@@ -2,15 +2,13 @@ const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 
-// Home
-app.get('/how-is-today', (req, res, next) => {
-
+// Home API
+router.route('/how-is-today').get((req, res, next) => {
+    res.send('great');
 });
 
-// Student Model
+// Student List API
 const studentSchema = require('../models/StudentSchema');
-
-// CREATE Student
 router.route('/create-student').post((req, res, next) => {
     studentSchema.create(req.body, (error, data) => {
         if (error)
@@ -22,8 +20,6 @@ router.route('/create-student').post((req, res, next) => {
         }
     });
 });
-
-// Get Student List
 router.route('/get-student-list').get((req, res, next) => {
     studentSchema.find((error, data) => {
         if (error)
@@ -32,8 +28,6 @@ router.route('/get-student-list').get((req, res, next) => {
             res.json(data);
     });
 });
-
-// Get Single Student
 router.route('/get-student/:id').get((req, res, next) => {
     studentSchema.findById(req.params.id, (error, data) => {
         if (error)
@@ -42,8 +36,6 @@ router.route('/get-student/:id').get((req, res, next) => {
             res.json(data);
     });
 });
-
-// Update Student
 router.route('/update-student/:id').put((req, res, next) => {
     studentSchema.findByIdAndUpdate(req.params.id, { $set: req.body },
         (error, data) => {
@@ -56,8 +48,6 @@ router.route('/update-student/:id').put((req, res, next) => {
             }
         });
 });
-
-// Delete Student
 router.route('/delete-student/:id').delete((req, res, next) => {
     studentSchema.findByIdAndRemove(req.params.id, (error, data) => {
         if (error)

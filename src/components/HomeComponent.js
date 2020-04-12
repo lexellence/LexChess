@@ -16,7 +16,7 @@ export default class HomeComponent extends React.Component {
         axios.get('http://localhost:4000/api/how-is-today/')
             .then(res => {
                 this.setState({
-                    students: res.data
+                    howIsToday: res.data
                 });
             })
             .catch((error) => {
