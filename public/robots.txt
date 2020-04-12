@@ -1,3 +1,27 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
+
+# https://www.robotstxt.org/robotstxt.html
+# Note: robots are free to ignore this!!
+
+# Exclude all robots from entire server
+#User-agent: *
+#Disallow: /
+
+# Exclude all robots from entire server
+#User-agent: *
+#Disallow: 
+
+# Exclude a single robot
+#User-agent: BadBot
+#Disallow: /
+
+# Allow a single robot
+#User-agent: Google
+#Disallow:
+#User-agent: *
+#Disallow: /
+
+# Allow all robots complete access
+#User-agent: *
+#Disallow:
