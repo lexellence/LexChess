@@ -10,12 +10,13 @@ import Button from 'react-bootstrap/Button';
 export default class StudentTableRowComponent extends React.Component {
     constructor(props) {
         super(props);
-        this.deleteStudent = this.deleteStudent.bind(this);
+        //this.deleteStudent = this.deleteStudent.bind(this);
     }
 
-    deleteStudent() {
-        axios.delete('http://localhost:4000/api/delete-student/' + this.props.obj._id)
+    deleteStudent = () => {
+        axios.delete('http://localhost:4000/api/delete-student/' + this.props.student._id)
             .then((res) => {
+
                 console.log('Student successfully deleted!');
             }).catch((error) => {
                 console.log(error);
@@ -25,11 +26,11 @@ export default class StudentTableRowComponent extends React.Component {
     render() {
         return (
             <tr>
-                <td>{this.props.obj.name}</td>
-                <td>{this.props.obj.email}</td>
-                <td>{this.props.obj.rollno}</td>
+                <td>{this.props.student.name}</td>
+                <td>{this.props.student.email}</td>
+                <td>{this.props.student.rollno}</td>
                 <td>
-                    <Link className="edit-link" to={"/edit-student/" + this.props.obj._id}>
+                    <Link className="edit-link" to={"/edit-student/" + this.props.student._id}>
                         Edit
                     </Link>
                     <Button onClick={this.deleteStudent} size="sm" variant="danger">Delete</Button>

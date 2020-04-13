@@ -27,7 +27,7 @@ export default class HomeComponent extends React.Component {
     render() {
         return (
             <div>
-                <h1>Hello, {this.props.howIsToday}</h1>
+                <h1>Hello, today is {this.state.howIsToday}.</h1>
             </div>
         );
     }

@@ -38,7 +38,7 @@ export default function App() {
                 </Nav>
 
                 <Nav>
-                  <Link to={"/student-list"} className="nav-link">
+                  <Link to={"/view-students"} className="nav-link">
                     View Student List
                   </Link>
                 </Nav>

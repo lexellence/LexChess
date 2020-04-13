@@ -12,10 +12,10 @@ export default class EditStudentComponent extends React.Component {
         super(props);
 
         // Setting up functions
-        this.onChangeStudentName = this.onChangeStudentName.bind(this);
-        this.onChangeStudentEmail = this.onChangeStudentEmail.bind(this);
-        this.onChangeStudentRollno = this.onChangeStudentRollno.bind(this);
-        this.onSubmit = this.onSubmit.bind(this);
+        //this.onChangeStudentName = this.onChangeStudentName.bind(this);
+        //this.onChangeStudentEmail = this.onChangeStudentEmail.bind(this);
+        //this.onChangeStudentRollno = this.onChangeStudentRollno.bind(this);
+        //this.onSubmit = this.onSubmit.bind(this);
 
         // Setting up state
         this.state = {
@@ -25,7 +25,7 @@ export default class EditStudentComponent extends React.Component {
         };
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         axios.get('http://localhost:4000/api/get-student/' + this.props.match.params.id)
             .then(res => {
                 this.setState({
@@ -39,19 +39,19 @@ export default class EditStudentComponent extends React.Component {
             });
     }
 
-    onChangeStudentName(e) {
+    onChangeStudentName = (e) => {
         this.setState({ name: e.target.value });
     }
 
-    onChangeStudentEmail(e) {
+    onChangeStudentEmail = (e) => {
         this.setState({ email: e.target.value });
     }
 
-    onChangeStudentRollno(e) {
+    onChangeStudentRollno = (e) => {
         this.setState({ rollno: e.target.value });
     }
 
-    onSubmit(e) {
+    onSubmit = (e) => {
         e.preventDefault();
 
         const studentObject = {
@@ -72,7 +72,7 @@ export default class EditStudentComponent extends React.Component {
         this.props.history.push('/view-students');
     }
 
-    render() {
+    render = () => {
         return (
             <div className="form-wrapper">
                 <Form onSubmit={this.onSubmit}>

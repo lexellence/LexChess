@@ -11,7 +11,7 @@ export default class ViewStudentsComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            students: []
+            studentList: []
         };
     }
 
@@ -19,7 +19,7 @@ export default class ViewStudentsComponent extends React.Component {
         axios.get('http://localhost:4000/api/get-student-list/')
             .then(res => {
                 this.setState({
-                    students: res.data
+                    studentList: res.data
                 });
             })
             .catch((error) => {
@@ -27,9 +27,10 @@ export default class ViewStudentsComponent extends React.Component {
             });
     }
 
+    // Create an array of RowComponents out of the array of students
     DataTable() {
-        return this.state.students.map((res, i) => {
-            return <StudentTableRowComponent obj={res} key={i} />;
+        return this.state.studentList.map((student, i) => {
+            return <StudentTableRowComponent student={student} key={i} />;
         });
     }
 
@@ -46,7 +47,6 @@ export default class ViewStudentsComponent extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {/* { Table data} */}
                         {this.DataTable()}
                     </tbody>
                 </Table>
