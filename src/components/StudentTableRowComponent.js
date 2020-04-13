@@ -8,10 +8,10 @@ import { Link } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 
 export default class StudentTableRowComponent extends React.Component {
+    /*
     constructor(props) {
         super(props);
-        //this.deleteStudent = this.deleteStudent.bind(this);
-    }
+    }*/
 
     deleteStudent = () => {
         axios.delete('http://localhost:4000/api/delete-student/' + this.props.student._id)
@@ -21,9 +21,9 @@ export default class StudentTableRowComponent extends React.Component {
             }).catch((error) => {
                 console.log(error);
             });
-    }
+    };
 
-    render() {
+    render = () => {
         return (
             <tr>
                 <td>{this.props.student.name}</td>

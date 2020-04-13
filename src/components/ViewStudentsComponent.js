@@ -15,7 +15,7 @@ export default class ViewStudentsComponent extends React.Component {
         };
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         axios.get('http://localhost:4000/api/get-student-list/')
             .then(res => {
                 this.setState({
@@ -28,13 +28,13 @@ export default class ViewStudentsComponent extends React.Component {
     }
 
     // Create an array of RowComponents out of the array of students
-    DataTable() {
+    DataTable = () => {
         return this.state.studentList.map((student, i) => {
             return <StudentTableRowComponent student={student} key={i} />;
         });
     }
 
-    render() {
+    render = () => {
         return (
             <div className="table-wrapper">
                 <Table striped bordered hover>

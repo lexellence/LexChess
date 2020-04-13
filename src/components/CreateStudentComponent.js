@@ -10,14 +10,6 @@ import Button from 'react-bootstrap/Button';
 export default class CreateStudentComponent extends React.Component {
     constructor(props) {
         super(props);
-
-        // Setting up functions
-        //this.onChangeStudentName = this.onChangeStudentName.bind(this);
-        //this.onChangeStudentEmail = this.onChangeStudentEmail.bind(this);
-        //this.onChangeStudentRollno = this.onChangeStudentRollno.bind(this);
-        //this.onSubmit = this.onSubmit.bind(this);
-
-        // Setting up state
         this.state = {
             name: '',
             email: '',
@@ -51,7 +43,7 @@ export default class CreateStudentComponent extends React.Component {
         this.setState({ name: '', email: '', rollno: '' });
     }
 
-    render() {
+    render = () => {
         return (
             <div class="form-wrapper">
                 <Form onSubmit={this.onSubmit}>

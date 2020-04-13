@@ -10,14 +10,6 @@ import Button from 'react-bootstrap/Button';
 export default class EditStudentComponent extends React.Component {
     constructor(props) {
         super(props);
-
-        // Setting up functions
-        //this.onChangeStudentName = this.onChangeStudentName.bind(this);
-        //this.onChangeStudentEmail = this.onChangeStudentEmail.bind(this);
-        //this.onChangeStudentRollno = this.onChangeStudentRollno.bind(this);
-        //this.onSubmit = this.onSubmit.bind(this);
-
-        // Setting up state
         this.state = {
             name: '',
             email: '',
