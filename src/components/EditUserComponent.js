@@ -1,13 +1,14 @@
 import React from "react";
 import axios from 'axios';
+import * as constants from '../Constants'
 
 //+----------------------------\------------------------------
-//|	   EditStudentComponent    |
+//|	   EditplayerComponent    |
 //\----------------------------/------------------------------
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-export default class EditStudentComponent extends React.Component {
+export default class EditUserComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -18,7 +19,7 @@ export default class EditStudentComponent extends React.Component {
     }
 
     componentDidMount = () => {
-        axios.get('http://localhost:4000/api/get-student/' + this.props.match.params.id)
+        axios.get(constants.API_BASE_URL + constants.API_GET_USER + `/${this.props.match.params.id}`)
             .then(res => {
                 this.setState({
                     name: res.data.name,
@@ -31,37 +32,37 @@ export default class EditStudentComponent extends React.Component {
             });
     }
 
-    onChangeStudentName = (e) => {
+    onChangeUserName = (e) => {
         this.setState({ name: e.target.value });
     }
 
-    onChangeStudentEmail = (e) => {
+    onChangeUserEmail = (e) => {
         this.setState({ email: e.target.value });
     }
 
-    onChangeStudentRollno = (e) => {
+    onChangeUserRollno = (e) => {
         this.setState({ rollno: e.target.value });
     }
 
     onSubmit = (e) => {
         e.preventDefault();
 
-        const studentObject = {
+        const userObject = {
             name: this.state.name,
             email: this.state.email,
             rollno: this.state.rollno
         };
-
-        axios.put('http://localhost:4000/api/update-student/' + this.props.match.params.id, studentObject)
+        const endpointURL = constants.API_BASE_URL + constants.API_UPDATE_USER + `/${this.props.match.params.id}`;
+        axios.put(endpointURL, userObject)
             .then((res) => {
                 console.log(res.data);
-                console.log('Student successfully updated');
+                console.log('User successfully updated');
             }).catch((error) => {
                 console.log(error);
             });
 
-        // Redirect to Student List 
-        this.props.history.push('/view-students');
+        // Redirect to user List 
+        this.props.history.push(constants.ROUTE_VIEW_USERS);
     }
 
     render = () => {
@@ -70,21 +71,21 @@ export default class EditStudentComponent extends React.Component {
                 <Form onSubmit={this.onSubmit}>
                     <Form.Group controlId="Name">
                         <Form.Label>Name</Form.Label>
-                        <Form.Control type="text" value={this.state.name} onChange={this.onChangeStudentName} />
+                        <Form.Control type="text" value={this.state.name} onChange={this.onChangeUserName} />
                     </Form.Group>
 
                     <Form.Group controlId="Email">
                         <Form.Label>Email</Form.Label>
-                        <Form.Control type="email" value={this.state.email} onChange={this.onChangeStudentEmail} />
+                        <Form.Control type="email" value={this.state.email} onChange={this.onChangeUserEmail} />
                     </Form.Group>
 
                     <Form.Group controlId="Name">
                         <Form.Label>Roll No</Form.Label>
-                        <Form.Control type="text" value={this.state.rollno} onChange={this.onChangeStudentRollno} />
+                        <Form.Control type="text" value={this.state.rollno} onChange={this.onChangeUserRollno} />
                     </Form.Group>
 
                     <Button variant="danger" size="lg" block="block" type="submit">
-                        Update Student
+                        Update User
                     </Button>
                 </Form>
             </div>

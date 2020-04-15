@@ -1,25 +1,27 @@
 import React from "react";
 import axios from 'axios';
+import * as constants from '../Constants'
 
 //+----------------------------\------------------------------
-//|	  ViewStudentsComponent    |
+//|	  ViewUsersComponent       |
 //\----------------------------/------------------------------
 import Table from 'react-bootstrap/Table';
-import StudentTableRowComponent from './StudentTableRowComponent';
+import UserTableRowComponent from './UserTableRowComponent';
 
-export default class ViewStudentsComponent extends React.Component {
+export default class ViewUsersComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            studentList: []
+            userList: []
         };
     }
 
     componentDidMount = () => {
-        axios.get('http://localhost:4000/api/get-student-list/')
-            .then(res => {
+        const endpointURL = constants.API_BASE_URL + constants.API_GET_USER_LIST;
+        axios.get(endpointURL)
+           .then(res => {
                 this.setState({
-                    studentList: res.data
+                    userList: res.data
                 });
             })
             .catch((error) => {
@@ -27,10 +29,10 @@ export default class ViewStudentsComponent extends React.Component {
             });
     }
 
-    // Create an array of RowComponents out of the array of students
-    DataTable = () => {
-        return this.state.studentList.map((student, i) => {
-            return <StudentTableRowComponent student={student} key={i} />;
+    // Create an array of RowComponents out of the array of users
+    GetTableRowsFromUserList = () => {
+        return this.state.userList.map((user, i) => {
+            return <UserTableRowComponent user={user} key={i} />;
         });
     }
 
@@ -47,7 +49,7 @@ export default class ViewStudentsComponent extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.DataTable()}
+                        {this.GetTableRowsFromUserList()}
                     </tbody>
                 </Table>
             </div>

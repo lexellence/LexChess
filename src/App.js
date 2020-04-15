@@ -11,10 +11,12 @@ import './App.css';
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 
 import HomeComponent from "./components/HomeComponent";
-import CreateStudentComponent from "./components/CreateStudentComponent";
-import EditStudentComponent from "./components/EditStudentComponent";
-import ViewStudentsComponent from "./components/ViewStudentsComponent";
+import PlayComponent from "./components/PlayComponent";
+import CreateUserComponent from "./components/CreateUserComponent";
+import EditUserComponent from "./components/EditUserComponent";
+import ViewUsersComponent from "./components/ViewUsersComponent";
 
+import * as constants from './Constants'
 export default function App() {
   return (
     <BrowserRouter>
@@ -24,21 +26,28 @@ export default function App() {
             <Container>
 
               <Navbar.Brand>
-                <Link to={"/"} className="nav-link">
+                <Link to={constants.ROUTE_HOME} className="nav-link">
                   Lex Chess
                 </Link>
               </Navbar.Brand>
 
               <Nav className="justify-content-end">
+
                 <Nav>
-                  <Link to={"/create-student"} className="nav-link">
-                    Create Student
+                  <Link to={constants.ROUTE_PLAY} className="nav-link">
+                    Play
                   </Link>
                 </Nav>
 
                 <Nav>
-                  <Link to={"/view-students"} className="nav-link">
-                    View Student List
+                  <Link to={constants.ROUTE_CREATE_USER} className="nav-link">
+                    Create User
+                  </Link>
+                </Nav>
+
+                <Nav>
+                  <Link to={constants.ROUTE_VIEW_USERS} className="nav-link">
+                    View User List
                   </Link>
                 </Nav>
               </Nav>
@@ -53,9 +62,10 @@ export default function App() {
               <div className="wrapper">
                 <Switch>
                   <Route exact path='/' component={HomeComponent} />
-                  <Route path="/view-students" component={ViewStudentsComponent} />
-                  <Route path="/create-student" component={CreateStudentComponent} />
-                  <Route path="/edit-student/:id" component={EditStudentComponent} />
+                                  <Route path={constants.ROUTE_PLAY} component={PlayComponent} />
+                                  <Route path={constants.ROUTE_VIEW_USERS} component={ViewUsersComponent} />
+                                  <Route path={constants.ROUTE_CREATE_USER} component={CreateUserComponent} />
+                                  <Route path={constants.ROUTE_EDIT_USER + '/:id'} component={EditUserComponent} />
                 </Switch>
               </div>
             </Col>
