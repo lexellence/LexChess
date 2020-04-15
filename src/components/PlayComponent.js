@@ -106,14 +106,15 @@ export default class PlayComponent extends React.Component {
             userId1: 2,
             userId2: 3,
             moveHistory: ['3233', '3736']
+            //moveHistory: '3736'
         };
         const endpointURL = constants.API_BASE_URL + constants.API_ADD_GAME;
         axios.post(endpointURL, gameObject)
             .then(res => {
-
+                this.refs.newGame.innerText = `Success: ` + JSON.stringify(gameObject);
             })
             .catch(error => {
-
+                this.refs.newGame.innerText = `Failure: ` + JSON.stringify(gameObject);
             });
     };
 
@@ -150,14 +151,10 @@ export default class PlayComponent extends React.Component {
     };
 
     update = () => {
-        const canvas = document.getElementById('gameBoard');
-        if (!canvas)
-            return;
-
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const ctx = this.refs.gameBoard.getContext('2d');
+        ctx.clearRect(0, 0, this.refs.gameBoard.width, this.refs.gameBoard.height);
         ctx.fillStyle = "#CCCCCC";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, this.refs.gameBoard.width, this.refs.gameBoard.height);
         ctx.fillStyle = "#ff0000";
         ctx.fillRect(this.game.getX(), this.game.getY(), 60, 60);
     };
@@ -166,14 +163,14 @@ export default class PlayComponent extends React.Component {
         return (
             <div>
                 <p>Before canvas.</p>
-                <canvas id='gameBoard' width="480" height="480">Canvas displays here.</canvas>
+                <canvas ref='gameBoard' width="480" height="480">Canvas displays here.</canvas>
                 <p>After canvas.</p>
 
                 <Button onClick={this.onShowPrevious}>Last Move</Button>
                 <Button onClick={this.onShowNext}>Next Move</Button>
                 <Button onClick={this.onShowPresent}>Present</Button><br />
                 <Button onClick={this.onNewGame}>New Game</Button>
-
+                <p><div ref='newGame'></div></p>
                 <p>History position: {this.state.historyPosition}</p>
 
                 <p>Your time: <div id="yourTime">0</div></p>

@@ -1,6 +1,6 @@
 const firebase = require("firebase");
 require("firebase/firestore");
-var firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyB8hSrh3MzpM_VxuKLDvrwGnDkpSJHBaUU",
     authDomain: "chessfighter-b3ba9.firebaseapp.com",
     databaseURL: "https://chessfighter-b3ba9.firebaseio.com",
@@ -15,31 +15,43 @@ var db = firebase.firestore();
 const express = require('express');
 const router = express.Router();
 
+
+const Joi = require('@hapi/joi');
+const gameSchema = Joi.object({
+    userId1:
+        Joi.number().integer().required(),
+    userId2:
+        Joi.number().integer().required(),
+    moveHistory:
+        Joi.array().items(
+            Joi.string().pattern(/^[1-8]{4}[+#]?$/)
+        ).required()
+    // username: Joi.string().alphanum().min(3).max(30).required(),
+    // password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+    // repeat_password: Joi.ref('password'), 
+    // access_token: [ Joi.string(), Joi.number() ],
+    // birth_year: Joi.number().integer().min(1900).max(2013), 
+    // email: Joi.string().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+});
+
 // Play API
-const isValidGame = (game) => {
-    if ((typeof (game.userId1) === 'number') &&
-        (typeof (game.userId2) === 'number') &&
-        (game.moveHistory instanceof Array))
-        return true;
-    else
-        return false;
-};
 router.route('/add-game').post((req, res, next) => {
-    // Validate input
-    if (!isValidGame(req.body)) {
-        res.status(500).send('invalid game');
+    const { error, value } = gameSchema.validate(req.body);
+    if (error) {
+        res.sendStatus(400); // 400 = bad request
         return;
     }
+    req.body.lastActive = firebase.firestore.FieldValue.serverTimestamp();
 
     // Add a game document
-    req.body.lastActive = firebase.firestore.FieldValue.serverTimestamp();
     db.collection("games").add(req.body)
         .then(docRef => {
-            res.status(200).send('success');
+            res.sendStatus(201); // 201 = created
             return;
         })
         .catch(error => {
-            res.status(500).send('error');
+            res.sendStatus(500); // 500 = generic internal server error
+            next(error);
         });
 });
 
@@ -51,18 +63,17 @@ router.route('/how-is-today').get((req, res, next) => {
     todayDocRef.get()
         .then(doc => {
             if (!doc.exists)
-                res.status(404).send("<doc_not_found>");
+                res.sendStatus(404);    // 404 = not found
             else {
                 if (!doc.data().howIsToday)
-                    res.status(200).send('<field_not_found>');
+                    res.sendStatus(404);    // 404 = not found
                 else
-                    res.status(200).send(doc.data().howIsToday);
+                    res.status(200).send(doc.data().howIsToday);    // 200 = OK
             }
             return;
         })
         .catch(error => {
-            console.log("Error getting document:", error);
-            res.status(500).send('<error>');
+            res.sendStatus(500); // 500 = generic internal server error
             next(error);
         });
 });
@@ -96,7 +107,7 @@ router.route('/create-user').post((req, res, next) => {
             res.json(data);
         }
     });*/
-    res.status(200).json(req.body);
+    res.sendStatus(201); // 201 = created
 });
 
 
@@ -107,7 +118,7 @@ router.route('/get-user-list').get((req, res, next) => {
         else
             res.json(data);
     });*/
-    res.status(200).json(userObjectList);
+    res.status(200).json(userObjectList);   // 200 = OK
 });
 
 router.route('/get-user/:id').get((req, res, next) => {
@@ -117,7 +128,7 @@ router.route('/get-user/:id').get((req, res, next) => {
         else
             res.json(data);
     });*/
-    res.status(200).json(userObject);
+    res.status(200).json(userObject);   // 200 = OK
 });
 router.route('/update-user/:id').put((req, res, next) => {
     /*playerSchema.findByIdAndUpdate(req.params.id, { $set: req.body },
@@ -130,7 +141,7 @@ router.route('/update-user/:id').put((req, res, next) => {
                 console.log('player updated successfully!');
             }
         });*/
-    res.status(200).json(userObject);
+    res.sendStatus(200);
 });
 router.route('/delete-user/:id').delete((req, res, next) => {
     /*playerSchema.findByIdAndRemove(req.params.id, (error, data) => {
@@ -139,7 +150,7 @@ router.route('/delete-user/:id').delete((req, res, next) => {
         else
             res.status(200).json({ msg: data });
     });*/
-    res.status(200).json({ msg: 'deleted' });
+    res.sendStatus(200);
 });
 
 module.exports = router;
