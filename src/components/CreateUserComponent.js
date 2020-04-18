@@ -1,13 +1,13 @@
 import React from "react";
 import axios from 'axios';
-import * as constants from '../Constants'
+import * as constants from '../Constants';
 
 //+----------------------------\------------------------------
 //|	  CreateplayerComponent   |
 //\----------------------------/------------------------------
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
- 
+
 export default class CreateUserComponent extends React.Component {
     constructor(props) {
         super(props);
@@ -20,15 +20,15 @@ export default class CreateUserComponent extends React.Component {
 
     onChangeUserName = (e) => {
         this.setState({ name: e.target.value });
-    }
+    };
 
     onChangeUserEmail = (e) => {
         this.setState({ email: e.target.value });
-    }
+    };
 
     onChangeUserRollno = (e) => {
         this.setState({ rollno: e.target.value });
-    }
+    };
 
     onSubmit = (e) => {
         e.preventDefault();
@@ -49,11 +49,11 @@ export default class CreateUserComponent extends React.Component {
             .catch(error => {
                 console.log(error);
             });
-       this.setState({ name: '', email: '', rollno: '' });
+        this.setState({ name: '', email: '', rollno: '' });
 
         // Redirect to player List 
         this.props.history.push(constants.ROUTE_CREATE_USER);
-    }
+    };
     render = () => {
         return (
             <div class="form-wrapper">
@@ -79,5 +79,5 @@ export default class CreateUserComponent extends React.Component {
                 </Form>
             </div>
         );
-    }
+    };
 }

@@ -16,7 +16,7 @@ import CreateUserComponent from "./components/CreateUserComponent";
 import EditUserComponent from "./components/EditUserComponent";
 import ViewUsersComponent from "./components/ViewUsersComponent";
 
-import * as constants from './Constants'
+import * as constants from './Constants';
 export default function App() {
   return (
     <BrowserRouter>
@@ -62,10 +62,10 @@ export default function App() {
               <div className="wrapper">
                 <Switch>
                   <Route exact path='/' component={HomeComponent} />
-                                  <Route path={constants.ROUTE_PLAY} component={PlayComponent} />
-                                  <Route path={constants.ROUTE_VIEW_USERS} component={ViewUsersComponent} />
-                                  <Route path={constants.ROUTE_CREATE_USER} component={CreateUserComponent} />
-                                  <Route path={constants.ROUTE_EDIT_USER + '/:id'} component={EditUserComponent} />
+                  <Route path={constants.ROUTE_PLAY} component={PlayComponent} />
+                  <Route path={constants.ROUTE_VIEW_USERS} component={ViewUsersComponent} />
+                  <Route path={constants.ROUTE_CREATE_USER} component={CreateUserComponent} />
+                  <Route path={constants.ROUTE_EDIT_USER + '/:id'} component={EditUserComponent} />
                 </Switch>
               </div>
             </Col>

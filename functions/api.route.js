@@ -1,3 +1,4 @@
+"use strict";
 const firebase = require("firebase");
 require("firebase/firestore");
 const firebaseConfig = {
@@ -98,58 +99,20 @@ const userObjectList = [userObject, userObject2, userObject3];
 
 ///const playerSchema = require('../models/playerSchema');
 router.route('/create-user').post((req, res, next) => {
-    /*playerSchema.create(req.body, (error, data) => {
-        if (error)
-            return next(error);
-        else {
-            console.log('New player:');
-            console.log(data);
-            res.json(data);
-        }
-    });*/
     res.sendStatus(201); // 201 = created
 });
 
-
 router.route('/get-user-list').get((req, res, next) => {
-    /*playerSchema.find((error, data) => {
-        if (error)
-            return next(error);
-        else
-            res.json(data);
-    });*/
     res.status(200).json(userObjectList);   // 200 = OK
 });
 
 router.route('/get-user/:id').get((req, res, next) => {
-    /*playerSchema.findById(req.params.id, (error, data) => {
-        if (error)
-            return next(error);
-        else
-            res.json(data);
-    });*/
     res.status(200).json(userObject);   // 200 = OK
 });
 router.route('/update-user/:id').put((req, res, next) => {
-    /*playerSchema.findByIdAndUpdate(req.params.id, { $set: req.body },
-        (error, data) => {
-            if (error) {
-                console.log(error);
-                return next(error);
-            } else {
-                res.json(data);
-                console.log('player updated successfully!');
-            }
-        });*/
     res.sendStatus(200);
 });
 router.route('/delete-user/:id').delete((req, res, next) => {
-    /*playerSchema.findByIdAndRemove(req.params.id, (error, data) => {
-        if (error)
-            return next(error);
-        else
-            res.status(200).json({ msg: data });
-    });*/
     res.sendStatus(200);
 });
 

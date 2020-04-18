@@ -17,7 +17,7 @@ export default class HomeComponent extends React.Component {
     componentDidMount = () => {
         const endpointURL = constants.API_BASE_URL + constants.API_HOW_IS_TODAY;
         axios.get(endpointURL)
-          .then(res => {
+            .then(res => {
                 this.setState({
                     today: res.data
                 });

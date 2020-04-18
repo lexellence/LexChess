@@ -1,6 +1,6 @@
 import React from "react";
 import axios from 'axios';
-import * as constants from '../Constants'
+import * as constants from '../Constants';
 
 //+----------------------------\------------------------------
 //|	   EditplayerComponent    |
@@ -30,19 +30,19 @@ export default class EditUserComponent extends React.Component {
             .catch((error) => {
                 console.log(error);
             });
-    }
+    };
 
     onChangeUserName = (e) => {
         this.setState({ name: e.target.value });
-    }
+    };
 
     onChangeUserEmail = (e) => {
         this.setState({ email: e.target.value });
-    }
+    };
 
     onChangeUserRollno = (e) => {
         this.setState({ rollno: e.target.value });
-    }
+    };
 
     onSubmit = (e) => {
         e.preventDefault();
@@ -63,7 +63,7 @@ export default class EditUserComponent extends React.Component {
 
         // Redirect to user List 
         this.props.history.push(constants.ROUTE_VIEW_USERS);
-    }
+    };
 
     render = () => {
         return (
@@ -90,5 +90,5 @@ export default class EditUserComponent extends React.Component {
                 </Form>
             </div>
         );
-    }
+    };
 }

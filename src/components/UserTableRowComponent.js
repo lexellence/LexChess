@@ -1,6 +1,6 @@
 import React from "react";
 import axios from 'axios';
-import * as constants from '../Constants'
+import * as constants from '../Constants';
 
 //+-------------------------------\---------------------------
 //|	  UserTableRowComponent       |
@@ -38,5 +38,5 @@ export default class UserTableRowComponent extends React.Component {
                 </td>
             </tr>
         );
-    }
+    };
 }; 
