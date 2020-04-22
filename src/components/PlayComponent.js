@@ -12,11 +12,21 @@ const CANVAS_HEIGHT = 480;
 const BOARD_IMAGE_SIZE = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT);
 const BOARD_IMAGE_X = 0;
 const BOARD_IMAGE_Y = 0;
-//const SQUARE_SIZE = BOARD_SIZE / 8;
 
-const BOARD_IMAGE_OFFSET_X_PERCENT = 0.01;
-const BOARD_IMAGE_OFFSET_Y_PERCENT = 0.01;
-const BOARD_IMAGE_SIZE_PERCENT = 0.98;
+const BOARD_MARGIN = 0.01 * BOARD_IMAGE_SIZE;
+const BOARD_SIZE = (BOARD_IMAGE_SIZE - 2 * BOARD_MARGIN);
+const SQUARE_SIZE = BOARD_SIZE / 8;
+const SQUARE_MARGIN = .15 * SQUARE_SIZE;
+const PIECE_IMAGE_SIZE = SQUARE_SIZE - 2 * SQUARE_MARGIN;
+
+function getPieceX(col) {
+    let boardStartX = BOARD_IMAGE_X + BOARD_MARGIN;
+    return boardStartX + col * SQUARE_SIZE + SQUARE_MARGIN;
+};
+function getPieceY(row) {
+    let boardEndY = BOARD_IMAGE_Y + BOARD_IMAGE_SIZE - BOARD_MARGIN;
+    return boardEndY - (row + 1) * SQUARE_SIZE + SQUARE_MARGIN;
+};
 
 const PieceTypes = {
     EMPTY: 0,
@@ -34,6 +44,15 @@ const TeamNames = {
 };
 Object.freeze(TeamNames);
 
+/*class GameRecord {
+    constructor(userId1, userId2, moveHistory) {
+        userId1: 2,
+            userId2: 3,
+                moveHistory: ['3233', '3736'];   // 'crcr' 'crcr+' 'crcr#'
+
+    }
+
+}*/
 class Game {
     constructor() {
         // Clear IDs
@@ -75,6 +94,15 @@ class Game {
 
         for (let col = 0; col < 8; col++)
             this.colRowGrid[col][6] = { team: TeamNames.BLACK, type: PieceTypes.PAWN };
+
+        // Bring up to speed
+        /* let gameObject = {
+             userId1: 2,
+             userId2: 3,
+             moveHistory: ['3233', '3736']
+         };*/
+
+
     }
     getPieceType = (col, row) => {
         return this.colRowGrid[col][row].type;
@@ -87,13 +115,34 @@ class Game {
         return false;
     };
     isValidMove = (fromCol, fromRow, toCol, toRow) => {
-        return false;
+        return true;
+    };
+    capture = (col, row) => {
+        if (this.getPieceType(col, row) !== PieceTypes.EMPTY) {
+            this.captured.push(this.colRowGrid[col][row]);
+            this.colRowGrid[col][row].type = PieceTypes.EMPTY;
+        }
     };
     move = (fromCol, fromRow, toCol, toRow) => {
+        if (!this.isValidMove(fromCol, fromRow, toCol, toRow))
+            return false;
 
+        let toType = this.getPieceType(toCol, toRow);
+        if (toType !== PieceTypes.EMPTY) {
+            this.capture(toCol, toRow);
+        }
+        this.colRowGrid[toCol][toRow] = Object.assign({}, this.colRowGrid[fromCol][fromRow]);;
+        this.colRowGrid[fromCol][fromRow].type = PieceTypes.EMPTY;
+        return true;
     };
 
 }
+
+function getImage(path) {
+    let newImage = new Image();
+    newImage.src = 'images/' + path;
+    return newImage;
+};
 
 export default class PlayComponent extends React.Component {
     constructor(props) {
@@ -102,21 +151,25 @@ export default class PlayComponent extends React.Component {
             historyPosition: 0
         };
         this.game = new Game();
+        if (!this.game.move(3, 1, 3, 3))
+            alert("bad move");
+        if (!this.game.move(3, 6, 3, 4))
+            alert("bad move");
     }
 
     recordGame = () => {
         let gameObject = {
             userId1: 2,
             userId2: 3,
-            moveHistory: ['3233', '3736']
+            moveHistory: ['3233', '3736']   // 'crcr' 'crcr+' 'crcr#'
         };
         const endpointURL = constants.API_BASE_URL + constants.API_ADD_GAME;
         axios.post(endpointURL, gameObject)
             .then(res => {
-                this.refs.newGame.innerText = `Success: ` + JSON.stringify(gameObject);
+                this.refs.newGame.innerHTML = `<br />Success: ` + JSON.stringify(gameObject);
             })
             .catch(error => {
-                this.refs.newGame.innerText = `Failure: ` + JSON.stringify(gameObject);
+                this.refs.newGame.innerHTML = `<br />Failure: ` + JSON.stringify(gameObject);
             });
     };
 
@@ -132,37 +185,37 @@ export default class PlayComponent extends React.Component {
     };
 
     componentDidMount = () => {
-        this.boardImage = new Image(1024, 1024);
-        this.boardImage.src = 'images/chessboard/chessboard.png';
+        // Load images
+        this.boardImage = getImage('chessboard/chessboard.png');
 
-        this.whiteKingImage = new Image(512, 512);
-        this.whiteKingImage.src = 'images/white/white_king.png';
-        this.whiteQueenImage = new Image();
-        this.whiteQueenImage.src = 'images/white/white_queen.png';
-        this.whiteBishopImage = new Image();
-        this.whiteBishopImage.src = 'images/white/white_bishop.png';
-        this.whiteKnightImage = new Image();
-        this.whiteKnightImage.src = 'images/white/white_knight.png';
-        this.whiteRookImage = new Image();
-        this.whiteRookImage.src = 'images/white/white_rook.png';
-        this.whitePawnImage = new Image();
-        this.whitePawnImage.src = 'images/white/white_pawn.png';
+        this.whiteKingImage = getImage('white/white_king.png');
+        this.whiteQueenImage = getImage('white/white_queen.png');
+        this.whiteBishopImage = getImage('white/white_bishop.png');
+        this.whiteKnightImage = getImage('white/white_knight.png');
+        this.whiteRookImage = getImage('white/white_rook.png');
+        this.whitePawnImage = getImage('white/white_pawn.png');
 
-        this.blackKingImage = new Image();
-        this.blackKingImage.src = 'images/black/black_king.png';
-        this.blackQueenImage = new Image();
-        this.blackQueenImage.src = 'images/black/black_queen.png';
-        this.blackBishopImage = new Image();
-        this.blackBishopImage.src = 'images/black/black_bishop.png';
-        this.blackKnightImage = new Image();
-        this.blackKnightImage.src = 'images/black/black_knight.png';
-        this.blackRookImage = new Image();
-        this.blackRookImage.src = 'images/black/black_rook.png';
-        this.blackPawnImage = new Image();
-        this.blackPawnImage.src = 'images/black/black_pawn.png';
+        this.blackKingImage = getImage('black/black_king.png');
+        this.blackQueenImage = getImage('black/black_queen.png');
+        this.blackBishopImage = getImage('black/black_bishop.png');
+        this.blackKnightImage = getImage('black/black_knight.png');
+        this.blackRookImage = getImage('black/black_rook.png');
+        this.blackPawnImage = getImage('black/black_pawn.png');
 
-        this.timerID = setInterval(this.update, 17); // milliseconds
+        if (this.refs.gameBoard.getContext) {
+            // Save drawing context
+            this.gameCanvasContext = this.refs.gameBoard.getContext('2d', { alpha: true });
 
+            // Setup periodic canvas redrawing
+            this.updateCanvas();
+            this.timerID = setInterval(this.updateCanvas, 500); // milliseconds
+        }
+        else {
+            this.gameCanvasContext = null;
+            alert('Couldn\'t get canvas context');
+        }
+
+        // Setup canvas mouse events
         this.refs.gameBoard.addEventListener('mousedown', this.onClickCanvas, false);
     };
     componentWillUnmount = () => {
@@ -184,82 +237,65 @@ export default class PlayComponent extends React.Component {
     onClickCanvas = () => {
         this.onShowPrevious();
     };
-    update = () => {
-        if (!this.refs.gameBoard.getContext) {
-            // Canvas not supported
-            return;
+
+    // Returns null if type == EMPTY
+    pieceToImage = (team, type) => {
+        switch (type) {
+            case PieceTypes.KING:
+                return (team === TeamNames.WHITE) ? this.whiteKingImage : this.blackKingImage;
+            case PieceTypes.QUEEN:
+                return (team === TeamNames.WHITE) ? this.whiteQueenImage : this.blackQueenImage;
+            case PieceTypes.BISHOP:
+                return (team === TeamNames.WHITE) ? this.whiteBishopImage : this.blackBishopImage;
+            case PieceTypes.KNIGHT:
+                return (team === TeamNames.WHITE) ? this.whiteKnightImage : this.blackKnightImage;
+            case PieceTypes.ROOK:
+                return (team === TeamNames.WHITE) ? this.whiteRookImage : this.blackRookImage;
+            case PieceTypes.PAWN:
+                return (team === TeamNames.WHITE) ? this.whitePawnImage : this.blackPawnImage;
+            default:
+                return null;
         }
+    };
 
-        const gameCanvasContext = this.refs.gameBoard.getContext('2d', { alpha: false });
-        gameCanvasContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        gameCanvasContext.fillStyle = "#CCCCCC";
-        gameCanvasContext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    drawPiece = (canvasContext, col, row, team, type) => {
+        // Determine which image to draw
+        let pieceImage = this.pieceToImage(team, type);
 
+        // Draw piece image (y-axis has zero at the top for canvas but zero at the bottom for chessboard)
+        if (pieceImage)
+            canvasContext.drawImage(pieceImage, getPieceX(col), getPieceY(row), PIECE_IMAGE_SIZE, PIECE_IMAGE_SIZE);
+    };
+
+    updateCanvas = () => {
+        if (!this.gameCanvasContext)
+            return;
+
+        let ctx = this.gameCanvasContext;
+        // Clear canvas
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+        // Canvas background
+        ctx.fillStyle = "#CCCCCC";
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         // Draw checkerboard
-        /*for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                gameCanvasContext.fillStyle = ((i + j) % 2 === 0) ? "white" : "black";
-                let x = boardX + j * squareSize;
-                let y = boardY + i * squareSize;
-                gameCanvasContext.fillRect(x, y, squareSize, squareSize);
-            }
-        }*/
-        // if (this.boardImageLoaded)
-        gameCanvasContext.drawImage(this.boardImage, BOARD_IMAGE_X, BOARD_IMAGE_Y, BOARD_IMAGE_SIZE, BOARD_IMAGE_SIZE);
+        ctx.drawImage(this.boardImage, BOARD_IMAGE_X, BOARD_IMAGE_Y, BOARD_IMAGE_SIZE, BOARD_IMAGE_SIZE);
 
         // Draw canvas border
-        gameCanvasContext.strokeStyle = "black";
-        gameCanvasContext.strokeRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
         // Draw game pieces
-        for (let col = 0; col < 8; col++) {
-            for (let row = 0; row < 8; row++) {
-                let pieceImage = null;
-                let pieceType = this.game.getPieceType(col, row);
-                if (pieceType !== PieceTypes.EMPTY) {
-                    let team = this.game.getPieceTeam(col, row);
-                    switch (pieceType) {
-                        case PieceTypes.KING:
-                            pieceImage = team == TeamNames.WHITE ? this.whiteKingImage : this.blackKingImage;
-                            break;
-                        case PieceTypes.QUEEN:
-                            pieceImage = team == TeamNames.WHITE ? this.whiteQueenImage : this.blackQueenImage;
-                            break;
-                        case PieceTypes.BISHOP:
-                            pieceImage = team == TeamNames.WHITE ? this.whiteBishopImage : this.blackBishopImage;
-                            break;
-                        case PieceTypes.KNIGHT:
-                            pieceImage = team == TeamNames.WHITE ? this.whiteKnightImage : this.blackKnightImage;
-                            break;
-                        case PieceTypes.ROOK:
-                            pieceImage = team == TeamNames.WHITE ? this.whiteRookImage : this.blackRookImage;
-                            break;
-                        case PieceTypes.PAWN:
-                            pieceImage = team == TeamNames.WHITE ? this.whitePawnImage : this.blackPawnImage;
-                            break;
-                    }
-                }
-                if (pieceImage) {
-                    let boardActualX = BOARD_IMAGE_X + BOARD_IMAGE_OFFSET_X_PERCENT * BOARD_IMAGE_SIZE;
-                    let boardActualY = BOARD_IMAGE_Y + BOARD_IMAGE_OFFSET_Y_PERCENT * BOARD_IMAGE_SIZE;
-                    let boardActualSize = BOARD_IMAGE_SIZE_PERCENT * BOARD_IMAGE_SIZE;
-                    let squareActualSize = boardActualSize / 8;
-
-                    let pieceMargin = squareActualSize * 0.1;
-                    let x = boardActualX + col * squareActualSize + pieceMargin;
-                    let y = boardActualY + row * squareActualSize + pieceMargin;
-                    gameCanvasContext.drawImage(pieceImage, x, y, squareActualSize - 2 * pieceMargin, squareActualSize - 2 * pieceMargin);
-                }
-            }
-        }
-
+        for (let col = 0; col < 8; col++)
+            for (let row = 0; row < 8; row++)
+                this.drawPiece(ctx, col, row, this.game.getPieceTeam(col, row), this.game.getPieceType(col, row));
     };
 
     render = () => {
         return (
             <div align='center'>
-                <canvas ref='gameBoard' width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>Canvas displays here.</canvas><br />
+                <canvas ref='gameBoard' width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>Canvas tag not supported.</canvas><br />
 
                 <Button onClick={this.onShowPrevious}>Last Move</Button>
                 <Button onClick={this.onShowNext}>Next Move</Button>
@@ -267,9 +303,11 @@ export default class PlayComponent extends React.Component {
                 <Button onClick={this.onNewGame}>New Game</Button><span ref='newGame'></span>
                 <p>History position: {this.state.historyPosition}</p>
 
-                <p>Your time: <div id="yourTime">0</div></p>
-                <p>Their time: <div id="theirTime">0</div></p>
-            </div>
+                <table style={{ width: '300px' }}>
+                    <tr><th>Your time</th><th>Their time</th></tr>
+                    <tr><td id="yourTime">0</td><td id="theirTime">0</td></tr>
+                </table>
+            </div >
         );
     };
 };
