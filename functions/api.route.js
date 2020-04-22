@@ -1,10 +1,11 @@
 "use strict";
 const firebase = require("firebase");
-const db = require('./db');
+require("firebase/firestore");
+firebase.initializeApp(require('./firebaseConfig'));
+const db = firebase.firestore();
 
 const express = require('express');
 const router = express.Router();
-
 
 const Joi = require('@hapi/joi');
 const gameSchema = Joi.object({
