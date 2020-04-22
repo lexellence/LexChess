@@ -10,6 +10,7 @@
     "bootstrap": "^4.4.1",
     "express-favicon": "^2.0.1",
     "firebase": "^7.14.0",
+    "firebaseui": "^4.5.0",
     "jquery": "^3.4.1",
     "path": "^0.12.7",
     "react": "^16.13.1",

@@ -1,17 +1,6 @@
 "use strict";
 const firebase = require("firebase");
-require("firebase/firestore");
-const firebaseConfig = {
-	apiKey: "AIzaSyB8hSrh3MzpM_VxuKLDvrwGnDkpSJHBaUU",
-	authDomain: "chessfighter-b3ba9.firebaseapp.com",
-	databaseURL: "https://chessfighter-b3ba9.firebaseio.com",
-	projectId: "chessfighter-b3ba9",
-	storageBucket: "chessfighter-b3ba9.appspot.com",
-	messagingSenderId: "571875242130",
-	appId: "1:571875242130:web:f87864f93d5251b0a6364b"
-};
-firebase.initializeApp(firebaseConfig);
-var db = firebase.firestore();
+const db = require('./db');
 
 const express = require('express');
 const router = express.Router();
@@ -36,6 +25,7 @@ router.route('/add-game').post((req, res, next) => {
 		res.sendStatus(400); // 400 = bad request
 		return;
 	}
+	// req.body.lastActive = firebase.firestore.FieldValue.serverTimestamp();
 	req.body.lastActive = firebase.firestore.FieldValue.serverTimestamp();
 
 	// Add a game document
