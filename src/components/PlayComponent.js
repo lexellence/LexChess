@@ -1,13 +1,13 @@
 import React from 'react';
+import Button from 'react-bootstrap/Button';
 import axios from 'axios';
 import * as constants from '../Constants';
+import firebase from 'firebase';
+import to from 'await-to-js';
 
 //+----------------------------\------------------------------
 //|	      PlayComponent        |
 //\----------------------------/------------------------------
-import Button from 'react-bootstrap/Button';
-// import { FirebaseAuthConsumer } from "@react-firebase/auth";
-// import firebase from "firebase/app";
 
 const CANVAS_WIDTH = 480;
 const CANVAS_HEIGHT = 480;
@@ -56,23 +56,42 @@ Object.freeze(TeamNames);
 
 }*/
 class Game {
-	constructor() {
-		// Clear IDs
-		this.colRowGrid = new Array(8);
+	// colRowGrid = new Array(8);
+	// history = [];
+	// captured = [];
 
+	constructor() {
+		// this.colRowGrid.forEach(col => col = new Array(8));
+
+		// for (let col = 0; col < 8; col++)
+		// 	this.colRowGrid[col] = new Array(8);
+
+		this.colRowGrid = new Array(8);
 		for (let col = 0; col < 8; col++) {
 			this.colRowGrid[col] = new Array(8);
 			for (let row = 0; row < 8; row++)
 				this.colRowGrid[col][row] = { team: TeamNames.WHITE, type: PieceTypes.EMPTY };
 		}
 
-		// Clear history
-		this.history = [];
 
-		// Clear captured pieces
+		// 	this.begin();
+		// }
+		// begin = () => {
+		this.turnTeam = TeamNames.WHITE;
+		this.history = [];
 		this.captured = [];
 
-		// Build board
+		// // Create 8x8 matrix
+		// this.colRowGrid = new Array(8);
+		// for (let col = 0; col < 8; col++) {
+		// 	this.colRowGrid[col] = new Array(8);
+		// 	for (let row = 0; row < 8; row++)
+		// 		this.colRowGrid[col][row] = { team: TeamNames.WHITE, type: PieceTypes.EMPTY };
+		// }
+		// this.colRowGrid.forEach(col => col.forEach(square => square = { team: TeamNames.WHITE, type: PieceTypes.EMPTY }));
+
+
+		// Place initial pieces
 		this.colRowGrid[0][0] = { team: TeamNames.WHITE, type: PieceTypes.ROOK };
 		this.colRowGrid[1][0] = { team: TeamNames.WHITE, type: PieceTypes.KNIGHT };
 		this.colRowGrid[2][0] = { team: TeamNames.WHITE, type: PieceTypes.BISHOP };
@@ -96,16 +115,8 @@ class Game {
 
 		for (let col = 0; col < 8; col++)
 			this.colRowGrid[col][6] = { team: TeamNames.BLACK, type: PieceTypes.PAWN };
+	};
 
-		// Bring up to speed
-        /* let gameObject = {
-             userId1: 2,
-             userId2: 3,
-             moveHistory: ['3233', '3736']
-         };*/
-
-
-	}
 	getPieceType = (col, row) => {
 		return this.colRowGrid[col][row].type;
 	};
@@ -117,6 +128,25 @@ class Game {
 		return false;
 	};
 	isValidMove = (fromCol, fromRow, toCol, toRow) => {
+		if (typeof fromCol !== 'number' || typeof fromRow !== 'number' || typeof toCol !== 'number' || typeof toRow !== 'number')
+			return false;
+		if (isNaN(fromCol) || isNaN(fromRow) || isNaN(toCol) || isNaN(toRow))
+			return false;
+
+		if (fromCol < 0 || fromCol > 7 ||
+			fromRow < 0 || fromRow > 7 ||
+			toCol < 0 || toCol > 7 ||
+			toRow < 0 || toRow > 7)
+			return false;
+
+		if (this.getPieceType(fromCol, fromRow) === PieceTypes.EMPTY)
+			return false;
+		if (this.getPieceType(toCol, toRow) !== PieceTypes.EMPTY)
+			return false;
+
+		// if (this.getPieceTeam(fromCol, fromRow) !== this.turnTeam)
+		// 	return false;
+
 		return true;
 	};
 	capture = (col, row) => {
@@ -125,7 +155,16 @@ class Game {
 			this.colRowGrid[col][row].type = PieceTypes.EMPTY;
 		}
 	};
-	move = (fromCol, fromRow, toCol, toRow) => {
+	moveString = (move) => {
+		if (typeof move !== 'string' || move.length < 4)
+			return false;
+		var fromCol = parseInt(move[0], 10);
+		var fromRow = parseInt(move[1], 10);
+		var toCol = parseInt(move[2], 10);
+		var toRow = parseInt(move[3], 10);
+		return this.moveInt(fromCol, fromRow, toCol, toRow);
+	};
+	moveInt = (fromCol, fromRow, toCol, toRow) => {
 		if (!this.isValidMove(fromCol, fromRow, toCol, toRow))
 			return false;
 
@@ -135,6 +174,21 @@ class Game {
 		}
 		this.colRowGrid[toCol][toRow] = Object.assign({}, this.colRowGrid[fromCol][fromRow]);;
 		this.colRowGrid[fromCol][fromRow].type = PieceTypes.EMPTY;
+
+		this.history.push({ fromCol, fromRow, toCol, toRow });
+		if (this.turnTeam === TeamNames.BLACK)
+			this.turnTeam = TeamNames.WHITE;
+		else
+			this.turnTeam = TeamNames.BLACK;
+		return true;
+	};
+	moveStringList = (moves) => {
+		if (!Array.isArray(moves))
+			return false;
+		moves.forEach(nextMove => {
+			if (!this.moveString(nextMove))
+				return false;
+		});
 		return true;
 	};
 
@@ -147,29 +201,28 @@ function getImage(path) {
 };
 
 export default class PlayComponent extends React.Component {
-	constructor(props) {
-		super(props);
+	state = {
+		isSignedIn: false,
+		historyPosition: 0
+	};
+	game = new Game();
 
-		this.state = {
-			email: '-',
-			historyPosition: 0
-		};
-
-
-		this.game = new Game();
-		if (!this.game.move(3, 1, 3, 3))
-			alert("bad move");
-		if (!this.game.move(3, 6, 3, 4))
-			alert("bad move");
-	}
-
-	recordGame = () => {
+	// TODO: Make this save the actual game
+	recordGame = async () => {
 		let gameObject = {
-			userId1: 2,
-			userId2: 3,
 			moveHistory: ['3233', '3736']   // 'crcr' 'crcr+' 'crcr#'
 		};
 
+		if (this.state.isSignedIn && firebase.auth().currentUser) {
+			const FORCE_REFRESH = true;
+			let [err, idToken] = await to(firebase.auth().currentUser.getIdToken(FORCE_REFRESH));
+			if (err)
+				alert('Error getting user id token');
+			else
+				gameObject.userIdToken = idToken;
+		}
+
+		this.refs.newGame.innerHTML = `<br />Sending...`;
 		const endpointURL = constants.API_BASE_URL + constants.API_ADD_GAME;
 		axios.post(endpointURL, gameObject)
 			.then(res => {
@@ -180,68 +233,16 @@ export default class PlayComponent extends React.Component {
 			});
 	};
 
-	/*
-	signIn = () => {
-		let auth = {
-			email: 'a@a.com',
-			password: 'aaaaaaaa'
-		};
-		// const endpointURL = constants.API_BASE_URL + constants.API_SIGNIN;
-		// axios.post(endpointURL, auth)
-		// 	.then(res => {
-		// 		alert('success');
-		// 	})
-		// 	.catch(error => {
-		// 		alert('fail');
-		// 	});
-
-		
-		firebase
-			.auth()
-			.signInWithEmailAndPassword(auth.email, auth.password)
-			.then(() => {
-				this.setState({ email: 'signed in' });
-				return;
-			})
-			.catch((error) => {
-				// var errorCode = error.code;
-				// var errorMessage = error.message;
-				this.setState({ email: 'error' });
-				return;
-			});
-		};
-			*/
-
 	onNewGame = () => {
 		this.recordGame();
 		this.setState({ historyPosition: 0 });
-		// this.signIn();
+		this.game = new Game();
 	};
 
 	componentDidMount = () => {
-		/*
-		// Listen for auth state changes
-		// firebase.auth().onAuthStateChanged(this.onAuthStateChanged);
-		firebase.auth().onAuthStateChanged(user => {
-			if (user) {
-				// User is signed in.
-	
-				// var displayName = user.displayName;
-				// var email = user.email;
-				// var emailVerified = user.emailVerified;
-				// var photoURL = user.photoURL;
-				// var isAnonymous = user.isAnonymous;
-				// var uid = user.uid;
-				// var providerData = user.providerData;
-	
-				this.setState({ email: user.email });
-			}
-			else {
-				// User is signed out.
-				this.setState({ email: 'please sign in' });
-			}
-		});
-	*/
+		this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged(
+			(user) => this.setState({ isSignedIn: !!user })
+		);
 
 		// Load images
 		this.boardImage = getImage('chessboard/chessboard.png');
@@ -275,9 +276,15 @@ export default class PlayComponent extends React.Component {
 
 		// Setup canvas mouse events
 		this.refs.gameBoard.addEventListener('mousedown', this.onClickCanvas, false);
+
+		if (!this.game.moveStringList(['3133', '3634']))
+			alert("bad move");
+
 	};
 	componentWillUnmount = () => {
 		clearInterval(this.timerID);
+
+		this.unregisterFirebaseAuthObserver();
 	};
 
 	onShowPrevious = () => {
@@ -353,13 +360,9 @@ export default class PlayComponent extends React.Component {
 	render = () => {
 		return (
 			<div align='center'>
-				{/* <FirebaseAuthConsumer>
-					{({ isSignedIn, user, providerId }) => {
-						return JSON.stringify({ isSignedIn, user, providerId }, null, 2);
-					}}
-				</FirebaseAuthConsumer>
-				<br /> */}
-
+				{this.state.isSignedIn &&
+					<p>email=<pre>{firebase.auth().currentUser.email}</pre></p>
+				}
 				<canvas ref='gameBoard' width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>Canvas tag not supported.</canvas><br />
 
 				<Button onClick={this.onShowPrevious}>Last Move</Button>
@@ -367,7 +370,6 @@ export default class PlayComponent extends React.Component {
 				<Button onClick={this.onShowPresent}>Present</Button><br />
 				<Button onClick={this.onNewGame}>New Game</Button><span ref='newGame'></span>
 				<p>History position: {this.state.historyPosition}</p>
-				{/* <p>Email: {this.state.email}</p> */}
 
 				<table style={{ width: '300px' }}>
 					<tr><th>Your time</th><th>Their time</th></tr>

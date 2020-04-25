@@ -24,8 +24,8 @@ module.exports = {
 		}),
 		// Game object
 		game: Joi.object({
-			userId1: Joi.number().integer().required(),
-			userId2: Joi.number().integer().required(),
+			// userIdToken: Joi.number().integer().required(),
+			userIdToken: Joi.string().default(null),
 			moveHistory: Joi.array().items(Joi.string().pattern(/^[0-7]{4}[+#]?$/))
 		})
 	}

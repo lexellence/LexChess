@@ -13,6 +13,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+var admin = require('firebase-admin');
 
 const express = require("express");
 const router = express.Router();
@@ -26,7 +27,7 @@ const Joi = require("@hapi/joi");
 //\------------------------/----------------------------------
 //	Responds with
 //------------------------------------------------------------
-function signUp(req, res) {
+/*function signUp(req, res) {
 	const auth = req.value.body;
 	firebase
 		.auth()
@@ -43,11 +44,12 @@ function signUp(req, res) {
 		});
 }
 router.post("/signup", validateBody(schemas.auth), signUp);
+*/
 
 //+------------------------\----------------------------------
 //|	       Signin          |
 //\------------------------/----------------------------------
-//	Responds with
+//	Responds with JSON Web Token
 //------------------------------------------------------------
 function signIn(req, res) {
 	const auth = req.value.body;
@@ -67,13 +69,18 @@ function signIn(req, res) {
 }
 router.post("/signin", validateBody(schemas.auth), signIn);
 
+
 //+------------------------\----------------------------------
 //|	       Add game        |
 //\------------------------/----------------------------------
 //	Responds with
 //------------------------------------------------------------
+
 function addGame(req, res) {
 	const game = req.value.body;
+
+
+
 	game.lastActive = firebase.firestore.FieldValue.serverTimestamp();
 	db.collection("games").add(game)
 		.then((docRef) => {
@@ -86,6 +93,7 @@ function addGame(req, res) {
 		});
 }
 router.post("/add-game", validateBody(schemas.game), addGame);
+
 
 //+------------------------\----------------------------------
 //|	     How is today      |

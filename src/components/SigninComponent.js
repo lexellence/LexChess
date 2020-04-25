@@ -1,21 +1,12 @@
 import React from 'react';
-// import FirebaseAuth from 'react-firebaseui/FirebaseAuth';
-import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 import firebase from 'firebase';
-
-import * as constants from '../Constants';
-firebase.initializeApp(constants.FIREBASE_CONFIG);
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
 
 export default class SigninComponent extends React.Component {
-
-	// The component's Local state.
 	state = {
-		isSignedIn: false // Local signed-in state.
+		isSignedIn: false
 	};
-
-	// Configure FirebaseUI.
 	uiConfig = {
-		// Popup signin flow rather than redirect flow.
 		signInFlow: 'popup',
 		signInOptions: [
 			firebase.auth.EmailAuthProvider.PROVIDER_ID,
@@ -26,19 +17,14 @@ export default class SigninComponent extends React.Component {
 			signInSuccessWithAuthResult: () => false
 		}
 	};
-
-	// Listen to the Firebase Auth state and set the local state.
 	componentDidMount() {
-		this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+		this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged(
 			(user) => this.setState({ isSignedIn: !!user })
 		);
 	}
-
-	// Make sure we un-register Firebase observers when the component unmounts.
 	componentWillUnmount() {
-		this.unregisterAuthObserver();
+		this.unregisterFirebaseAuthObserver();
 	}
-
 	render() {
 		if (!this.state.isSignedIn) {
 			return (
@@ -52,7 +38,8 @@ export default class SigninComponent extends React.Component {
 		return (
 			<div>
 				<h1>My App</h1>
-				<p>Welcome {firebase.auth().currentUser.displayName}! You are now signed-in!</p>
+				<p>Welcome! You are now signed-in!</p>
+				<p>currentUser=<pre>{JSON.stringify(firebase.auth().currentUser, null, 4)}</pre></p>
 				<button onClick={() => firebase.auth().signOut()}>Sign-out</button>
 			</div>
 		);
