@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "chessfighter-b3ba9",
     "public": "build",
     "ignore": [
       "firebase.json",
