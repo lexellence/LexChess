@@ -10,11 +10,7 @@ import "./App.css";
 
 import { BrowserRouter, Switch, Route, Link } from "react-router-dom";
 
-import HomeComponent from "./components/HomeComponent";
 import PlayComponent from "./components/PlayComponent";
-import CreateUserComponent from "./components/CreateUserComponent";
-import EditUserComponent from "./components/EditUserComponent";
-import ViewUsersComponent from "./components/ViewUsersComponent";
 import SigninComponent from "./components/SigninComponent";
 
 import * as constants from "./Constants";
@@ -28,7 +24,7 @@ export default class App extends React.Component {
 						<Navbar bg="dark" variant="dark">
 							<Container>
 								<Navbar.Brand>
-									<Link to={constants.ROUTE_HOME} className="nav-link">
+									<Link to={constants.ROUTE_PLAY} className="nav-link">
 										Lex Chess
                 </Link>
 								</Navbar.Brand>
@@ -41,18 +37,7 @@ export default class App extends React.Component {
 									</Nav>
 
 									<Nav>
-										<Link to={constants.ROUTE_CREATE_USER} className="nav-link">
-											Create User
-                  </Link>
-									</Nav>
-
-									<Nav>
-										<Link to={constants.ROUTE_VIEW_USERS} className="nav-link">
-											View User List
-                  </Link>
-									</Nav>
-									<Nav>
-										<Link to={constants.ROUTE_SIGNIN} className="nav-link">
+										<Link to={constants.ROUTE_SIGN_IN} className="nav-link">
 											Sign in
                   </Link>
 									</Nav>
@@ -66,25 +51,13 @@ export default class App extends React.Component {
 							<Col md={12}>
 								<div className="wrapper">
 									<Switch>
-										<Route exact path="/" component={HomeComponent} />
+										<Route exact path="/" component={PlayComponent} />
 										<Route
 											path={constants.ROUTE_PLAY}
 											component={PlayComponent}
 										/>
 										<Route
-											path={constants.ROUTE_VIEW_USERS}
-											component={ViewUsersComponent}
-										/>
-										<Route
-											path={constants.ROUTE_CREATE_USER}
-											component={CreateUserComponent}
-										/>
-										<Route
-											path={constants.ROUTE_EDIT_USER + "/:id"}
-											component={EditUserComponent}
-										/>
-										<Route
-											path={constants.ROUTE_SIGNIN}
+											path={constants.ROUTE_SIGN_IN}
 											component={SigninComponent}
 										/>
 									</Switch>

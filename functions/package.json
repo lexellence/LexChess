@@ -1,30 +1,32 @@
 {
-  "name": "functions",
-  "description": "Cloud Functions for Firebase",
-  "scripts": {
-    "lint": "eslint .",
-    "serve": "firebase emulators:start --only functions",
-    "shell": "firebase functions:shell",
-    "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
-  },
-  "engines": {
-    "node": "8"
-  },
-  "dependencies": {
-    "@hapi/joi": "^17.1.1",
-    "dotenv": "^8.2.0",
-    "firebase": "^7.14.0",
-    "firebase-admin": "^8.9.0",
-    "firebase-functions": "^3.3.0",
-    "firebaseui": "^4.5.0",
-    "http-status-codes": "^1.4.0"
-  },
-  "devDependencies": {
-    "eslint": "^5.12.0",
-    "eslint-plugin-promise": "^4.0.1",
-    "firebase-functions-test": "^0.1.6"
-  },
-  "private": true
+	"name": "functions",
+	"description": "Cloud Functions for Firebase",
+	"scripts": {
+		"lint": "eslint .",
+		"serve": "firebase emulators:start --only functions",
+		"shell": "firebase functions:shell",
+		"start": "npm run shell",
+		"deploy": "firebase deploy --only functions",
+		"logs": "firebase functions:log"
+	},
+	"engines": {
+		"node": "8"
+	},
+	"dependencies": {
+		"@hapi/joi": "^17.1.1",
+		"await-to-js": "^2.1.1",
+		"dotenv": "^8.2.0",
+		"firebase": "^7.14.0",
+		"firebase-admin": "^8.9.0",
+		"firebase-functions": "^3.3.0",
+		"firebaseui": "^4.5.0",
+		"http-status-codes": "^1.4.0",
+		"cookie-parser": "^1.4.5"
+	},
+	"devDependencies": {
+		"eslint": "^5.12.0",
+		"eslint-plugin-promise": "^4.0.1",
+		"firebase-functions-test": "^0.1.6"
+	},
+	"private": true
 }

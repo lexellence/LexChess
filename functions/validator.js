@@ -22,11 +22,13 @@ module.exports = {
 			email: Joi.string().email().required(),
 			password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required()
 		}),
-		// Game object
-		game: Joi.object({
-			// userIdToken: Joi.number().integer().required(),
-			userIdToken: Joi.string().default(null),
+
+		addGame: Joi.object({
+			userIdToken: Joi.string().required(),
 			moveHistory: Joi.array().items(Joi.string().pattern(/^[0-7]{4}[+#]?$/))
+		}),
+		getUserList: Joi.object({
+			userIdToken: Joi.string().required()
 		})
 	}
 };
