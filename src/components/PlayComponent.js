@@ -13,8 +13,8 @@ import ViewGamesComponent from "./ViewGamesComponent";
 //|	      PlayComponent        |
 //\----------------------------/------------------------------
 
-const CANVAS_WIDTH = 480;
-const CANVAS_HEIGHT = 480;
+const CANVAS_WIDTH = 360;
+const CANVAS_HEIGHT = 360;
 const BOARD_IMAGE_SIZE = Math.min(CANVAS_WIDTH, CANVAS_HEIGHT);
 const BOARD_IMAGE_X = 0;
 const BOARD_IMAGE_Y = 0;
@@ -53,9 +53,10 @@ function loadImages(sources, callback) {
 export default class PlayComponent extends React.Component {
 	state = {
 		isSignedIn: undefined,
-		userPlayObject: undefined,
 		historyPosition: 0
 	};
+	idToken = '';
+	userPlayObject = undefined;
 	game = new Game();
 	images = loadImages(['chessboard/chessboard.png',
 		'white/white_king.png',
@@ -90,39 +91,63 @@ export default class PlayComponent extends React.Component {
 				return null;
 		}
 	};
+	getPlay = () => {
+		// axios.get(constants.API_GET_PLAY)
+		axios({
+			method: 'get',
+			url: constants.API_GET_PLAY,
+			headers: {
+				Authorization: 'Bearer ' + this.idToken
+			}
+		})
+			.then((res) => {
+				// Save play state
+				alert(JSON.stringify(res.data));
+				this.userPlayObject = res.data;
+
+				// Update local game
+				if (this.userPlayObject.inGame && !this.userPlayObject.isWaiting) {
+					this.game.start();
+					this.game.moveStringList(this.userPlayObject.moves);
+				}
+
+				// Refresh
+				this.forceUpdate();
+			})
+			.catch((err) => {
+				this.userPlayObject = null;
+				this.forceUpdate();
+				alert('error getting game: ' + err.message.toUpperCase());
+			});
+	};
 	componentDidMount = () => {
 		// Setup canvas mouse events
 		this.refs.gameBoard.addEventListener('mousedown', this.onClickCanvas, false);
 
 		// Authentication listener
-		this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged(
-			(user) => {
-				this.setState({ isSignedIn: !!user });
-				if (user) {
-					axios.get(constants.API_GET_PLAY)
-						.then((res) => {
-							this.setState({ userPlayObject: res.data }, () => {
-								// Update local game
-								if (this.state.userPlayObject.inGame && !this.state.userPlayObject.isWaiting) {
-									this.game.start();
-									this.game.moveStringList(this.state.userPlayObject.moves);
-									this.setState({});
-								}
-							});
-							// alert('userPlayObject: ' + JSON.stringify(res.data, null, 2));
-						})
-						.catch((err) => {
-							this.setState({ userPlayObject: null });
-							alert('error getting game: ' + err.message.toUpperCase());
-						});
-				}
-				else
-					this.setState({ userPlayObject: undefined });
-			});
+		this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged((user) => {
+			if (!user) {
+				this.setState({ isSignedIn: false });
+				return;
+			}
+
+			// Get id token to send with api requests
+			user.getIdToken()
+				.then(idToken => {
+					this.idToken = idToken;
+					this.setState({ isSignedIn: true });
+
+					// Get play object from server
+					this.getPlay();
+				})
+				.catch(err => {
+					this.setState({ isSignedIn: false });
+					alert('error getting user id token from firebase');
+					firebase.auth().signOut();
+				});
+		});
 	};
 	componentWillUnmount = () => {
-		clearInterval(this.timerID);
-
 		this.unregisterFirebaseAuthObserver();
 	};
 
@@ -141,10 +166,6 @@ export default class PlayComponent extends React.Component {
 	onClickCanvas = () => {
 		this.onShowPrevious();
 	};
-	onRecordGame = () => {
-		this.recordGame();
-	};
-
 
 	drawPiece = (canvasContext, col, row, team, type) => {
 		let pieceImage = this.pieceToImage(team, type);
@@ -184,10 +205,10 @@ export default class PlayComponent extends React.Component {
 	};
 
 	isBoardVisible = () => {
-		return (this.state.userPlayObject && this.state.userPlayObject.inGame);
+		return (this.userPlayObject && this.userPlayObject.inGame);
 	};
 	isGameVisible = () => {
-		return (this.isBoardVisible() && !this.state.userPlayObject.isWaiting);
+		return (this.isBoardVisible() && !this.userPlayObject.isWaiting);
 	};
 	isMovesBackVisible = () => {
 		return (this.isGameVisible() && this.state.historyPosition > 0);
@@ -201,17 +222,24 @@ export default class PlayComponent extends React.Component {
 	isResumeVisible = () => {
 		return this.isMovesBackVisible();
 	};
+
 	render = () => {
 		this.drawCanvas();
 		return (
 			<div align='center'>
-				{(this.state.isSignedIn !== undefined && !this.state.isSignedIn) &&
+				{this.userPlayObject && this.userPlayObject.inGame && this.userPlayObject.isWaiting &&
+					<p>Waiting for opponent...</p>
+				}
+				{this.userPlayObject && !this.userPlayObject.inGame &&
+					<p>Open Games List</p>
+				}
+				{this.state.isSignedIn !== undefined && !this.state.isSignedIn &&
 					<p>Please sign in</p>
 				}
-				{this.state.isSignedIn && this.state.userPlayObject === undefined &&
+				{this.state.isSignedIn && this.userPlayObject === undefined &&
 					<div align='center'>Getting data from server...</div>
 				}
-				{this.state.userPlayObject === null &&
+				{this.userPlayObject === null &&
 					<div align='center'>Getting data from server... FAILED</div>
 				}
 				<div style={{ visibility: this.isBoardVisible() ? 'visible' : 'hidden' }}>

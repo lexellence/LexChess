@@ -1,8 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import firebase from 'firebase';
-// import 'firebase/auth';
-// import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+import 'firebase/auth';
 
 import * as constants from '../Constants';
 
@@ -15,130 +14,123 @@ let firebaseUiDeletion = Promise.resolve();
 export default class SigninComponent extends React.Component {
 	state = {
 		isSignedIn: undefined,
-		gotCookie: false
+		idToken: '',
+		uid: '',
+		displayName: '',
+		email: ''
 	};
-	uiConfig = {
-		signInFlow: 'popup',
-		signInOptions: [
-			firebase.auth.EmailAuthProvider.PROVIDER_ID,
-			firebase.auth.GoogleAuthProvider.PROVIDER_ID
-		],
 
-		// TODO: ToS, Privacy Policy
-		// tosUrl: '<your-tos-url>',
-		// privacyPolicyUrl: function () {
-		// 	window.location.assign('<your-privacy-policy-url>');
-		// },
-
-		callbacks: {
-			// Avoid redirects after sign-in.
-			// signInSuccessWithAuthResult: () => false
-			signInSuccess: (user, credential, redirectUrl) => {
-				// User successfully signed in.
-			}
-		}
-
-		// Another option:
-		// signInSuccessUrl: '/',
-	};
 	componentDidMount = () => {
 		require('firebaseui/dist/firebaseui.css');
 		const firebaseui = require('firebaseui');
-
 		var uiConfig = {
 			callbacks: {
-				// signInSuccessWithAuthResult: () => false,
-				signInSuccessWithAuthResult: function (authResult, redirectUrl) {
-					// 	user.getIdToken()
-					// 		.then(idToken => {
-					// 			alert('getIdToken success');
-					// 			window.location.href = constants.API_SESSION_LOGIN + '?idToken=' + idToken;
-					// 		}).catch(error => {
-					// 			alert('getIdToken error: ' + error);
-					// 		});
-					return false;
+				signInSuccess: (user, credential, redirectUrl) => {
 				},
-				uiShown: function () {
-					// The widget is rendered.
-					// document.getElementById('loader').style.display = 'none';
-				}
+				// signInSuccessWithAuthResult: (authResult, redirectUrl) => {
+				// 	return false;
+				// },
+				// uiShown: function () {
+				// }
 			},
-			// Will use popup for IDP Providers sign-in flow instead of the default, redirect.
 			signInFlow: 'popup',
 			// signInSuccessUrl: '<url-to-redirect-to-on-success>',
 			signInOptions: [
-				{
-					provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-					requireDisplayName: true
-				},
-				{
-					provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-					requireDisplayName: true
-				}
-			]
+				{ provider: firebase.auth.EmailAuthProvider.PROVIDER_ID, requireDisplayName: false },
+				{ provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID, requireDisplayName: false }]
 			// tosUrl: '<your-tos-url>',
 			// privacyPolicyUrl: '<your-privacy-policy-url>'
 		};
 
-		// return
-		firebaseUiDeletion.then(() => {
+
+		return firebaseUiDeletion.then(() => {
 			this.ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
 
-			// if (uiConfig.signInFlow === 'popup')
-			// this.ui.reset();
+			// if (this.uiConfig.signInFlow === 'popup')
+			// 	this.ui.reset();
 
 			// We track the auth state to reset firebaseUi if the user signs out.
-			this.isSignedIn = false;
-			this.setState({ isSignedIn: false });
+			// this.setState({ isSignedIn: false });
+			//this.isSignedIn = false;
+			//this.setState({ isSignedIn: false });
 
 			this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged((user) => {
-				if (!user && this.isSignedIn)
-					this.ui.reset();
-				this.setState({ isSignedIn: !!user });
+				if (!user) {
+					if (this.state.isSignedIn) {
+						this.ui.reset();
+						window.location.reload(false);
+						this.setState({ isSignedIn: false, idToken: '' });
+					}
+					return;
+				}
+				user.getIdToken()
+					.then(idToken => {
+						this.setState({
+							isSignedIn: true,
+							idToken: idToken,
+							uid: user.uid,
+							displayName: user.displayName,
+							email: user.email
+						});
+
+					})
+					.catch(err => {
+						this.setState({ isSignedIn: false, idToken: '' });
+						alert('error getting user id token from firebase');
+						firebase.auth().signOut();
+					});
 			});
 
 			this.ui.start('#' + ELEMENT_ID, uiConfig);
 		});
 	};
+
 	componentWillUnmount() {
 		firebaseUiDeletion = firebaseUiDeletion.then(() => {
 			this.unregisterFirebaseAuthObserver();
+			// alert('ui.delete');
 			return this.ui.delete();
 		});
 		return firebaseUiDeletion;
 	}
 	signOut = () => {
-		// axios.get(constants.API_SIGN_OUT)
-		// 	.then(() => {
-		// 		alert('signOut success');
+		firebase.auth().signOut();
+		//.then(() => this.setState({}));
+
+		// axios.get(constants.API_SESSION_SIGN_OUT)
+		// 	.then(res => {
 		// 		firebase.auth().signOut();
+		// 		// window.location.reload(false);
+		// 		alert('signOut success: ' + JSON.stringify(res.data));
 		// 	})
 		// 	.catch(err => {
 		// 		alert('signOut error: ' + err.message.toUpperCase());
-		// 		return;
 		// 	});
 	};
 	render = () => {
 		return (
 			<div>
-				<h1>Lex chess</h1>
-				{this.state.isSignedIn !== undefined && !this.state.isSignedIn &&
-					<div>
+				{(!this.state.isSignedIn) &&
+					<div id='signin'>
 						<p>Please sign-in:</p>
-						{/* <StyledFirebaseAuth uiConfig={this.uiConfig} firebaseAuth={firebase.auth()} /> */}
 						<div id={ELEMENT_ID} />
 					</div>
 				}
 				{this.state.isSignedIn &&
 					<div>
 						<p>Welcome! You are now signed-in!</p>
-						<p>Received cookie? {this.state.gotCookie.toString()}</p>
+						{/* <p>Received cookie? {this.state.gotCookie.toString()}</p> */}
 
-						<p>currentUser=<pre>{JSON.stringify(firebase.auth().currentUser, null, 4)}</pre></p>
+						{/* <p>currentUser=<pre>{JSON.stringify(firebase.auth().currentUser, null, 4)}</pre></p> */}
+						<p>uid = {this.state.uid}</p>
+						<p>display name = {this.state.displayName}</p>
+						<p>email = {this.state.email}</p>
+						<p>id token = {this.state.idToken}</p>
 						<button onClick={() => this.signOut()}>Sign-out</button>
 					</div>
 				}
 			</div>
+
 		);
 	};
-}
+};

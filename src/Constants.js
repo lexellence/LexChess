@@ -13,7 +13,8 @@ module.exports = Object.freeze({
 	ROUTE_PLAY: '/play',
 	ROUTE_SIGN_IN: '/sign-in',
 
-	API_SESSION_LOGIN: apiBaseURL + '/session-login',
+	API_SESSION_SIGN_IN: apiBaseURL + '/session-sign-in',
+	API_SESSION_SIGN_OUT: apiBaseURL + '/session-sign-out',
 
 	API_GET_PLAY: apiBaseURL + '/get-play',
 	API_JOIN_GAME: apiBaseURL + '/join-game',	// :gameid
@@ -21,7 +22,6 @@ module.exports = Object.freeze({
 	API_MOVE: apiBaseURL + '/move',
 	API_LEAVE_GAME: apiBaseURL + '/leave-game',
 
-	API_SIGN_OUT: apiBaseURL + '/sign-out',
 
 	FIREBASE_CONFIG: {
 		apiKey: "AIzaSyB8hSrh3MzpM_VxuKLDvrwGnDkpSJHBaUU",

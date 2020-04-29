@@ -19,6 +19,7 @@ export class Game {
 		this.start();
 	};
 	start = () => {
+		this.movesAwayFromPresent = 0;
 		this.history = [];
 		this.captured = [];
 		this.turnTeam = TeamNames.WHITE;
@@ -59,6 +60,27 @@ export class Game {
 		for (let col = 0; col < 8; col++)
 			this.colRowGrid[col][6] = { team: TeamNames.BLACK, type: PieceTypes.PAWN };
 	};
+
+	hasMoreHistory = () => {
+		return this.history.length > this.movesAwayFromPresent;
+	};
+	isOnCurrentMove = () => {
+		return this.movesAwayFromPresent < 1;
+	};
+	backOneMove = () => {
+		if (this.hasMoreHistory()) {
+			let i = this.history.length - (1 + this.movesAwayFromPresent);
+			this.moveStringUndo(this.history[i]);
+			this.movesAwayFromPresent++;
+		}
+	};
+	forwardOneMove = () => {
+
+	};
+	jumpToPresent = () => {
+
+	};
+
 
 	getPieceType = (col, row) => {
 		return this.colRowGrid[col][row].type;
@@ -101,9 +123,10 @@ export class Game {
 			this.colRowGrid[col][row].type = PieceTypes.EMPTY;
 		}
 	};
+	moveBackString = (move) => {
+
+	};
 	moveString = (move) => {
-		if (typeof move !== 'string' || move.length < 4)
-			return false;
 		var fromCol = parseInt(move[0], 10);
 		var fromRow = parseInt(move[1], 10);
 		var toCol = parseInt(move[2], 10);
