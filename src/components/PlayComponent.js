@@ -114,6 +114,7 @@ export default class PlayComponent extends React.Component {
 		}
 	};
 	getPlay = () => {
+		// this.userPlayObject = undefined;
 		axios({
 			method: 'get',
 			url: constants.API_GET_PLAY,
@@ -140,6 +141,7 @@ export default class PlayComponent extends React.Component {
 			});
 	};
 	joinGame = (gid) => {
+		// this.userPlayObject = undefined;
 		axios({
 			method: 'put',
 			url: constants.API_JOIN_GAME + '/' + gid,
@@ -155,6 +157,7 @@ export default class PlayComponent extends React.Component {
 
 	};
 	leaveGame = () => {
+		// this.userPlayObject = undefined;
 		axios({
 			method: 'put',
 			url: constants.API_LEAVE_GAME,
@@ -165,6 +168,22 @@ export default class PlayComponent extends React.Component {
 			.then((res) => this.getPlay())
 			.catch((err) => {
 				alert('error leaving game: ' + err.message.toUpperCase());
+				this.forceUpdate();
+			});
+
+	};
+	createGame = () => {
+		// this.userPlayObject = undefined;
+		axios({
+			method: 'post',
+			url: constants.API_CREATE_GAME,
+			headers: {
+				Authorization: 'Bearer ' + this.idToken
+			}
+		})
+			.then((res) => this.getPlay())
+			.catch((err) => {
+				alert('error creating game: ' + err.message.toUpperCase());
 				this.forceUpdate();
 			});
 
@@ -219,6 +238,10 @@ export default class PlayComponent extends React.Component {
 		this.leaveGame();
 		this.forceUpdate();
 	};
+	onCreateGameButton = () => {
+		this.createGame();
+		this.forceUpdate();
+	};
 
 	onTestButton = () => {
 
@@ -232,7 +255,7 @@ export default class PlayComponent extends React.Component {
 	};
 
 	drawCanvas = () => {
-		if (!this.isGameVisible())
+		if (!this.isBoardVisible())
 			return;
 
 		if (!this.refs.gameBoard || !this.refs.gameBoard.getContext)
@@ -295,8 +318,9 @@ export default class PlayComponent extends React.Component {
 
 	// Create an array of RowComponents out of the array of users
 	getTableRowsFromGameList = () => {
-		if (!this.userPlayObject.openGames || this.userPlayObject.openGames.length < 1)
-			return;
+		if (!this.userPlayObject.openGames || this.userPlayObject.openGames.length < 1 ||
+			!this.userPlayObject.openGames.map)
+			return <></>;
 
 		return this.userPlayObject.openGames.map((game, i) => {
 			return <GameTableRowComponent game={game} gid={i} joinGameCallback={this.joinGame} />;
@@ -306,7 +330,7 @@ export default class PlayComponent extends React.Component {
 		let myTeam = '', blackText = '', whiteText = '';
 		if (this.userPlayObject) {
 			myTeam = this.userPlayObject.isWhite ? 'White' : 'Black';
-			blackText = (!this.userPlayObject.isWhite) ? 'Your move' : 'Their move';
+			blackText = !this.userPlayObject.isWhite ? 'Your move' : 'Their move';
 			whiteText = this.userPlayObject.isWhite ? 'Your move' : 'Their move';
 		}
 
@@ -323,7 +347,8 @@ export default class PlayComponent extends React.Component {
 				}
 				{this.userPlayObject && !this.userPlayObject.inGame &&
 					<div>
-						<p>Open Games List</p>
+						<h1>Open Games List</h1>
+						<Button onClick={this.onCreateGameButton}>Create Game</Button>
 						<div className="table-wrapper">
 							<Table striped bordered hover>
 								<thead>

@@ -179,14 +179,46 @@ router.put("/join-game/:gid", async (req, res) => {
 	}
 });
 //+------------------------\----------------------------------
-//|	  POST /create-game    |
+//|	  POST /create-game    | 
 //\------------------------/
-//
+//	starts game as white, unless black is specified as :team
 //------------------------------------------------------------
-router.post("/create-game", async (req, res) => {
+router.post("/create-game/:team?", async (req, res) => {
 	console.log('*****  create-game  *****');
 	let uid = req.decodedClaims.uid;
+	let isWhite = (req.params.team !== 'black');
 
+	try {
+		let user = await getUser(uid);
+
+		if (user.inGame)
+			throw new Error('user already in game');
+
+		// New game
+		let gameListRef = db.ref('games');
+		let gameRef = gameListRef.push();
+		let game = { moves: [] };
+		if (isWhite)
+			game.uid_white = uid;
+		else
+			game.uid_black = uid;
+		gameRef.set(game);
+
+		// Get gid
+		let gameSnapshot = await gameRef.once('value');
+		let gid = gameSnapshot.key;
+		console.log("gid=" + gid);
+
+		// Update user
+		db.ref('users/' + uid).update({ inGame: true, gid: gid });
+		res.sendStatus(httpCodes.OK);
+		return;
+	}
+	catch (err) {
+		console.log(err.message);
+		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
+		return;
+	}
 });
 //+------------------------\----------------------------------
 //|	      PUT /move        |
@@ -218,7 +250,6 @@ router.put("/leave-game", async (req, res) => {
 		}
 
 		// User in game -> get game info
-
 		if (!gid || gid.length < 1)
 			throw new Error('missing gid');
 
@@ -245,8 +276,6 @@ router.put("/leave-game", async (req, res) => {
 		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
 		return;
 	}
-
-
 });
 
 module.exports = router;

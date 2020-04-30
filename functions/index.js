@@ -5,6 +5,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors')({ origin: true });
 const cookieParser = require('cookie-parser');
+var boolParser = require('express-query-boolean');
 const httpCodes = require("http-status-codes");
 
 const admin = require('firebase-admin');
@@ -66,6 +67,9 @@ const validateFirebaseIdToken = async (req, res, next) => {
 // Populate req.body
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Change 'true'/'false' values to bool in req.query
+app.use(boolParser());
 
 // Automatically allow cross-origin requests
 app.use(cors);
