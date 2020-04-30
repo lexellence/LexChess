@@ -370,10 +370,7 @@ export default class PlayComponent extends React.Component {
 						</table>
 						<p>My team: {myTeam}</p>
 
-						<br /><br />
 						<Button onClick={this.onQuitButton} style={{ visibility: this.isQuitVisible() ? 'visible' : 'hidden' }}>Quit</Button>
-
-
 					</div>
 				</div>
 			</div >
