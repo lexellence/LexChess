@@ -17,6 +17,21 @@ const to = require('await-to-js').default;
 var admin = require("firebase-admin");
 var db = admin.database();
 
+const { Game, PieceTypes, TeamNames } = require('./Game');
+
+//+------------------------\----------------------------------
+//|	 	 getOpenGames  	   | throws Errors
+//\------------------------/
+//	
+//------------------------------------------------------------
+async function getOpenGames() {
+	let gamesRef = db.ref('games');
+	let gameListSnapshot = await gamesRef.once('value');
+	let gameList = gameListSnapshot.val();
+	if (!gameList)
+		gameList = [];
+	return gameList;
+}
 
 //+------------------------\----------------------------------
 //|	 	   getUser    	   | throws Errors
@@ -33,19 +48,6 @@ async function getUser(uid) {
 		userRef.set(user);
 	}
 	return user;
-}
-//+------------------------\----------------------------------
-//|	 	 getOpenGames  	   | throws Errors
-//\------------------------/
-//	
-//------------------------------------------------------------
-async function getOpenGames() {
-	let gamesRef = db.ref('games');
-	let gameListSnapshot = await gamesRef.once('value');
-	let gameList = gameListSnapshot.val();
-	if (!gameList)
-		gameList = [];
-	return gameList;
 }
 
 //+------------------------\----------------------------------
@@ -96,9 +98,8 @@ async function getUserPlayObject(uid) {
 
 	// Get isWaiting, moves
 	userPlayObject.isWaiting = (!game.uid_white || !game.uid_black);
-	if (!userPlayObject.isWaiting) {
-		userPlayObject.moves = [];
-	}
+	if (!userPlayObject.isWaiting)
+		userPlayObject.moves = game.moves ? game.moves : [];
 
 	return userPlayObject;
 }
@@ -139,10 +140,8 @@ router.put("/join-game/:gid", async (req, res) => {
 		let user = await getUser(uid);
 
 		// Can't join if you're already in a game
-		if (user.inGame) {
-			res.status(httpCodes.FORBIDDEN).send(err);
-			return;
-		}
+		if (user.inGame)
+			throw new Error('user already in game');
 
 		// Find game
 		let gameRef = db.ref('games/' + gid);
@@ -204,9 +203,49 @@ router.put("/move", validateBody(schemas.move), async (req, res) => {
 //\------------------------/
 //
 //------------------------------------------------------------
-router.put("/leave-game", validateBody(schemas.move), async (req, res) => {
+router.put("/leave-game", async (req, res) => {
 	console.log('*****  leave-game  *****');
 	let uid = req.decodedClaims.uid;
+
+	try {
+		// Get user info
+		let gid = null;
+		{
+			let user = await getUser(uid);
+			if (!user.inGame)
+				throw new Error('user not in game');
+			gid = user.gid;
+		}
+
+		// User in game -> get game info
+
+		if (!gid || gid.length < 1)
+			throw new Error('missing gid');
+
+		let gameRef = db.ref('games/' + gid);
+		let gameSnapshot = await gameRef.once('value');
+		let game = gameSnapshot.val();
+		if (!game)
+			throw new Error('no game found with gid=' + gid);
+
+		// Remove from game
+		if (uid === game.uid_white)
+			gameRef.update({ uid_white: null });
+		else if (uid === game.uid_black)
+			gameRef.update({ uid_black: null });
+		else
+			throw new Error("user uid not found in game with gid=" + gid);
+
+		db.ref('users/' + uid).update({ inGame: false, gid: null });
+		res.sendStatus(httpCodes.OK);
+		return;
+	}
+	catch (err) {
+		console.log(err.message);
+		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
+		return;
+	}
+
 
 });
 

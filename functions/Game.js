@@ -1,4 +1,4 @@
-export const PieceTypes = {
+const PieceTypes = {
 	EMPTY: 0,
 	KING: 1,
 	QUEEN: 2,
@@ -8,20 +8,20 @@ export const PieceTypes = {
 	PAWN: 6,
 };
 Object.freeze(PieceTypes);
-export const TeamNames = {
+const TeamNames = {
 	WHITE: 1,
 	BLACK: 2
 };
 Object.freeze(TeamNames);
 
-export class Game {
+class Game {
 	constructor() {
 		this.start();
 	}
 	start = () => {
 		this.movesAwayFromPresent = 0;
 		this.history = [];
-		// this.captured = [];
+		this.captured = [];
 		this.turnTeam = TeamNames.WHITE;
 		this.winnerTeam = null;
 
@@ -72,19 +72,18 @@ export class Game {
 		if (this.hasMoreHistory()) {
 			this.movesAwayFromPresent++;
 			let i = this.history.length - this.movesAwayFromPresent;
-			this.moveUndo(this.history[i]);
+			this.moveStringUndo(this.history[i]);
 		}
 	};
 	forwardOneMove = () => {
 		if (!this.isOnCurrentMove()) {
 			let i = this.history.length - this.movesAwayFromPresent;
-			this.moveRedo(this.history[i]);
+			this.moveStringUndo(this.history[i]);
 			this.movesAwayFromPresent--;
 		}
 	};
 	jumpToPresent = () => {
-		while (!this.isOnCurrentMove())
-			this.forwardOneMove();
+
 	};
 
 
@@ -121,12 +120,12 @@ export class Game {
 
 		return true;
 	};
-	// capture = (col, row) => {
-	// 	if (this.getPieceType(col, row) !== PieceTypes.EMPTY) {
-	// 		this.captured.push(this.colRowGrid[col][row]);
-	// 		this.colRowGrid[col][row].type = PieceTypes.EMPTY;
-	// 	}
-	// };
+	capture = (col, row) => {
+		if (this.getPieceType(col, row) !== PieceTypes.EMPTY) {
+			this.captured.push(this.colRowGrid[col][row]);
+			this.colRowGrid[col][row].type = PieceTypes.EMPTY;
+		}
+	};
 	parseMoveString = (move) => {
 		return {
 			fromCol: parseInt(move[0], 10),
@@ -135,75 +134,29 @@ export class Game {
 			toRow: parseInt(move[3], 10)
 		};
 	};
-	charToPieceType = (char) => {
-		switch (char) {
-			case 'p': return PieceTypes.PAWN;
-			case 'r': return PieceTypes.ROOK;
-			case 'k': return PieceTypes.KNIGHT;
-			case 'b': return PieceTypes.BISHOP;
-			case 'q': return PieceTypes.QUEEN;
-			default: return PieceTypes.EMPTY;
-		}
+	moveStringUndo = (move) => {
+		// let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
+
+		// TODO: implement reversing moves
 	};
-	getOtherTeam = (team) => {
-		if (team === TeamNames.BLACK)
-			return TeamNames.WHITE;
-		else
-			return TeamNames.BLACK;
-	};
-	switchTurnTeam = () => {
-		this.turnTeam = this.getOtherTeam(this.turnTeam);
-	};
-	moveUndo = (move) => {
-		let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
-		let movingTeam = this.getPieceTeam(fromCol, fromRow);
-		let nonMovingTeam = this.getOtherTeam(movingTeam);
-
-		this.colRowGrid[fromCol][fromRow] = Object.assign({}, this.colRowGrid[toCol][toRow]);;
-		this.colRowGrid[toCol][toRow].type = PieceTypes.EMPTY;
-
-
-		if (move.length > 4) {
-			let capturedChar = move[4];
-			let capturedPieceType = this.charToPieceType(capturedChar);
-
-			// alert(JSON.stringify(capturedPieceType));
-			this.colRowGrid[toCol][toRow].type = capturedPieceType;
-
-			// alert(JSON.stringify(nonMovingTeam));
-			this.colRowGrid[toCol][toRow].team = nonMovingTeam;
-		}
-		this.switchTurnTeam();
-	};
-	moveRedo = (move) => {
-		let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
-		// let nonMovingTeam = this.getPieceTeam(toCol, toRow);
-		this.colRowGrid[toCol][toRow] = Object.assign({}, this.colRowGrid[fromCol][fromRow]);;
-		this.colRowGrid[fromCol][fromRow].type = PieceTypes.EMPTY;
-
-		// if (move.length > 4) {
-		// 	let returningChar = move[4];
-		// 	let returningPieceType = this.charToPieceType(returningChar);
-		// 	this.colRowGrid[fromCol][fromRow].type = capturedPieceType;
-		// 	this.colRowGrid[fromCol][fromRow].team = nonMovingTeam;
-		// }
-		this.switchTurnTeam();
-	};
-
 	move = (move) => {
 		let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
 		if (!this.isValidMove(fromCol, fromRow, toCol, toRow))
 			return false;
 
-		// let toType = this.getPieceType(toCol, toRow);
-		// if (toType !== PieceTypes.EMPTY) {
-		// 	this.capture(toCol, toRow);
-		// }
+		let toType = this.getPieceType(toCol, toRow);
+		if (toType !== PieceTypes.EMPTY) {
+			this.capture(toCol, toRow);
+		}
 		this.colRowGrid[toCol][toRow] = Object.assign({}, this.colRowGrid[fromCol][fromRow]);;
 		this.colRowGrid[fromCol][fromRow].type = PieceTypes.EMPTY;
 
+		// this.history.push({ fromCol, fromRow, toCol, toRow });
 		this.history.push(move);
-		this.switchTurnTeam();
+		if (this.turnTeam === TeamNames.BLACK)
+			this.turnTeam = TeamNames.WHITE;
+		else
+			this.turnTeam = TeamNames.BLACK;
 		return true;
 	};
 	doMoves = (moves) => {
@@ -215,5 +168,6 @@ export class Game {
 		});
 		return true;
 	};
+}
 
-};
+module.exports = { Game: Game, PieceTypes: PieceTypes, TeamNames: TeamNames };

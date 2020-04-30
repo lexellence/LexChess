@@ -8,7 +8,7 @@ import to from 'await-to-js';
 // import * as httpCodes from 'http-status-codes';
 
 import * as constants from '../Constants';
-import { PieceTypes, TeamNames, Game } from './Game';
+import { Game, PieceTypes, TeamNames } from './Game';
 // import ViewGamesComponent from "./ViewGamesComponent";
 
 //+----------------------------\------------------------------
@@ -129,7 +129,7 @@ export default class PlayComponent extends React.Component {
 				// Update local game
 				if (this.userPlayObject.inGame && !this.userPlayObject.isWaiting) {
 					this.game.start();
-					this.game.moveStringList(this.userPlayObject.moves);
+					this.game.doMoves(this.userPlayObject.moves);
 				}
 				this.forceUpdate();
 			})
@@ -147,12 +147,24 @@ export default class PlayComponent extends React.Component {
 				Authorization: 'Bearer ' + this.idToken
 			}
 		})
-			.then((res) => {
-				alert('joined game: ');
-				this.getPlay();
-			})
+			.then((res) => this.getPlay())
 			.catch((err) => {
 				alert('error joining game: ' + err.message.toUpperCase());
+				this.forceUpdate();
+			});
+
+	};
+	leaveGame = () => {
+		axios({
+			method: 'put',
+			url: constants.API_LEAVE_GAME,
+			headers: {
+				Authorization: 'Bearer ' + this.idToken
+			}
+		})
+			.then((res) => this.getPlay())
+			.catch((err) => {
+				alert('error leaving game: ' + err.message.toUpperCase());
 				this.forceUpdate();
 			});
 
@@ -189,23 +201,29 @@ export default class PlayComponent extends React.Component {
 	};
 
 	onShowPrevious = () => {
-		// this.setState(state => ({ historyPosition: state.historyPosition + 1 }));
 		this.game.backOneMove();
+		this.forceUpdate();
 	};
 	onShowNext = () => {
-		// if (this.state.historyPosition > 0)
-		// 	this.setState(state => ({ historyPosition: state.historyPosition - 1 }));
 		this.game.forwardOneMove();
+		this.forceUpdate();
 	};
 	onShowPresent = () => {
-		// this.setState({
-		// 	historyPosition: 0
-		// });
 		this.game.jumpToPresent();
+		this.forceUpdate();
 	};
 	onClickCanvas = () => {
-		// this.onShowPrevious();
 	};
+
+	onQuitButton = () => {
+		this.leaveGame();
+		this.forceUpdate();
+	};
+
+	onTestButton = () => {
+
+	};
+
 
 	drawPiece = (canvasContext, col, row, team, type) => {
 		let pieceImage = this.pieceToImage(team, type);
@@ -263,7 +281,16 @@ export default class PlayComponent extends React.Component {
 		return this.isMovesBackVisible();
 	};
 	isWinnerVisible = () => {
-		return this.game.winnerTeam;
+		return this.isBoardVisible() && this.game.winnerTeam;
+	};
+	isBlackTurnTextVisible = () => {
+		return this.isGameVisible() && !this.isWinnerVisible() && this.game.turnTeam === TeamNames.BLACK;
+	};
+	isWhiteTurnTextVisible = () => {
+		return this.isGameVisible() && !this.isWinnerVisible() && this.game.turnTeam === TeamNames.WHITE;
+	};
+	isQuitVisible = () => {
+		return this.isBoardVisible();
 	};
 
 	// Create an array of RowComponents out of the array of users
@@ -276,9 +303,12 @@ export default class PlayComponent extends React.Component {
 		});
 	};
 	render = () => {
-		let myTeam = '';
-		if (this.userPlayObject)
+		let myTeam = '', blackText = '', whiteText = '';
+		if (this.userPlayObject) {
 			myTeam = this.userPlayObject.isWhite ? 'White' : 'Black';
+			blackText = (!this.userPlayObject.isWhite) ? 'Your move' : 'Their move';
+			whiteText = this.userPlayObject.isWhite ? 'Your move' : 'Their move';
+		}
 
 		let winner = '';
 		if (this.game.winnerTeam)
@@ -322,18 +352,26 @@ export default class PlayComponent extends React.Component {
 				}
 				<div style={{ visibility: this.isBoardVisible() ? 'visible' : 'hidden' }}>
 					<p style={{ visibility: this.isWinnerVisible() ? 'visible' : 'hidden' }}>{winner} is the winner!</p>
+
+					<p style={{ visibility: this.isBlackTurnTextVisible() ? 'visible' : 'hidden' }}>{blackText}</p>
 					<canvas ref='gameBoard' width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>Canvas tag not supported.</canvas><br />
+					<p style={{ visibility: this.isWhiteTurnTextVisible() ? 'visible' : 'hidden' }}>{whiteText}</p>
+
+					{/* <div><Button onClick={this.onTestButton}>onTestButton</Button></div> */}
 
 					<div style={{ visibility: this.isGameVisible() ? 'visible' : 'hidden' }}>
-						<Button onClick={this.onShowPrevious} style={{ visibility: this.isLastMoveVisible() ? 'visible' : 'hidden' }}>Last Move</Button>
-						<Button onClick={this.onShowNext} style={{ visibility: this.isNextMoveVisible() ? 'visible' : 'hidden' }}>Next Move</Button>
-						<Button onClick={this.onShowPresent} style={{ visibility: this.isResumeVisible() ? 'visible' : 'hidden' }}>Present</Button><br />
-						<p style={{ visibility: this.isMovesBackVisible() ? 'visible' : 'hidden' }}>Moves back: {this.state.historyPosition}</p>
+						<Button onClick={this.onShowPrevious} style={{ visibility: this.isLastMoveVisible() ? 'visible' : 'hidden' }}>Back</Button>
+						<Button onClick={this.onShowNext} style={{ visibility: this.isNextMoveVisible() ? 'visible' : 'hidden' }}>Forward</Button>
+						<Button onClick={this.onShowPresent} style={{ visibility: this.isResumeVisible() ? 'visible' : 'hidden' }}>Now</Button><br />
+						<p style={{ visibility: this.isMovesBackVisible() ? 'visible' : 'hidden' }}>Moves back: {this.game.movesAwayFromPresent}</p>
 						<table style={{ width: '300px' }}>
 							<tr><th>Your time</th><th>Their time</th></tr>
 							<tr><td id="yourTime">0</td><td id="theirTime">0</td></tr>
 						</table>
 						<p>My team: {myTeam}</p>
+
+						<br /><br />
+						<Button onClick={this.onQuitButton} style={{ visibility: this.isQuitVisible() ? 'visible' : 'hidden' }}>Quit</Button>
 
 
 					</div>
