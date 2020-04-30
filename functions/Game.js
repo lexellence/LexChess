@@ -18,7 +18,7 @@ class Game {
 	constructor() {
 		this.start();
 	}
-	start = () => {
+	start() {
 		this.movesAwayFromPresent = 0;
 		this.history = [];
 		this.captured = [];
@@ -60,44 +60,44 @@ class Game {
 
 		for (let col = 0; col < 8; col++)
 			this.colRowGrid[col][6] = { team: TeamNames.BLACK, type: PieceTypes.PAWN };
-	};
+	}
 
-	hasMoreHistory = () => {
+	hasMoreHistory() {
 		return this.history.length > this.movesAwayFromPresent;
-	};
-	isOnCurrentMove = () => {
+	}
+	isOnCurrentMove() {
 		return this.movesAwayFromPresent < 1;
-	};
-	backOneMove = () => {
+	}
+	backOneMove() {
 		if (this.hasMoreHistory()) {
 			this.movesAwayFromPresent++;
 			let i = this.history.length - this.movesAwayFromPresent;
 			this.moveStringUndo(this.history[i]);
 		}
-	};
-	forwardOneMove = () => {
+	}
+	forwardOneMove() {
 		if (!this.isOnCurrentMove()) {
 			let i = this.history.length - this.movesAwayFromPresent;
 			this.moveStringUndo(this.history[i]);
 			this.movesAwayFromPresent--;
 		}
-	};
-	jumpToPresent = () => {
+	}
+	jumpToPresent() {
 
-	};
+	}
 
 
-	getPieceType = (col, row) => {
+	getPieceType(col, row) {
 		return this.colRowGrid[col][row].type;
-	};
-	getPieceTeam = (col, row) => {
+	}
+	getPieceTeam(col, row) {
 		return this.colRowGrid[col][row].team;
-	};
+	}
 
-	moveExposesKing = (fromCol, fromRow, toCol, toRow) => {
+	moveExposesKing(fromCol, fromRow, toCol, toRow) {
 		return false;
-	};
-	isValidMove = (fromCol, fromRow, toCol, toRow) => {
+	}
+	isValidMove(fromCol, fromRow, toCol, toRow) {
 		if (typeof fromCol !== 'number' || typeof fromRow !== 'number' || typeof toCol !== 'number' || typeof toRow !== 'number')
 			return false;
 		if (isNaN(fromCol) || isNaN(fromRow) || isNaN(toCol) || isNaN(toRow))
@@ -119,27 +119,27 @@ class Game {
 			return false;
 
 		return true;
-	};
-	capture = (col, row) => {
+	}
+	capture(col, row) {
 		if (this.getPieceType(col, row) !== PieceTypes.EMPTY) {
 			this.captured.push(this.colRowGrid[col][row]);
 			this.colRowGrid[col][row].type = PieceTypes.EMPTY;
 		}
-	};
-	parseMoveString = (move) => {
+	}
+	parseMoveString(move) {
 		return {
 			fromCol: parseInt(move[0], 10),
 			fromRow: parseInt(move[1], 10),
 			toCol: parseInt(move[2], 10),
 			toRow: parseInt(move[3], 10)
 		};
-	};
-	moveStringUndo = (move) => {
+	}
+	moveStringUndo(move) {
 		// let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
 
 		// TODO: implement reversing moves
-	};
-	move = (move) => {
+	}
+	move(move) {
 		let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
 		if (!this.isValidMove(fromCol, fromRow, toCol, toRow))
 			return false;
@@ -148,7 +148,7 @@ class Game {
 		if (toType !== PieceTypes.EMPTY) {
 			this.capture(toCol, toRow);
 		}
-		this.colRowGrid[toCol][toRow] = Object.assign({}, this.colRowGrid[fromCol][fromRow]);;
+		this.colRowGrid[toCol][toRow] = Object.assign({}, this.colRowGrid[fromCol][fromRow]);
 		this.colRowGrid[fromCol][fromRow].type = PieceTypes.EMPTY;
 
 		// this.history.push({ fromCol, fromRow, toCol, toRow });
@@ -158,16 +158,16 @@ class Game {
 		else
 			this.turnTeam = TeamNames.BLACK;
 		return true;
-	};
-	doMoves = (moves) => {
+	}
+	doMoves(moves) {
 		if (!Array.isArray(moves))
 			return false;
-		moves.forEach(m => {
-			if (!this.move(m))
+		for (let i = 0; i < moves.length; i++)
+			if (!this.move(moves[i]))
 				return false;
-		});
+
 		return true;
-	};
+	}
 }
 
 module.exports = { Game: Game, PieceTypes: PieceTypes, TeamNames: TeamNames };

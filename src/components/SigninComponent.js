@@ -26,6 +26,7 @@ export default class SigninComponent extends React.Component {
 		var uiConfig = {
 			callbacks: {
 				signInSuccess: (user, credential, redirectUrl) => {
+					return false;
 				},
 				// signInSuccessWithAuthResult: (authResult, redirectUrl) => {
 				// 	return false;
@@ -37,7 +38,8 @@ export default class SigninComponent extends React.Component {
 			// signInSuccessUrl: '<url-to-redirect-to-on-success>',
 			signInOptions: [
 				{ provider: firebase.auth.EmailAuthProvider.PROVIDER_ID, requireDisplayName: false },
-				{ provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID, requireDisplayName: false }]
+				{ provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID, requireDisplayName: false }
+			]
 			// tosUrl: '<your-tos-url>',
 			// privacyPolicyUrl: '<your-privacy-policy-url>'
 		};
@@ -49,17 +51,12 @@ export default class SigninComponent extends React.Component {
 			// if (this.uiConfig.signInFlow === 'popup')
 			// 	this.ui.reset();
 
-			// We track the auth state to reset firebaseUi if the user signs out.
-			// this.setState({ isSignedIn: false });
-			//this.isSignedIn = false;
-			//this.setState({ isSignedIn: false });
-
 			this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged((user) => {
 				if (!user) {
 					if (this.state.isSignedIn) {
 						this.ui.reset();
-						window.location.reload(false);
 						this.setState({ isSignedIn: false, idToken: '' });
+						window.location.reload(false);
 					}
 					return;
 				}

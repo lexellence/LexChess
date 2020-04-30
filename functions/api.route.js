@@ -27,9 +27,10 @@ const { Game, PieceTypes, TeamNames } = require('./Game');
 async function getOpenGames() {
 	let gamesRef = db.ref('games');
 	let gameListSnapshot = await gamesRef.once('value');
-	let gameList = gameListSnapshot.val();
+	let gameList = Object.entries(gameListSnapshot.val());
 	if (!gameList)
 		gameList = [];
+	console.log(gameList);
 	return gameList;
 }
 
@@ -45,7 +46,7 @@ async function getUser(uid) {
 	if (!user) {
 		// New user entry
 		user = { inGame: false };
-		userRef.set(user);
+		await userRef.set(user);
 	}
 	return user;
 }
@@ -162,13 +163,17 @@ router.put("/join-game/:gid", async (req, res) => {
 		if (game.uid_white && game.uid_black)
 			throw new Error('game is full');
 
-		// Fill a spot
-		if (!game.uid_white)
-			gameRef.update({ uid_white: uid });
-		else
-			gameRef.update({ uid_black: uid });
-		db.ref('users/' + uid).update({ inGame: true, gid: gid });
+		let promises = [];
+		{
+			// Fill a spot
+			if (!game.uid_white)
+				promises.push(gameRef.update({ uid_white: uid }));
+			else
+				promises.push(gameRef.update({ uid_black: uid }));
 
+			promises.push(db.ref('users/' + uid).update({ inGame: true, gid: gid }));
+		}
+		await Promise.all(promises);
 		res.sendStatus(httpCodes.OK);
 		return;
 	}
@@ -196,21 +201,19 @@ router.post("/create-game/:team?", async (req, res) => {
 
 		// New game
 		let gameListRef = db.ref('games');
-		let gameRef = gameListRef.push();
 		let game = { moves: [] };
 		if (isWhite)
 			game.uid_white = uid;
 		else
 			game.uid_black = uid;
-		gameRef.set(game);
+		let gameRef = gameListRef.push(game);
 
 		// Get gid
 		let gameSnapshot = await gameRef.once('value');
 		let gid = gameSnapshot.key;
-		console.log("gid=" + gid);
 
 		// Update user
-		db.ref('users/' + uid).update({ inGame: true, gid: gid });
+		await db.ref('users/' + uid).update({ inGame: true, gid: gid });
 		res.sendStatus(httpCodes.OK);
 		return;
 	}
@@ -259,15 +262,25 @@ router.put("/leave-game", async (req, res) => {
 		if (!game)
 			throw new Error('no game found with gid=' + gid);
 
-		// Remove from game
-		if (uid === game.uid_white)
-			gameRef.update({ uid_white: null });
-		else if (uid === game.uid_black)
-			gameRef.update({ uid_black: null });
-		else
-			throw new Error("user uid not found in game with gid=" + gid);
+		let promises = [];
+		{
+			// Remove from game
+			if (uid === game.uid_white) {
+				if (!game.uid_black)
+					promises.push(gameRef.remove());
+				else
+					promises.push(gameRef.update({ uid_white: null }));
+			}
+			else if (uid === game.uid_black) {
+				if (!game.uid_white)
+					promises.push(gameRef.remove());
+				else
+					promises.push(gameRef.update({ uid_black: null }));
+			}
 
-		db.ref('users/' + uid).update({ inGame: false, gid: null });
+			promises.push(db.ref('users/' + uid).update({ inGame: false, gid: null }));
+		}
+		await Promise.all(promises);
 		res.sendStatus(httpCodes.OK);
 		return;
 	}

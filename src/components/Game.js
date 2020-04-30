@@ -209,10 +209,10 @@ export class Game {
 	doMoves = (moves) => {
 		if (!Array.isArray(moves))
 			return false;
-		moves.forEach(m => {
-			if (!this.move(m))
+		for (let i = 0; i < moves.length; i++)
+			if (!this.move(moves[i]))
 				return false;
-		});
+
 		return true;
 	};
 

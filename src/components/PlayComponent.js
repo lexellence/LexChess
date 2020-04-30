@@ -53,20 +53,15 @@ function loadImages(sources, callback) {
 };
 
 function GameTableRowComponent(props) {
-	if (!props.game)
-		return <></>;
-
 	return (
 		<tr>
 			<td>{props.gid}</td>
-			<td>{props.game.uid_white}</td>
-			<td>{props.game.uid_black}</td>
+			<td>{props.uid_white}</td>
+			<td>{props.uid_black}</td>
 			<td>
-				{/* <Link className="edit-link" to={constants.API_JOIN_GAME + '/' + props.gid} > */}
 				<Button className="edit-link" onClick={() => props.joinGameCallback(props.gid)} >
 					Join
 			    </Button>
-				{/* </Link> */}
 			</td>
 		</tr >
 	);
@@ -318,12 +313,11 @@ export default class PlayComponent extends React.Component {
 
 	// Create an array of RowComponents out of the array of users
 	getTableRowsFromGameList = () => {
-		if (!this.userPlayObject.openGames || this.userPlayObject.openGames.length < 1 ||
-			!this.userPlayObject.openGames.map)
+		if (!this.userPlayObject.openGames)
 			return <></>;
 
 		return this.userPlayObject.openGames.map((game, i) => {
-			return <GameTableRowComponent game={game} gid={i} joinGameCallback={this.joinGame} />;
+			return <GameTableRowComponent uid_white={game[1].uid_white} uid_black={game[1].uid_black} gid={game[0]} joinGameCallback={this.joinGame} />;
 		});
 	};
 	render = () => {
