@@ -1,5 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
+import Table from 'react-bootstrap/Table';
 import axios from 'axios';
 import firebase from 'firebase';
 import to from 'await-to-js';
@@ -7,7 +9,7 @@ import to from 'await-to-js';
 
 import * as constants from '../Constants';
 import { PieceTypes, TeamNames, Game } from './Game';
-import ViewGamesComponent from "./ViewGamesComponent";
+// import ViewGamesComponent from "./ViewGamesComponent";
 
 //+----------------------------\------------------------------
 //|	      PlayComponent        |
@@ -49,6 +51,26 @@ function loadImages(sources, callback) {
 	}
 	return images;
 };
+
+function GameTableRowComponent(props) {
+	if (!props.game)
+		return <></>;
+
+	return (
+		<tr>
+			<td>{props.gid}</td>
+			<td>{props.game.uid_white}</td>
+			<td>{props.game.uid_black}</td>
+			<td>
+				{/* <Link className="edit-link" to={constants.API_JOIN_GAME + '/' + props.gid} > */}
+				<Button className="edit-link" onClick={() => props.joinGameCallback(props.gid)} >
+					Join
+			    </Button>
+				{/* </Link> */}
+			</td>
+		</tr >
+	);
+}
 
 export default class PlayComponent extends React.Component {
 	state = {
@@ -92,7 +114,6 @@ export default class PlayComponent extends React.Component {
 		}
 	};
 	getPlay = () => {
-		// axios.get(constants.API_GET_PLAY)
 		axios({
 			method: 'get',
 			url: constants.API_GET_PLAY,
@@ -102,7 +123,7 @@ export default class PlayComponent extends React.Component {
 		})
 			.then((res) => {
 				// Save play state
-				alert(JSON.stringify(res.data));
+				// alert(JSON.stringify(res.data));
 				this.userPlayObject = res.data;
 
 				// Update local game
@@ -110,8 +131,6 @@ export default class PlayComponent extends React.Component {
 					this.game.start();
 					this.game.moveStringList(this.userPlayObject.moves);
 				}
-
-				// Refresh
 				this.forceUpdate();
 			})
 			.catch((err) => {
@@ -119,6 +138,24 @@ export default class PlayComponent extends React.Component {
 				this.forceUpdate();
 				alert('error getting game: ' + err.message.toUpperCase());
 			});
+	};
+	joinGame = (gid) => {
+		axios({
+			method: 'put',
+			url: constants.API_JOIN_GAME + '/' + gid,
+			headers: {
+				Authorization: 'Bearer ' + this.idToken
+			}
+		})
+			.then((res) => {
+				alert('joined game: ');
+				this.getPlay();
+			})
+			.catch((err) => {
+				alert('error joining game: ' + err.message.toUpperCase());
+				this.forceUpdate();
+			});
+
 	};
 	componentDidMount = () => {
 		// Setup canvas mouse events
@@ -152,19 +189,22 @@ export default class PlayComponent extends React.Component {
 	};
 
 	onShowPrevious = () => {
-		this.setState(state => ({ historyPosition: state.historyPosition + 1 }));
+		// this.setState(state => ({ historyPosition: state.historyPosition + 1 }));
+		this.game.backOneMove();
 	};
 	onShowNext = () => {
-		if (this.state.historyPosition > 0)
-			this.setState(state => ({ historyPosition: state.historyPosition - 1 }));
+		// if (this.state.historyPosition > 0)
+		// 	this.setState(state => ({ historyPosition: state.historyPosition - 1 }));
+		this.game.forwardOneMove();
 	};
 	onShowPresent = () => {
-		this.setState({
-			historyPosition: 0
-		});
+		// this.setState({
+		// 	historyPosition: 0
+		// });
+		this.game.jumpToPresent();
 	};
 	onClickCanvas = () => {
-		this.onShowPrevious();
+		// this.onShowPrevious();
 	};
 
 	drawPiece = (canvasContext, col, row, team, type) => {
@@ -211,10 +251,10 @@ export default class PlayComponent extends React.Component {
 		return (this.isBoardVisible() && !this.userPlayObject.isWaiting);
 	};
 	isMovesBackVisible = () => {
-		return (this.isGameVisible() && this.state.historyPosition > 0);
+		return (this.isGameVisible() && !this.game.isOnCurrentMove());
 	};
 	isLastMoveVisible = () => {
-		return (this.isGameVisible() && this.state.historyPosition < this.game.history.length);
+		return (this.isGameVisible() && this.game.hasMoreHistory());
 	};
 	isNextMoveVisible = () => {
 		return this.isMovesBackVisible();
@@ -222,16 +262,54 @@ export default class PlayComponent extends React.Component {
 	isResumeVisible = () => {
 		return this.isMovesBackVisible();
 	};
+	isWinnerVisible = () => {
+		return this.game.winnerTeam;
+	};
 
+	// Create an array of RowComponents out of the array of users
+	getTableRowsFromGameList = () => {
+		if (!this.userPlayObject.openGames || this.userPlayObject.openGames.length < 1)
+			return;
+
+		return this.userPlayObject.openGames.map((game, i) => {
+			return <GameTableRowComponent game={game} gid={i} joinGameCallback={this.joinGame} />;
+		});
+	};
 	render = () => {
+		let myTeam = '';
+		if (this.userPlayObject)
+			myTeam = this.userPlayObject.isWhite ? 'White' : 'Black';
+
+		let winner = '';
+		if (this.game.winnerTeam)
+			winner = this.game.winnerTeam === TeamNames.WHITE ? 'White' : 'Black';
+
 		this.drawCanvas();
+
 		return (
 			<div align='center'>
 				{this.userPlayObject && this.userPlayObject.inGame && this.userPlayObject.isWaiting &&
 					<p>Waiting for opponent...</p>
 				}
 				{this.userPlayObject && !this.userPlayObject.inGame &&
-					<p>Open Games List</p>
+					<div>
+						<p>Open Games List</p>
+						<div className="table-wrapper">
+							<Table striped bordered hover>
+								<thead>
+									<tr>
+										<th>gid</th>
+										<th>uid_white</th>
+										<th>uid_black</th>
+										<th>Join</th>
+									</tr>
+								</thead>
+								<tbody>
+									{this.getTableRowsFromGameList()}
+								</tbody>
+							</Table>
+						</div>
+					</div>
 				}
 				{this.state.isSignedIn !== undefined && !this.state.isSignedIn &&
 					<p>Please sign in</p>
@@ -243,6 +321,7 @@ export default class PlayComponent extends React.Component {
 					<div align='center'>Getting data from server... FAILED</div>
 				}
 				<div style={{ visibility: this.isBoardVisible() ? 'visible' : 'hidden' }}>
+					<p style={{ visibility: this.isWinnerVisible() ? 'visible' : 'hidden' }}>{winner} is the winner!</p>
 					<canvas ref='gameBoard' width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>Canvas tag not supported.</canvas><br />
 
 					<div style={{ visibility: this.isGameVisible() ? 'visible' : 'hidden' }}>
@@ -254,6 +333,9 @@ export default class PlayComponent extends React.Component {
 							<tr><th>Your time</th><th>Their time</th></tr>
 							<tr><td id="yourTime">0</td><td id="theirTime">0</td></tr>
 						</table>
+						<p>My team: {myTeam}</p>
+
+
 					</div>
 				</div>
 			</div >

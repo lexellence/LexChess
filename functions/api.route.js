@@ -17,84 +17,113 @@ const to = require('await-to-js').default;
 var admin = require("firebase-admin");
 var db = admin.database();
 
+
 //+------------------------\----------------------------------
-//|	    GET /get-play      |
+//|	 	   getUser    	   | throws Errors
+//\------------------------/
+//	If user record not found, it is created with inGame=false
+//------------------------------------------------------------
+async function getUser(uid) {
+	let userRef = db.ref('users/' + uid);
+	let userSnapshot = await userRef.once('value');
+	let user = userSnapshot.val();
+	if (!user) {
+		// New user entry
+		user = { inGame: false };
+		userRef.set(user);
+	}
+	return user;
+}
+//+------------------------\----------------------------------
+//|	 	 getOpenGames  	   | throws Errors
+//\------------------------/
+//	
+//------------------------------------------------------------
+async function getOpenGames() {
+	let gamesRef = db.ref('games');
+	let gameListSnapshot = await gamesRef.once('value');
+	let gameList = gameListSnapshot.val();
+	if (!gameList)
+		gameList = [];
+	return gameList;
+}
+
+//+------------------------\----------------------------------
+//|	  getUserPlayObject    | throws Errors
 //\------------------------/
 //	Get inGame. 
 //		If false, get openGames[].
 //		If true, get isWhite, isWaiting.
-//				If isWaiting, get moves[].
+//				If !isWaiting, get moves[].
+//------------------------------------------------------------
+async function getUserPlayObject(uid) {
+	let userPlayObject = {};
+
+	// Get user info
+	let gid;
+	{
+		let user = await getUser(uid);
+		userPlayObject.inGame = user.inGame;
+		gid = user.gid;
+	}
+
+	// User not in game? Return game list
+	if (!userPlayObject.inGame) {
+		userPlayObject.openGames = await getOpenGames();
+		return userPlayObject;
+	}
+
+	// User in game -> get game info
+	let game;
+	{
+		if (!gid || gid.length < 1)
+			throw new Error('missing gid');
+
+		let gameRef = db.ref('games/' + gid);
+		let gameSnapshot = await gameRef.once('value');
+		game = gameSnapshot.val();
+		if (!game)
+			throw new Error('no game found with gid=' + gid);
+	}
+
+	// Get isWhite
+	if (uid === game.uid_white)
+		userPlayObject.isWhite = true;
+	else if (uid === game.uid_black)
+		userPlayObject.isWhite = false;
+	else
+		throw new Error("user uid not found in game with gid=" + gid);
+
+	// Get isWaiting, moves
+	userPlayObject.isWaiting = (!game.uid_white || !game.uid_black);
+	if (!userPlayObject.isWaiting) {
+		userPlayObject.moves = [];
+	}
+
+	return userPlayObject;
+}
+//+------------------------\----------------------------------
+//|	    GET /get-play      |
+//\------------------------/
+//	Get inGame. 
+//		If false, get gamesWaiting[].
+//		If true, get isWhite, isWaiting.
+//				If !isWaiting, get moves[].
 //------------------------------------------------------------
 router.get("/get-play", async (req, res) => {
 	console.log('*****  get-play  *****');
 	let uid = req.decodedClaims.uid;
 
-	let [err, userSnapshot] = await to(db.ref('users/' + uid).once('value'));
-	if (err) {
-		console.log("Couldn't find user with uid=" + uid);
+	try {
+		let userPlayObject = await getUserPlayObject(uid);
+		res.status(httpCodes.OK).json(userPlayObject);
+		return;
+	}
+	catch (err) {
+		console.log(err.message);
 		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
 		return;
 	}
-	let user = userSnapshot.val();
-
-	// User not in game -> get games to join.
-	let userPlayObject = { inGame: user.inGame };
-	if (!userPlayObject.inGame) {
-		let [err, gameListSnapshot] = await to(db.ref('games').once('value'));
-		if (err) {
-			console.log("Couldn't find game list");
-			res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-			return;
-		}
-		userPlayObject.openGames = gameListSnapshot.val();
-		res.status(httpCodes.OK).json(userPlayObject);
-		return;
-	}
-	// User in game -> get game info
-	else {
-		let [err, gameSnapshot] = await to(db.ref('games/' + user.gid).once('value'));
-		if (err) {
-			console.log("Couldn't find game with gid=" + user.gid);
-			res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-			return;
-		}
-		let game = gameSnapshot.val();
-
-		// Set user's team
-		if (uid === game.uid_white)
-			userPlayObject.isWhite = true;
-		else if (uid === game.uid_black)
-			userPlayObject.isWhite = false;
-		else {
-			// User not found in game
-			console.log("Couldn't find uid=" + uid + " in game with gid=" + user.gid);
-			res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-			return;
-		}
-
-		// No opponent yet?
-		if (!game.uid_white || !game.uid_black) {
-			userPlayObject.isWaiting = true;
-		}
-		else {
-			// Game has started, get moves.
-			userPlayObject.isWaiting = false;
-			userPlayObject.moves = [];
-		}
-		res.status(httpCodes.OK).json(userPlayObject);
-		return;
-	}
-
-
-	// var gameRef = db.ref('games/1');
-	// gameRef.once('value')
-	// 	.then(snapshot => {
-	// 		res.status(httpCodes.OK).json(snapshot.val());
-	// 		return;
-	// 	})
-	// 	.catch(err => {
-	// 		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-	// 	});
 });
 //+------------------------\----------------------------------
 //|	    PUT /join-game     |
@@ -105,6 +134,50 @@ router.put("/join-game/:gid", async (req, res) => {
 	console.log('*****  join-game  *****');
 	let uid = req.decodedClaims.uid;
 	let gid = req.params.gid;
+
+	try {
+		let user = await getUser(uid);
+
+		// Can't join if you're already in a game
+		if (user.inGame) {
+			res.status(httpCodes.FORBIDDEN).send(err);
+			return;
+		}
+
+		// Find game
+		let gameRef = db.ref('games/' + gid);
+		let gameSnapshot = await gameRef.once('value');
+		let game = gameSnapshot.val();
+		if (!game)
+			throw new Error('no game found with gid=' + gid);
+
+		// Make sure it's not over
+		if (game.uid_winner)
+			throw new Error('can not join closed game');
+
+		// Am I already in the game?
+		if (uid === game.uid_white || uid === game.uid_black)
+			throw new Error('already in that game');
+
+		// Is it already full?
+		if (game.uid_white && game.uid_black)
+			throw new Error('game is full');
+
+		// Fill a spot
+		if (!game.uid_white)
+			gameRef.update({ uid_white: uid });
+		else
+			gameRef.update({ uid_black: uid });
+		db.ref('users/' + uid).update({ inGame: true, gid: gid });
+
+		res.sendStatus(httpCodes.OK);
+		return;
+	}
+	catch (err) {
+		console.log(err.message);
+		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
+		return;
+	}
 });
 //+------------------------\----------------------------------
 //|	  POST /create-game    |

@@ -23,6 +23,7 @@ export class Game {
 		this.history = [];
 		this.captured = [];
 		this.turnTeam = TeamNames.WHITE;
+		this.winnerTeam = null;
 
 		// Make piece grid
 		this.colRowGrid = new Array(8);
@@ -123,17 +124,24 @@ export class Game {
 			this.colRowGrid[col][row].type = PieceTypes.EMPTY;
 		}
 	};
-	moveBackString = (move) => {
+	parseMoveString = (move) => {
+		return {
+			fromCol: parseInt(move[0], 10),
+			fromRow: parseInt(move[1], 10),
+			toCol: parseInt(move[2], 10),
+			toRow: parseInt(move[3], 10)
+		};
+	};
+	moveStringUndo = (move) => {
+		// let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
 
+		// TODO: implement reversing moves
 	};
 	moveString = (move) => {
-		var fromCol = parseInt(move[0], 10);
-		var fromRow = parseInt(move[1], 10);
-		var toCol = parseInt(move[2], 10);
-		var toRow = parseInt(move[3], 10);
-		return this.moveInt(fromCol, fromRow, toCol, toRow);
+		return this.moveInt(this.parseMoveString);
 	};
-	moveInt = (fromCol, fromRow, toCol, toRow) => {
+	move = (move) => {
+		let { fromCol, fromRow, toCol, toRow } = this.parseMoveString(move);
 		if (!this.isValidMove(fromCol, fromRow, toCol, toRow))
 			return false;
 
@@ -154,8 +162,8 @@ export class Game {
 	moveStringList = (moves) => {
 		if (!Array.isArray(moves))
 			return false;
-		moves.forEach(nextMove => {
-			if (!this.moveString(nextMove))
+		moves.forEach(move => {
+			if (!this.move(move))
 				return false;
 		});
 		return true;

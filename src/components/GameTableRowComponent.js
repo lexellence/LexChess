@@ -10,13 +10,13 @@ import Button from 'react-bootstrap/Button';
 
 export default class GameTableRowComponent extends React.Component {
 	joinGame = () => {
-		const endpointURL = constants.API_BASE_URL + constants.API_JOIN_GAME + `/${this.props.user._id}`;
-		axios.delete(endpointURL)
-			.then((res) => {
-				console.log('User successfully deleted!');
-			}).catch((error) => {
-				console.log(error);
-			});
+		// const endpointURL = constants.API_BASE_URL + constants.API_JOIN_GAME + `/${this.props.user._id}`;
+		// axios.delete(endpointURL)
+		// 	.then((res) => {
+		// 		console.log('User successfully deleted!');
+		// 	}).catch((error) => {
+		// 		console.log(error);
+		// 	});
 	};
 
 	render = () => {
