@@ -166,10 +166,11 @@ router.put("/join-game/:gid", async (req, res) => {
 		let promises = [];
 		{
 			// Fill a spot
+			let moves = ['3133', '4644', '3344p', '6755', '4455k', '6655p'];
 			if (!game.uid_white)
-				promises.push(gameRef.update({ uid_white: uid }));
+				promises.push(gameRef.update({ uid_white: uid, moves: moves }));
 			else
-				promises.push(gameRef.update({ uid_black: uid }));
+				promises.push(gameRef.update({ uid_black: uid, moves: moves }));
 
 			promises.push(db.ref('users/' + uid).update({ inGame: true, gid: gid }));
 		}

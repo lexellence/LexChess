@@ -37,8 +37,8 @@ export default class SigninComponent extends React.Component {
 			signInFlow: 'popup',
 			// signInSuccessUrl: '<url-to-redirect-to-on-success>',
 			signInOptions: [
-				{ provider: firebase.auth.EmailAuthProvider.PROVIDER_ID, requireDisplayName: false },
-				{ provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID, requireDisplayName: false }
+				{ provider: firebase.auth.EmailAuthProvider.PROVIDER_ID, requireDisplayName: false }
+				// { provider: firebase.auth.GoogleAuthProvider.PROVIDER_ID, requireDisplayName: false }
 			]
 			// tosUrl: '<your-tos-url>',
 			// privacyPolicyUrl: '<your-privacy-policy-url>'
