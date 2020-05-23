@@ -1,5 +1,4 @@
 import React from 'react';
-// import { Link } from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import axios from 'axios';
@@ -7,13 +6,8 @@ import firebase from 'firebase';
 // import to from 'await-to-js';
 // import * as httpCodes from 'http-status-codes';
 
-import * as constants from '../Constants';
+import * as ENDPOINTS from "../constants/endpoints";
 import { Game, PieceTypes, TeamNames } from './Game';
-// import ViewGamesComponent from "./ViewGamesComponent";
-
-//+----------------------------\------------------------------
-//|	      PlayComponent        |
-//\----------------------------/------------------------------
 
 const CANVAS_WIDTH = 360;
 const CANVAS_HEIGHT = 360;
@@ -67,7 +61,7 @@ function GameTableRowComponent(props) {
 	);
 }
 
-export default class PlayComponent extends React.Component {
+export default class Play extends React.Component {
 	state = {
 		isSignedIn: undefined,
 		historyPosition: 0
@@ -112,7 +106,7 @@ export default class PlayComponent extends React.Component {
 		// this.userPlayObject = undefined;
 		axios({
 			method: 'get',
-			url: constants.API_GET_PLAY,
+			url: ENDPOINTS.GET_PLAY,
 			headers: {
 				Authorization: 'Bearer ' + this.idToken
 			}
@@ -139,7 +133,7 @@ export default class PlayComponent extends React.Component {
 		// this.userPlayObject = undefined;
 		axios({
 			method: 'put',
-			url: constants.API_JOIN_GAME + '/' + gid,
+			url: ENDPOINTS.JOIN_GAME + '/' + gid,
 			headers: {
 				Authorization: 'Bearer ' + this.idToken
 			}
@@ -155,7 +149,7 @@ export default class PlayComponent extends React.Component {
 		// this.userPlayObject = undefined;
 		axios({
 			method: 'put',
-			url: constants.API_LEAVE_GAME,
+			url: ENDPOINTS.LEAVE_GAME,
 			headers: {
 				Authorization: 'Bearer ' + this.idToken
 			}
@@ -171,7 +165,7 @@ export default class PlayComponent extends React.Component {
 		// this.userPlayObject = undefined;
 		axios({
 			method: 'post',
-			url: constants.API_CREATE_GAME,
+			url: ENDPOINTS.CREATE_GAME,
 			headers: {
 				Authorization: 'Bearer ' + this.idToken
 			}
@@ -237,11 +231,6 @@ export default class PlayComponent extends React.Component {
 		this.createGame();
 		this.forceUpdate();
 	};
-
-	onTestButton = () => {
-
-	};
-
 
 	drawPiece = (canvasContext, col, row, team, type) => {
 		let pieceImage = this.pieceToImage(team, type);
@@ -375,8 +364,6 @@ export default class PlayComponent extends React.Component {
 					<p style={{ visibility: this.isBlackTurnTextVisible() ? 'visible' : 'hidden' }}>{blackText}</p>
 					<canvas ref='gameBoard' width={CANVAS_WIDTH} height={CANVAS_HEIGHT}>Canvas tag not supported.</canvas><br />
 					<p style={{ visibility: this.isWhiteTurnTextVisible() ? 'visible' : 'hidden' }}>{whiteText}</p>
-
-					{/* <div><Button onClick={this.onTestButton}>onTestButton</Button></div> */}
 
 					<div style={{ visibility: this.isGameVisible() ? 'visible' : 'hidden' }}>
 						<Button onClick={this.onShowPrevious} style={{ visibility: this.isLastMoveVisible() ? 'visible' : 'hidden' }}>Back</Button>

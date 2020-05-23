@@ -3,7 +3,7 @@ import React from 'react';
 import firebase from 'firebase';
 import 'firebase/auth';
 
-// import * as constants from '../Constants';
+// import * as ROUTES from "../constants/routes";
 
 // Global ID for the element.
 const ELEMENT_ID = 'firebaseui_container';
@@ -11,7 +11,7 @@ const ELEMENT_ID = 'firebaseui_container';
 // Promise that resolves unless the FirebaseUI instance is currently being deleted.
 let firebaseUiDeletion = Promise.resolve();
 
-export default class SigninComponent extends React.Component {
+export default class Signin extends React.Component {
 	state = {
 		isSignedIn: undefined,
 		idToken: '',
