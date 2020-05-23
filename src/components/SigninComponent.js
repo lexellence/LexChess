@@ -1,9 +1,9 @@
 import React from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import firebase from 'firebase';
 import 'firebase/auth';
 
-import * as constants from '../Constants';
+// import * as constants from '../Constants';
 
 // Global ID for the element.
 const ELEMENT_ID = 'firebaseui_container';
