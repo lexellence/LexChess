@@ -2,7 +2,9 @@ import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import axios from 'axios';
-import firebase from 'firebase';
+// import firebase from 'firebase';
+import { auth } from "../firebase";
+
 // import to from 'await-to-js';
 // import * as httpCodes from 'http-status-codes';
 
@@ -182,7 +184,7 @@ export default class Play extends React.Component {
 		this.refs.gameBoard.addEventListener('mousedown', this.onClickCanvas, false);
 
 		// Authentication listener
-		this.unregisterFirebaseAuthObserver = firebase.auth().onAuthStateChanged((user) => {
+		this.unregisterFirebaseAuthObserver = auth.onAuthStateChanged((user) => {
 			if (!user) {
 				this.setState({ isSignedIn: false });
 				return;
@@ -200,7 +202,7 @@ export default class Play extends React.Component {
 				.catch(err => {
 					this.setState({ isSignedIn: false });
 					alert('error getting user id token from firebase');
-					firebase.auth().signOut();
+					auth.signOut();
 				});
 		});
 	};

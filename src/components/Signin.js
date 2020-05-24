@@ -1,7 +1,8 @@
 import React from 'react';
 // import axios from 'axios';
-import firebase from 'firebase';
-import 'firebase/auth';
+// import firebase from 'firebase';
+// import 'firebase/auth';
+import firebase from "../firebase";
 
 // import * as ROUTES from "../constants/routes";
 
@@ -27,7 +28,7 @@ export default class Signin extends React.Component {
 			callbacks: {
 				signInSuccess: (user, credential, redirectUrl) => {
 					return false;
-				},
+				}
 				// signInSuccessWithAuthResult: (authResult, redirectUrl) => {
 				// 	return false;
 				// },
