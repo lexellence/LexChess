@@ -7,13 +7,6 @@ const { validateBody, schemas } = require("./validator");
 const Joi = require("@hapi/joi");
 const to = require('await-to-js').default;
 
-// const firebase = require("firebase");
-// require("firebase/auth");
-// require("firebase/firestore");
-// require("firebase/database");
-// const firebaseConfig = require('./firebaseConfig.json');
-// const firebaseProject = firebase.initializeApp(firebaseConfig);
-// const firebaseDB = firebase.database();
 var admin = require("firebase-admin");
 var db = admin.database();
 
@@ -25,13 +18,17 @@ const { Game, PieceTypes, TeamNames } = require('./Game');
 //	
 //------------------------------------------------------------
 async function getOpenGames() {
-	let gamesRef = db.ref('games');
-	let gameListSnapshot = await gamesRef.once('value');
-	let gameList = Object.entries(gameListSnapshot.val());
+	console.log('*****  getOpenGames  *****');
+	let gameListSnapshot = await db.ref('games').once('value');
+	if (!gameListSnapshot.exists) {
+		console.log('*****  !gameListSnapshot.exists  *****');
+		return [];
+	}
+	console.log('*****  Object.entries(gameListSnapshot.val())  *****');
+	let gameList = gameListSnapshot.val();
 	if (!gameList)
-		gameList = [];
-	console.log(gameList);
-	return gameList;
+		return [];
+	return Object.entries(gameList);
 }
 
 //+------------------------\----------------------------------
@@ -40,15 +37,10 @@ async function getOpenGames() {
 //	If user record not found, it is created with inGame=false
 //------------------------------------------------------------
 async function getUser(uid) {
+	console.log('*****  getUser  *****');
 	let userRef = db.ref('users/' + uid);
 	let userSnapshot = await userRef.once('value');
-	let user = userSnapshot.val();
-	if (!user) {
-		// New user entry
-		user = { inGame: false };
-		await userRef.set(user);
-	}
-	return user;
+	return userSnapshot.val();
 }
 
 //+------------------------\----------------------------------
@@ -60,6 +52,7 @@ async function getUser(uid) {
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
 async function getUserPlayObject(uid) {
+	console.log('*****  getUserPlayObject  *****');
 	let userPlayObject = {};
 
 	// Get user info
@@ -73,6 +66,7 @@ async function getUserPlayObject(uid) {
 	// User not in game? Return game list
 	if (!userPlayObject.inGame) {
 		userPlayObject.openGames = await getOpenGames();
+		console.log('*****  done getOpenGames  *****');
 		return userPlayObject;
 	}
 
@@ -108,7 +102,7 @@ async function getUserPlayObject(uid) {
 //|	    GET /get-play      |
 //\------------------------/
 //	Get inGame. 
-//		If false, get gamesWaiting[].
+//		If false, get openGames[].
 //		If true, get isWhite, isWaiting.
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
@@ -118,6 +112,7 @@ router.get("/get-play", async (req, res) => {
 
 	try {
 		let userPlayObject = await getUserPlayObject(uid);
+		console.log('*****  done getUserPlayObject  *****');
 		res.status(httpCodes.OK).json(userPlayObject);
 		return;
 	}

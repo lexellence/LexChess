@@ -9,13 +9,7 @@ var boolParser = require('express-query-boolean');
 const httpCodes = require("http-status-codes");
 
 const admin = require('firebase-admin');
-const firebaseConfig = require('./firebaseConfig.json');
-admin.initializeApp({
-	credential: admin.credential.applicationDefault(), // .cert(serviceAccount) or .refreshToken(refreshTokenfromOAuth2)
-	databaseURL: firebaseConfig.databaseURL
-});
-// admin.initializeApp();
-// const CHECK_REVOKED_ON_VERIFYIDTOKEN = false;	// CHECK_REVOKED true might have caused an error before (look into security rules instead?)
+admin.initializeApp();
 // const COOKIE_EXPIRES_IN = 60 * 60 * 24 * 5 * 1000;	// 5 days
 
 

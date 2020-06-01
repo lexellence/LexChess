@@ -7,14 +7,12 @@ export const PieceTypes = {
 	ROOK: 5,
 	PAWN: 6,
 };
-Object.freeze(PieceTypes);
 export const TeamNames = {
 	WHITE: 1,
 	BLACK: 2
 };
-Object.freeze(TeamNames);
 
-export class Game {
+export default class Game {
 	constructor() {
 		this.start();
 	}
