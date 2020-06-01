@@ -64,45 +64,39 @@ class Firebase {
 	doDisplayNameUpdate = displayName => {
 		var updates = {};
 		updates['displayName'] = displayName;
-		this.userRef(this.authUser.uid).update(updates);
+		this.userRef(this.auth.currentUser.uid).update(updates);
 	};
 
 	// *** Merge Auth and DB User API *** //
 	onAuthUserListener = (next, fallback) =>
-		this.auth.onAuthStateChanged(async authUser => {
+		this.auth.onAuthStateChanged(authUser => {
 			// Fallback if no auth
 			if (!authUser) {
 				fallback();
 				return;
 			}
 
-			// Get id token to send with api requests
-			let idToken, snapshot, err;
-			[err, idToken] = await to(authUser.getIdToken());
-			if (err) {
-				alert('Error getting user token from firebase');
-				this.doSignOut();
-			};
+			this.userRef(authUser.uid)
+				.once('value')
+				.then(snapshot => {
+					const dbUser = snapshot.val();
 
-			[err, snapshot] = await to(this.userRef(authUser.uid).once('value'));
-			let dbUser = err ? {} : snapshot.val();
+					// default empty roles
+					if (!dbUser.roles) {
+						dbUser.roles = {};
+					}
 
-			// default empty roles
-			if (!dbUser.roles) {
-				dbUser.roles = {};
-			}
+					// merge auth and db user
+					authUser = {
+						uid: authUser.uid,
+						email: authUser.email,
+						emailVerified: authUser.emailVerified,
+						providerData: authUser.providerData,
+						...dbUser,
+					};
 
-			// merge auth, db user, and token
-			authUser = {
-				uid: authUser.uid,
-				email: authUser.email,
-				emailVerified: authUser.emailVerified,
-				providerData: authUser.providerData,
-				...dbUser,
-				idToken: idToken,
-			};
-
-			next(authUser);
+					next(authUser);
+				});
 		});
 
 	// *** User API ***

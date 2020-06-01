@@ -3,10 +3,11 @@ import Button from 'react-bootstrap/Button';
 
 import { compose } from 'recompose';
 import {
-	withAuthUser,
+	// withAuthUser,
 	withAuthorization,
 	withEmailVerification,
 } from './Session';
+// import withFirebase from './Firebase';
 import Game, { PieceTypes, TeamNames } from './Game';
 import GameCanvas from './GameCanvas';
 import GameList from './GameList';
@@ -29,9 +30,19 @@ class GamePage extends React.Component {
 		super(props);
 		this.state = { ...INITIAL_STATE };
 		this.game = new Game();
+		this.user = null;
 	}
 
-	componentDidMount = () => this.getPlay();
+	componentDidMount = () => {
+		this.props.firebase.onAuthUserListener((authUser) => {
+			this.user = authUser;
+			this.getPlay();
+		}, () => {
+			this.user = null;
+			this.setState({ ...INITIAL_STATE });
+		});
+	};
+
 	componentDidUpdate = () => {
 		if (this.refs.gameCanvas)
 			this.refs.gameCanvas.draw(this.game);
@@ -51,57 +62,60 @@ class GamePage extends React.Component {
 		this.setHistoryState();
 	};
 	onLeaveGame = () =>
-		api.leaveGame(this.props.authUser.idToken)
-			.then((res) => this.getPlay())
-			.catch((err) => alert(err.message));
+		this.props.firebase.auth.currentUser.getIdToken()
+			.then((token) =>
+				api.leaveGame(token)
+					.then((res) => this.getPlay())
+					.catch((err) => alert(err.message))
+			);
 
 	getPlay = () => {
 		this.setState({ ...INITIAL_STATE });
-		api.getPlay(this.props.authUser.idToken)
-			.then((res) => {
-				const userPlayObject = res.data;
-				// Game list
-				if (!userPlayObject.inGame) {
-					this.setState({ openGames: userPlayObject.openGames });
-					return;
-				}
+		this.props.firebase.auth.currentUser.getIdToken()
+			.then((token) => {
+				api.getPlay(token)
+					.then((res) => {
+						const userPlayObject = res.data;
 
-				// In-game
-				this.game.start();
-				this.setState({ inGame: true, isWhite: userPlayObject.isWhite, isWaiting: userPlayObject.isWaiting }, () => {
-					if (!this.state.isWaiting)
-						this.game.doMoves(userPlayObject.moves);
-				});
-			})
-			.catch((err) => alert(err.message))
-			.finally(() => this.setState({ loadingPlay: false }));
+						// Game list
+						if (!userPlayObject.inGame) {
+							this.setState({ openGames: userPlayObject.openGames });
+							return;
+						}
+
+						// In-game
+						this.game.start();
+						this.setState({ inGame: true, isWhite: userPlayObject.isWhite, isWaiting: userPlayObject.isWaiting }, () => {
+							if (!this.state.isWaiting)
+								this.game.doMoves(userPlayObject.moves);
+						});
+					})
+					.catch((err) => alert(err.message))
+					.finally(() => this.setState({ loadingPlay: false }));
+			});
 	};
 
 	onCreateGame = () =>
-		api.createGame(this.props.authUser.idToken)
-			.then((res) => this.getPlay())
-			.catch((err) => alert(err.message));
+		this.props.firebase.auth.currentUser.getIdToken()
+			.then((token) =>
+				api.createGame(token)
+					.then((res) => this.getPlay())
+					.catch((err) => alert(err.message))
+			);
 
 	onJoinButton = (gid) =>
-		api.joinGame(this.props.authUser.idToken, gid)
-			.then((res) => this.getPlay())
-			.catch((err) => alert(err.message));
+		this.props.firebase.auth.currentUser.getIdToken()
+			.then((token) =>
+				api.joinGame(token, gid)
+					.then((res) => this.getPlay())
+					.catch((err) => alert(err.message))
+			);
 
 	render() {
 		// Loading
 		if (this.state.loadingPlay)
 			return <div align='center'>Loading...</div>;
 
-		// Game list
-		// if (!this.userPlayObject.inGame)
-		// 	return (
-		// 		<div align='center'>
-		// 			<h1>Open Games List</h1>
-		// 			<Button onClick={this.onCreateGame}>Create Game</Button>
-		// 			<GameList openGames={this.userPlayObject.openGames}
-		// 				joinGameCallback={(gid) => this.onJoinButton(gid)} />
-		// 		</div>
-		// 	);
 		const gameMode = !!this.state.inGame;
 		const gameListDisplay = !gameMode ? 'block' : 'none';
 		const gameDisplay = gameMode ? 'block' : 'none';
@@ -128,7 +142,7 @@ class GamePage extends React.Component {
 					<h1>Open Games List</h1>
 					<Button onClick={this.onCreateGame}>Create Game</Button>
 					<GameList openGames={this.state.openGames}
-						joinGameCallback={(gid) => this.onJoinButton(gid)} />
+						joinGameCallback={this.onJoinButton} />
 				</div>
 				<div style={{ display: gameDisplay }}>
 					<h4 style={{ visibility: waitingVisibility }}>Waiting for opponent...</h4>
@@ -158,9 +172,7 @@ class GamePage extends React.Component {
 };
 
 const condition = authUser => !!authUser;
-
 export default compose(
 	withEmailVerification,
 	withAuthorization(condition),
-	withAuthUser
 )(GamePage);

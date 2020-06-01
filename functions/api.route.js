@@ -18,13 +18,9 @@ const { Game, PieceTypes, TeamNames } = require('./Game');
 //	
 //------------------------------------------------------------
 async function getOpenGames() {
-	console.log('*****  getOpenGames  *****');
 	let gameListSnapshot = await db.ref('games').once('value');
-	if (!gameListSnapshot.exists) {
-		console.log('*****  !gameListSnapshot.exists  *****');
+	if (!gameListSnapshot.exists)
 		return [];
-	}
-	console.log('*****  Object.entries(gameListSnapshot.val())  *****');
 	let gameList = gameListSnapshot.val();
 	if (!gameList)
 		return [];
@@ -37,7 +33,6 @@ async function getOpenGames() {
 //	If user record not found, it is created with inGame=false
 //------------------------------------------------------------
 async function getUser(uid) {
-	console.log('*****  getUser  *****');
 	let userRef = db.ref('users/' + uid);
 	let userSnapshot = await userRef.once('value');
 	return userSnapshot.val();
@@ -52,7 +47,6 @@ async function getUser(uid) {
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
 async function getUserPlayObject(uid) {
-	console.log('*****  getUserPlayObject  *****');
 	let userPlayObject = {};
 
 	// Get user info
@@ -66,7 +60,6 @@ async function getUserPlayObject(uid) {
 	// User not in game? Return game list
 	if (!userPlayObject.inGame) {
 		userPlayObject.openGames = await getOpenGames();
-		console.log('*****  done getOpenGames  *****');
 		return userPlayObject;
 	}
 
@@ -107,12 +100,10 @@ async function getUserPlayObject(uid) {
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
 router.get("/get-play", async (req, res) => {
-	console.log('*****  get-play  *****');
 	let uid = req.decodedClaims.uid;
 
 	try {
 		let userPlayObject = await getUserPlayObject(uid);
-		console.log('*****  done getUserPlayObject  *****');
 		res.status(httpCodes.OK).json(userPlayObject);
 		return;
 	}
@@ -128,7 +119,6 @@ router.get("/get-play", async (req, res) => {
 //
 //------------------------------------------------------------
 router.put("/join-game/:gid", async (req, res) => {
-	console.log('*****  join-game  *****');
 	let uid = req.decodedClaims.uid;
 	let gid = req.params.gid;
 
@@ -185,7 +175,6 @@ router.put("/join-game/:gid", async (req, res) => {
 //	starts game as white, unless black is specified as :team
 //------------------------------------------------------------
 router.post("/create-game/:team?", async (req, res) => {
-	console.log('*****  create-game  *****');
 	let uid = req.decodedClaims.uid;
 	let isWhite = (req.params.team !== 'black');
 
@@ -225,7 +214,6 @@ router.post("/create-game/:team?", async (req, res) => {
 //
 //------------------------------------------------------------
 router.put("/move", validateBody(schemas.move), async (req, res) => {
-	console.log('*****  move  *****');
 	let uid = req.decodedClaims.uid;
 
 });
@@ -235,7 +223,6 @@ router.put("/move", validateBody(schemas.move), async (req, res) => {
 //
 //------------------------------------------------------------
 router.put("/leave-game", async (req, res) => {
-	console.log('*****  leave-game  *****');
 	let uid = req.decodedClaims.uid;
 
 	try {

@@ -29,7 +29,7 @@ class GameCanvas extends React.Component {
 	};
 	draw = (game) => {
 		this.game = game;
-		if (!this.refs.gameBoard.getContext)
+		if (!this.refs.gameBoard || !this.refs.gameBoard.getContext)
 			return;
 
 		// Save drawing context
