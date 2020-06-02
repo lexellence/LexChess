@@ -1,15 +1,10 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'recompose';
+import to from 'await-to-js';
 
 import { withFirebase } from './Firebase';
 import * as ROUTES from './constants/routes';
-
-const INITIAL_STATE = {
-	email: '',
-	password: '',
-	error: null,
-};
 
 const ERROR_CODE_ACCOUNT_EXISTS = 'auth/account-exists-with-different-credential';
 const ERROR_MSG_ACCOUNT_EXISTS = `
@@ -17,125 +12,11 @@ const ERROR_MSG_ACCOUNT_EXISTS = `
   Try to login from this account instead and associate your social accounts on your personal account page.
 `;
 
-class SignInGoogleBase extends Component {
-	constructor(props) {
-		super(props);
-		this.state = { error: null };
-	}
-
-	onSubmit = event => {
-		this.props.firebase.doSignInWithGoogle()
-			.then(socialAuthUser => {
-				// Create a user in Firebase Realtime Database
-				let userRef = this.props.firebase.userRef(socialAuthUser.user.uid);
-				return userRef.set({
-					displayName: socialAuthUser.user.displayName,
-					email: socialAuthUser.user.email,
-					roles: {}
-				});
-			})
-			.then(() => {
-				this.setState({ error: null });
-				this.props.history.push(ROUTES.GAME);
-			})
-			.catch(error => {
-				if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
-					error.message = ERROR_MSG_ACCOUNT_EXISTS;
-				this.setState({ error });
-			});
-		event.preventDefault();
-	};
-
-	render() {
-		const { error } = this.state;
-		return (
-			<form onSubmit={this.onSubmit}>
-				<button type="submit">Sign In with Google</button>
-				{error && <p>{error.message}</p>}
-			</form>
-		);
-	}
-}
-
-class SignInFacebookBase extends Component {
-	constructor(props) {
-		super(props);
-		this.state = { error: null };
-	}
-
-	onSubmit = event => {
-		this.props.firebase.doSignInWithFacebook()
-			.then(socialAuthUser => {
-				// Create a user in Firebase Realtime Database
-				let userRef = this.props.firebase.userRef(socialAuthUser.user.uid);
-				return userRef.set({
-					displayName: socialAuthUser.additionalUserInfo.profile.name,
-					email: socialAuthUser.additionalUserInfo.profile.email,
-					roles: {},
-				});
-			})
-			.then(() => {
-				this.setState({ error: null });
-				this.props.history.push(ROUTES.GAME);
-			})
-			.catch(error => {
-				if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
-					error.message = ERROR_MSG_ACCOUNT_EXISTS;
-				this.setState({ error });
-			});
-		event.preventDefault();
-	};
-
-	render() {
-		const { error } = this.state;
-		return (
-			<form onSubmit={this.onSubmit}>
-				<button type="submit">Sign In with Facebook</button>
-				{error && <p>{error.message}</p>}
-			</form>
-		);
-	}
-}
-
-class SignInTwitterBase extends Component {
-	constructor(props) {
-		super(props);
-		this.state = { error: null };
-	}
-
-	onSubmit = event => {
-		this.props.firebase.doSignInWithTwitter()
-			.then(socialAuthUser => {
-				// Create a user in your Firebase Realtime Database too
-				let userRef = this.props.firebase.userRef(socialAuthUser.user.uid);
-				return userRef.set({
-					displayName: socialAuthUser.additionalUserInfo.profile.name,
-					email: socialAuthUser.additionalUserInfo.profile.email,
-					roles: {},
-				});
-			})
-			.then(() => {
-				this.setState({ error: null });
-				this.props.history.push(ROUTES.GAME);
-			})
-			.catch(error => {
-				if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
-					error.message = ERROR_MSG_ACCOUNT_EXISTS;
-				this.setState({ error });
-			});
-		event.preventDefault();
-	};
-
-	render() {
-		const { error } = this.state;
-		return (
-			<form onSubmit={this.onSubmit}>
-				<button type="submit">Sign In with Twitter</button>
-				{error && <p>{error.message}</p>}
-			</form>
-		);
-	}
-}
+const INITIAL_STATE = {
+	email: '',
+	password: '',
+	error: null,
+};
 
 class SignInFormBase extends Component {
 	constructor(props) {
@@ -145,9 +26,8 @@ class SignInFormBase extends Component {
 
 	onSubmit = event => {
 		const { email, password } = this.state;
-
 		this.props.firebase.doSignInWithEmailAndPassword(email, password)
-			.then(() => {
+			.then(result => {
 				this.setState({ ...INITIAL_STATE });
 				this.props.history.push(ROUTES.GAME);
 			})
@@ -191,6 +71,160 @@ class SignInFormBase extends Component {
 	}
 }
 
+class SignInGoogleBase extends Component {
+	constructor(props) {
+		super(props);
+		this.state = { error: null };
+	}
+
+	onSubmit = event => {
+		this.props.firebase.doSignInWithGoogle().then(result => {
+			this.setState({ error: null });
+			this.props.history.push(ROUTES.GAME);
+		}).catch(error => {
+			if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
+				error.message = ERROR_MSG_ACCOUNT_EXISTS;
+			this.setState({ error });
+		});
+		event.preventDefault();
+
+
+		// event.preventDefault();
+		// alert('onSubmit');
+		// this.props.firebase.doSignInWithGoogle()
+		// 	.then(result => {
+		// 		alert(JSON.stringify(result));
+		// 		const user = result.user;
+		// 		// Create a user (or update existing user) in Firebase Realtime Database
+		// 		const userRef = this.props.firebase.userRef(user.uid);
+		// 		// let [error, snapshot] = await to(userRef.once('value'));
+		// 		// if (error)
+		// 		// 	alert(error);
+		// 		// else if (snapshot.val())
+		// 		// 	await userRef.update({ displayName });
+		// 		// else
+		// 		alert(JSON.stringify(userRef));
+		// 		userRef.set({ inGame: false, displayName: user.displayName, roles: {} });
+		// 		alert('didset');
+		// 		this.setState({ error: null });
+		// 		this.props.history.push(ROUTES.GAME);
+		// 	})
+		// 	.catch(error => {
+		// 		alert(JSON.stringify(error));
+
+		// 		if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
+		// 			error.message = ERROR_MSG_ACCOUNT_EXISTS;
+		// 		this.setState({ error });
+		// 	});
+		// alert('end of onSubmit');
+
+		// this.props.firebase.doSignInWithGoogle
+		// 	.then(() => {
+		// 		this.setState({ ...INITIAL_STATE });
+		// 		this.props.history.push(ROUTES.GAME);
+		// 	})
+		// 	.catch(error => {
+		// 		this.setState({ error });
+		// 	});
+		// event.preventDefault();
+	};
+
+	render() {
+		const { error } = this.state;
+		return (
+			<form onSubmit={this.onSubmit}>
+				<button type="submit">Sign In with Google</button>
+				{error && <p>{error.message}</p>}
+			</form>
+		);
+	}
+}
+
+class SignInFacebookBase extends Component {
+	constructor(props) {
+		super(props);
+		this.state = { error: null };
+	}
+
+	onSubmit = async (event) => {
+		try {
+			let socialAuthUser = await this.props.firebase.doSignInWithFacebook();
+
+			// Create a user (or update existing user) in Firebase Realtime Database
+			const userRef = this.props.firebase.userRef(socialAuthUser.user.uid);
+			let snapshot = await userRef.once('value');
+			const displayName = socialAuthUser.additionalUserInfo.profile.name;
+			if (snapshot.val())
+				await userRef.update({ displayName });
+			else
+				await userRef.set({ inGame: false, displayName, roles: {} });
+			this.setState({ error: null });
+			this.props.history.push(ROUTES.GAME);
+		}
+		catch (error) {
+			if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
+				error.message = ERROR_MSG_ACCOUNT_EXISTS;
+			this.setState({ error });
+		}
+		event.preventDefault();
+	};
+
+	render() {
+		const { error } = this.state;
+		return (
+			<form onSubmit={this.onSubmit}>
+				<button type="submit">Sign In with Facebook</button>
+				{error && <p>{error.message}</p>}
+			</form>
+		);
+	}
+}
+
+class SignInTwitterBase extends Component {
+	constructor(props) {
+		super(props);
+		this.state = { error: null };
+	}
+
+	onSubmit = async (event) => {
+		try {
+			let socialAuthUser = await this.props.firebase.doSignInWithTwitter();
+
+			// Create a user (or update existing user) in Firebase Realtime Database
+			const userRef = this.props.firebase.userRef(socialAuthUser.user.uid);
+			let snapshot = await userRef.once('value');
+			const displayName = socialAuthUser.additionalUserInfo.profile.name;
+			if (snapshot.val())
+				await userRef.update({ displayName });
+			else
+				await userRef.set({ inGame: false, displayName, roles: {} });
+			this.setState({ error: null });
+			this.props.history.push(ROUTES.GAME);
+		}
+		catch (error) {
+			if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
+				error.message = ERROR_MSG_ACCOUNT_EXISTS;
+			this.setState({ error });
+		}
+		event.preventDefault();
+	};
+
+	render() {
+		const { error } = this.state;
+		return (
+			<form onSubmit={this.onSubmit}>
+				<button type="submit">Sign In with Twitter</button>
+				{error && <p>{error.message}</p>}
+			</form>
+		);
+	}
+}
+
+const SignInForm = compose(
+	withRouter,
+	withFirebase,
+)(SignInFormBase);
+
 const SignInGoogle = compose(
 	withRouter,
 	withFirebase,
@@ -205,11 +239,6 @@ const SignInTwitter = compose(
 	withRouter,
 	withFirebase,
 )(SignInTwitterBase);
-
-const SignInForm = compose(
-	withRouter,
-	withFirebase,
-)(SignInFormBase);
 
 const SignInPage = () => (
 	<div>

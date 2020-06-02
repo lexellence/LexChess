@@ -3,15 +3,13 @@ import Button from 'react-bootstrap/Button';
 
 import { compose } from 'recompose';
 import {
-	// withAuthUser,
 	withAuthorization,
 	withEmailVerification,
-} from './Session';
-// import withFirebase from './Firebase';
+} from '../Session';
 import Game, { PieceTypes, TeamNames } from './Game';
 import GameCanvas from './GameCanvas';
 import GameList from './GameList';
-import * as api from './api';
+import * as api from '../api';
 
 const CANVAS_WIDTH = 360;
 const CANVAS_HEIGHT = 360;
@@ -34,14 +32,19 @@ class GamePage extends React.Component {
 	}
 
 	componentDidMount = () => {
-		this.props.firebase.onAuthUserListener((authUser) => {
+		const onSignIn = authUser => {
 			this.user = authUser;
 			this.getPlay();
-		}, () => {
+		};
+		const onSignOut = () => {
 			this.user = null;
 			this.setState({ ...INITIAL_STATE });
-		});
+		};
+		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 	};
+	componentWillUnmount() {
+		this.unregisterAuthListener();
+	}
 
 	componentDidUpdate = () => {
 		if (this.refs.gameCanvas)
@@ -61,47 +64,53 @@ class GamePage extends React.Component {
 		this.game.jumpToPresent();
 		this.setHistoryState();
 	};
-	onLeaveGame = () =>
-		this.props.firebase.auth.currentUser.getIdToken()
-			.then((token) =>
-				api.leaveGame(token)
-					.then((res) => this.getPlay())
-					.catch((err) => alert(err.message))
-			);
-
-	getPlay = () => {
-		this.setState({ ...INITIAL_STATE });
-		this.props.firebase.auth.currentUser.getIdToken()
-			.then((token) => {
-				api.getPlay(token)
-					.then((res) => {
-						const userPlayObject = res.data;
-
-						// Game list
-						if (!userPlayObject.inGame) {
-							this.setState({ openGames: userPlayObject.openGames });
-							return;
-						}
-
-						// In-game
-						this.game.start();
-						this.setState({ inGame: true, isWhite: userPlayObject.isWhite, isWaiting: userPlayObject.isWaiting }, () => {
-							if (!this.state.isWaiting)
-								this.game.doMoves(userPlayObject.moves);
-						});
-					})
-					.catch((err) => alert(err.message))
-					.finally(() => this.setState({ loadingPlay: false }));
-			});
+	onLeaveGame = () => {
+		if (this.user)
+			this.user.getIdToken()
+				.then(token =>
+					api.leaveGame(token)
+						.then((res) => this.getPlay())
+						.catch((err) => alert(err.message))
+				);
 	};
 
-	onCreateGame = () =>
-		this.props.firebase.auth.currentUser.getIdToken()
-			.then((token) =>
-				api.createGame(token)
-					.then((res) => this.getPlay())
-					.catch((err) => alert(err.message))
-			);
+	getPlay = () => {
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
+			this.user.getIdToken()
+				.then((token) => {
+					api.getPlay(token)
+						.then((res) => {
+							const userPlayObject = res.data;
+
+							// Game list
+							if (!userPlayObject.inGame) {
+								this.setState({ openGames: userPlayObject.openGames });
+								return;
+							}
+
+							// In-game
+							this.game.start();
+							this.setState({ inGame: true, isWhite: userPlayObject.isWhite, isWaiting: userPlayObject.isWaiting }, () => {
+								if (!this.state.isWaiting)
+									this.game.doMoves(userPlayObject.moves);
+							});
+						})
+						.catch((err) => alert(err.message))
+						.finally(() => this.setState({ loadingPlay: false }));
+				});
+		}
+	};
+
+	onCreateGame = () => {
+		if (this.user)
+			this.user.getIdToken()
+				.then((token) =>
+					api.createGame(token)
+						.then((res) => this.getPlay())
+						.catch((err) => alert(err.message))
+				);
+	};
 
 	onJoinButton = (gid) =>
 		this.props.firebase.auth.currentUser.getIdToken()
@@ -110,6 +119,18 @@ class GamePage extends React.Component {
 					.then((res) => this.getPlay())
 					.catch((err) => alert(err.message))
 			);
+	onClickCanvas = () => {
+		// Is it user's turn?
+
+		// Do they already have a piece chosen?
+		// Did they click somewhere that's valid to move?
+		// Move
+
+		// Did they click on a piece?
+
+		// Did they click on a piece that has valid moves?
+		// Indicate no moves, or highlight all possible moves 
+	};
 
 	render() {
 		// Loading
@@ -149,7 +170,7 @@ class GamePage extends React.Component {
 					<p style={{ visibility: winnerVisibility }}> {winnerText} is the winner!</p>
 
 					<p style={{ visibility: blackTurnTextVisibility }}>{blackText}</p>
-					<GameCanvas ref='gameCanvas' width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />
+					<GameCanvas ref='gameCanvas' width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={this.onClickCanvas()} />
 					<p style={{ visibility: whiteTurnTextVisibility }}>{whiteText}</p>
 
 					<div style={{ visibility: gameControlsVisibility }}>

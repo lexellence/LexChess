@@ -34,8 +34,14 @@ async function getOpenGames() {
 //------------------------------------------------------------
 async function getUser(uid) {
 	let userRef = db.ref('users/' + uid);
-	let userSnapshot = await userRef.once('value');
-	return userSnapshot.val();
+	let snapshot = await userRef.once('value');
+	if (snapshot.val() !== null)
+		return snapshot.val();
+	else {
+		let newUser = { inGame: false };
+		userRef.set(newUser);
+		return newUser;
+	}
 }
 
 //+------------------------\----------------------------------

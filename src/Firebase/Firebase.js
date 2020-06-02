@@ -1,7 +1,6 @@
 import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
-import to from 'await-to-js';
 
 const config = {
 	apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -18,12 +17,11 @@ class Firebase {
 		app.initializeApp(config);
 
 		// Helper for Messages
-		this.serverValue = app.database.ServerValue;
+		// this.serverValue = app.database.ServerValue;
 
 		// Firebase
 		this.auth = app.auth();
-		this.auth.setPersistence(app.auth.Auth.Persistence.LOCAL);
-		this.db = app.database();
+		// this.db = app.database();
 
 		// Sign In Method Providers
 		this.emailAuthProvider = app.auth.EmailAuthProvider;
@@ -42,29 +40,35 @@ class Firebase {
 		this.auth.signInWithEmailAndPassword(email, password);
 
 	doSignInWithGoogle = () =>
-		this.auth.signInWithPopup(this.googleProvider);
+		// this.auth.signInWithPopup(this.googleProvider);
+		this.auth.signInWithRedirect(this.googleProvider);
 
 	doSignInWithFacebook = () =>
-		this.auth.signInWithPopup(this.facebookProvider);
+		// this.auth.signInWithPopup(this.facebookProvider);
+		this.auth.signInWithRedirect(this.facebookProvider);
 
 	doSignInWithTwitter = () =>
-		this.auth.signInWithPopup(this.twitterProvider);
+		// this.auth.signInWithPopup(this.twitterProvider);
+		this.auth.signInWithRedirect(this.twitterProvider);
 
 	doSignOut = () => this.auth.signOut();
 
 	doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
 
-	doSendEmailVerification = () =>
-		this.auth.currentUser.sendEmailVerification({
-			url: `https://${window.location.host}/game`
-		});
+	doSendEmailVerification = () => {
+		if (this.auth.currentUser)
+			return this.auth.currentUser.sendEmailVerification({
+				url: `https://${window.location.host}/game`
+			});
+	};
 
-	doPasswordUpdate = password =>
-		this.auth.currentUser.updatePassword(password);
+	doPasswordUpdate = password => {
+		if (this.auth.currentUser)
+			return this.auth.currentUser.updatePassword(password);
+	};
 	doDisplayNameUpdate = displayName => {
-		var updates = {};
-		updates['displayName'] = displayName;
-		this.userRef(this.auth.currentUser.uid).update(updates);
+		if (this.auth.currentUser)
+			return this.auth.currentUser.updateProfile({ displayName });
 	};
 
 	// *** Merge Auth and DB User API *** //
@@ -75,28 +79,9 @@ class Firebase {
 				fallback();
 				return;
 			}
-
-			this.userRef(authUser.uid)
-				.once('value')
-				.then(snapshot => {
-					const dbUser = snapshot.val();
-
-					// default empty roles
-					if (!dbUser.roles) {
-						dbUser.roles = {};
-					}
-
-					// merge auth and db user
-					authUser = {
-						uid: authUser.uid,
-						email: authUser.email,
-						emailVerified: authUser.emailVerified,
-						providerData: authUser.providerData,
-						...dbUser,
-					};
-
-					next(authUser);
-				});
+			// replace with code to get roles from db
+			authUser.roles = {};
+			next(authUser);
 		});
 
 	// *** User API ***
@@ -106,6 +91,6 @@ class Firebase {
 	// *** Message API ***
 	messageRef = uid => this.db.ref(`messages/${uid}`);
 	messageListRef = () => this.db.ref('messages');
-}
+};
 
 export default Firebase;

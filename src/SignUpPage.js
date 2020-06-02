@@ -4,14 +4,14 @@ import { compose } from 'recompose';
 
 import { withFirebase } from './Firebase';
 import * as ROUTES from './constants/routes';
-import * as ROLES from './constants/roles';
+// import * as ROLES from './constants/roles';
 
 const INITIAL_STATE = {
 	email: '',
 	passwordOne: '',
 	passwordTwo: '',
 	displayName: '',
-	isAdmin: false,
+	// isAdmin: false,
 	error: null
 };
 
@@ -29,22 +29,19 @@ class SignUpFormBase extends Component {
 	}
 
 	onSubmit = event => {
-		const { email, passwordOne, displayName, isAdmin } = this.state;
-		const roles = {};
+		// const { email, passwordOne, displayName, isAdmin } = this.state;
+		const { email, passwordOne, displayName } = this.state;
+		// const roles = {};
 
-		if (isAdmin) {
-			roles[ROLES.ADMIN] = ROLES.ADMIN;
-		}
+		// TODO: Where would isAdmin be set to true???
+		// if (isAdmin) {
+		// 	roles[ROLES.ADMIN] = ROLES.ADMIN;
+		// }
 
 		this.props.firebase
 			.doCreateUserWithEmailAndPassword(email, passwordOne)
-			.then(authUser => {
-				let userRef = this.props.firebase.userRef(authUser.user.uid);
-				return userRef.set({ inGame: false, displayName, roles });
-			})
-			.then(() => {
-				return this.props.firebase.doSendEmailVerification();
-			})
+			.then(credential => credential.user.updateProfile({ displayName }))
+			.then(() => this.props.firebase.doSendEmailVerification())
 			.then(() => {
 				this.setState({ ...INITIAL_STATE });
 				this.props.history.push(ROUTES.GAME);

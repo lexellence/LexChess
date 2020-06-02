@@ -4,31 +4,27 @@ import { PieceTypes } from './Game';
 
 class GameCanvas extends React.Component {
 	loading = true;
-	game = null;
+	savedDraw = null;
 	componentDidMount = () => {
 		// Load images
 		this.images = new GameImages(() => {
 			this.loading = false;
-			this.draw(this.game);
+			if (this.savedDraw) {
+				this.savedDraw();
+				this.savedDraw = null;
+			}
 		});
 
-		// Setup canvas mouse events
-		this.refs.gameBoard.addEventListener('mousedown', this.onClickCanvas, false);
-	};
-	onClickCanvas = () => {
-		// Is it user's turn?
 
-		// Do they already have a piece chosen?
-		// Did they click somewhere that's valid to move?
-		// Move
-
-		// Did they click on a piece?
-
-		// Did they click on a piece that has valid moves?
-		// Indicate no moves, or highlight all possible moves 
+		this.refs.gameBoard.addEventListener('mousedown', this.props.onClick, false);
 	};
 	draw = (game) => {
-		this.game = game;
+		if (this.loading) {
+			this.savedDraw = () => {
+				this.draw(game);
+			};
+			return;
+		}
 		if (!this.refs.gameBoard || !this.refs.gameBoard.getContext)
 			return;
 

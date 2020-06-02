@@ -12,29 +12,25 @@ const withAuthentication = Component => {
 	class WithAuthentication extends React.Component {
 		constructor(props) {
 			super(props);
-
 			this.state = {
 				authUser: JSON.parse(localStorage.getItem('authUser')),
 			};
 		}
 
 		componentDidMount() {
-			this.listener = this.props.firebase.onAuthUserListener(
-				// next(authUser)
-				authUser => {
-					localStorage.setItem('authUser', JSON.stringify(authUser));
-					this.setState({ authUser });
-				},
-				// fallback()
-				() => {
-					localStorage.removeItem('authUser');
-					this.setState({ authUser: null });
-				},
-			);
+			const onSignIn = authUser => {
+				localStorage.setItem('authUser', JSON.stringify(authUser));
+				this.setState({ authUser });
+			};
+			const onSignOut = () => {
+				localStorage.removeItem('authUser');
+				this.setState({ authUser: null });
+			};
+			this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 		}
 
 		componentWillUnmount() {
-			this.listener();
+			this.unregisterAuthListener();
 		}
 
 		render() {
