@@ -1,6 +1,7 @@
 import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
+import * as ROLES from '../constants/roles';
 
 const config = {
 	apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -21,7 +22,7 @@ class Firebase {
 
 		// Firebase
 		this.auth = app.auth();
-		// this.db = app.database();
+		this.db = app.database();
 
 		// Sign In Method Providers
 		this.emailAuthProvider = app.auth.EmailAuthProvider;
@@ -79,8 +80,9 @@ class Firebase {
 				fallback();
 				return;
 			}
-			// replace with code to get roles from db
+			// replace with code to get roles from db; 
 			authUser.roles = {};
+			authUser.roles[ROLES.ADMIN] = ROLES.ADMIN;
 			next(authUser);
 		});
 

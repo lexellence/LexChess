@@ -7,7 +7,7 @@ import SignInPage from "../SignInPage";
 import SignUpPage from "../SignUpPage";
 import PasswordForgetPage from '../Account/PasswordForgetPage';
 import AccountPage from '../Account/AccountPage';
-import AdminPage from '../AdminPage';
+import AdminPage from '../Admin/AdminPage';
 
 import * as ROUTES from "../constants/routes";
 

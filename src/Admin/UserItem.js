@@ -21,7 +21,7 @@ class UserItem extends Component {
 		this.setState({ loading: true });
 
 		this.props.firebase
-			.user(this.props.match.params.id)
+			.userRef(this.props.match.params.id)
 			.on('value', snapshot => {
 				this.setState({
 					user: snapshot.val(),
@@ -52,11 +52,13 @@ class UserItem extends Component {
 							<strong>ID:</strong> {user.uid}
 						</span>
 						<span>
-							<strong>Email:</strong> {user.email}
+							<strong>In game?</strong> {user.inGame}
 						</span>
-						<span>
-							<strong>Display name:</strong> {user.displayName}
-						</span>
+						{user.inGame &&
+							<span>
+								<strong>Game ID:</strong> {user.gid}
+							</span>
+						}
 						<span>
 							<button
 								type="button"

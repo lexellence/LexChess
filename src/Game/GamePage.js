@@ -42,9 +42,7 @@ class GamePage extends React.Component {
 		};
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 	};
-	componentWillUnmount() {
-		this.unregisterAuthListener();
-	}
+	componentWillUnmount = () => this.unregisterAuthListener();
 
 	componentDidUpdate = () => {
 		if (this.refs.gameCanvas)
