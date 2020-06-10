@@ -28,10 +28,10 @@ export const leaveGame = (idToken) => {
 		}
 	});
 };
-export const createGame = (idToken) => {
+export const createGame = (idToken, team) => {
 	return axios({
 		method: 'post',
-		url: ENDPOINTS.CREATE_GAME,
+		url: ENDPOINTS.CREATE_GAME + '/' + team,
 		headers: {
 			Authorization: 'Bearer ' + idToken
 		}

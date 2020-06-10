@@ -54,7 +54,7 @@ class Firebase {
 
 	doSignOut = () => this.auth.signOut();
 
-	doPasswordReset = email => this.auth.sendPasswordResetEmail(email);
+	doPasswordReset = (email) => this.auth.sendPasswordResetEmail(email);
 
 	doSendEmailVerification = () => {
 		if (this.auth.currentUser)
@@ -80,10 +80,15 @@ class Firebase {
 				fallback();
 				return;
 			}
-			// replace with code to get roles from db; 
+			// get roles from db; 
 			authUser.roles = {};
-			authUser.roles[ROLES.ADMIN] = ROLES.ADMIN;
-			next(authUser);
+			this.userRef(authUser.uid).child('roles').once('value')
+				.then(snapshot => {
+					if (snapshot.val() !== null)
+						authUser.roles = snapshot.val();
+					next(authUser);
+					return;
+				});
 		});
 
 	// *** User API ***

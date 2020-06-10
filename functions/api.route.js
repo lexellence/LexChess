@@ -106,7 +106,7 @@ async function getUserPlayObject(uid) {
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
 router.get("/get-play", async (req, res) => {
-	let uid = req.decodedClaims.uid;
+	let { uid } = req.decodedClaims;
 
 	try {
 		let userPlayObject = await getUserPlayObject(uid);
@@ -125,7 +125,7 @@ router.get("/get-play", async (req, res) => {
 //
 //------------------------------------------------------------
 router.put("/join-game/:gid", async (req, res) => {
-	let uid = req.decodedClaims.uid;
+	let { uid, displayName } = req.decodedClaims;
 	let gid = req.params.gid;
 
 	try {
@@ -178,11 +178,11 @@ router.put("/join-game/:gid", async (req, res) => {
 //+------------------------\----------------------------------
 //|	  POST /create-game    | 
 //\------------------------/
-//	starts game as white, unless black is specified as :team
+//	starts game as black, unless white is specified as :team
 //------------------------------------------------------------
 router.post("/create-game/:team?", async (req, res) => {
-	let uid = req.decodedClaims.uid;
-	let isWhite = (req.params.team !== 'black');
+	let { uid, displayName } = req.decodedClaims;
+	let isWhite = (req.params.team === 'white');
 
 	try {
 		let user = await getUser(uid);
