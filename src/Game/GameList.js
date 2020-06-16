@@ -2,53 +2,41 @@ import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
-const GameTableRow = ({ gid, uid_white, uid_black, joinGameCallback }) => (
+const GameTableTitleRow = () => (
 	<tr>
-		<td>{gid}</td>
-		<td>{uid_white}</td>
-		<td>{uid_black}</td>
+		<th>White</th>
+		<th>Black</th>
+		<th>Join</th>
+	</tr>
+);
+
+const GameTableRow = ({ gid, display_name_white, display_name_black, joinGameCallback }) => (
+	<tr>
+		<td>{display_name_white}</td>
+		<td>{display_name_black}</td>
 		<td> <Button className="edit-link" onClick={() => joinGameCallback(gid)}>Join</Button> </td>
 	</tr >
 );
 
-// Create an array of GameTableRows out of the array of users
-// const getTableRowsFromGameList = () => {
-// 	if (!openGames)
-// 		return <></>;
-
-// 	return openGames.map((game, i) => {
-// 		return <GameTableRow gid={game[0]}
-// 			uid_white={game[1].uid_white}
-// 			uid_black={game[1].uid_black}
-// 			joinGameCallback={joinGameCallback} />;
-// 	});
-// };
-const GameTableRowList = ({ openGames, joinGameCallback }) => (
-	openGames.map((game, i) => {
-		return <GameTableRow gid={game[0]}
-			uid_white={game[1].uid_white}
-			uid_black={game[1].uid_black}
+const GameTableRowList = ({ gameList, joinGameCallback }) => (
+	gameList.map((game, i) => {
+		return <GameTableRow gid={game.gid}
+			display_name_white={game.display_name_white}
+			display_name_black={game.display_name_black}
 			joinGameCallback={joinGameCallback} />;
 	})
 );
 
-
-const GameList = ({ openGames, joinGameCallback }) => (
+const GameList = ({ gameList, joinGameCallback }) => (
 	<div>
 		<div className="table-wrapper">
 			<Table striped bordered hover>
 				<thead>
-					<tr>
-						<th>gid</th>
-						<th>uid_white</th>
-						<th>uid_black</th>
-						<th>Join</th>
-					</tr>
+					<GameTableTitleRow />
 				</thead>
 				<tbody>
-					{/* {getTableRowsFromGameList(openGames, joinGameCallback)} */}
-					{openGames ?
-						<GameTableRowList openGames={openGames} joinGameCallback={joinGameCallback} />
+					{gameList ?
+						<GameTableRowList gameList={gameList} joinGameCallback={joinGameCallback} />
 						:
 						<></>
 					}

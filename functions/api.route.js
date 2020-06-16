@@ -13,18 +13,29 @@ var db = admin.database();
 const { Game, PieceTypes, TeamNames } = require('./Game');
 
 //+------------------------\----------------------------------
-//|	 	 getOpenGames  	   | throws Errors
+//|	 	 getGameList  	   | throws Errors
 //\------------------------/
 //	
 //------------------------------------------------------------
-async function getOpenGames() {
+async function getGameList() {
 	let gameListSnapshot = await db.ref('games').once('value');
 	if (!gameListSnapshot.exists)
 		return [];
 	let gameList = gameListSnapshot.val();
 	if (!gameList)
 		return [];
-	return Object.entries(gameList);
+	let convertedGameList = Object.entries(gameList).map((game, i) => {
+		return {
+			gid: game[0],
+			uid_white: game[1].uid_white,
+			uid_black: game[1].uid_black,
+			display_name_white: game[1].display_name_white,
+			display_name_black: game[1].display_name_black,
+			moves: game[1].moves
+		};
+	});
+	console.log(convertedGameList);
+	return convertedGameList;
 }
 
 //+------------------------\----------------------------------
@@ -48,7 +59,7 @@ async function getUser(uid) {
 //|	  getUserPlayObject    | throws Errors
 //\------------------------/
 //	Get inGame. 
-//		If false, get openGames[].
+//		If false, get games[].
 //		If true, get isWhite, isWaiting.
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
@@ -65,7 +76,7 @@ async function getUserPlayObject(uid) {
 
 	// User not in game? Return game list
 	if (!userPlayObject.inGame) {
-		userPlayObject.openGames = await getOpenGames();
+		userPlayObject.gameList = await getGameList();
 		return userPlayObject;
 	}
 
@@ -125,14 +136,14 @@ router.get("/get-play", async (req, res) => {
 //
 //------------------------------------------------------------
 router.put("/join-game/:gid", async (req, res) => {
-	let { uid, displayName } = req.decodedClaims;
+	let { uid, name } = req.decodedClaims;
 	let gid = req.params.gid;
 
 	try {
-		let user = await getUser(uid);
+		let dbUser = await getUser(uid);
 
 		// Can't join if you're already in a game
-		if (user.inGame)
+		if (dbUser.inGame)
 			throw new Error('user already in game');
 
 		// Find game
@@ -159,9 +170,9 @@ router.put("/join-game/:gid", async (req, res) => {
 			// Fill a spot
 			let moves = ['3133', '4644', '3344p', '6755', '4455k', '6655p'];
 			if (!game.uid_white)
-				promises.push(gameRef.update({ uid_white: uid, moves: moves }));
+				promises.push(gameRef.update({ uid_white: uid, display_name_white: name, moves: moves }));
 			else
-				promises.push(gameRef.update({ uid_black: uid, moves: moves }));
+				promises.push(gameRef.update({ uid_black: uid, display_name_black: name, moves: moves }));
 
 			promises.push(db.ref('users/' + uid).update({ inGame: true, gid: gid }));
 		}
@@ -181,22 +192,36 @@ router.put("/join-game/:gid", async (req, res) => {
 //	starts game as black, unless white is specified as :team
 //------------------------------------------------------------
 router.post("/create-game/:team?", async (req, res) => {
-	let { uid, displayName } = req.decodedClaims;
+	let { uid, name } = req.decodedClaims;
+
 	let isWhite = (req.params.team === 'white');
 
 	try {
-		let user = await getUser(uid);
+		let dbUser = await getUser(uid);
 
-		if (user.inGame)
+		if (dbUser.inGame)
 			throw new Error('user already in game');
 
 		// New game
 		let gameListRef = db.ref('games');
-		let game = { moves: [] };
+		let game;
 		if (isWhite)
-			game.uid_white = uid;
+			game = {
+				uid_white: uid,
+				uid_black: 0,
+				display_name_white: name,
+				display_name_black: '',
+				moves: []
+			};
 		else
-			game.uid_black = uid;
+			game = {
+				uid_white: 0,
+				uid_black: uid,
+				display_name_white: '',
+				display_name_black: name,
+				moves: []
+			};
+		console.log(JSON.stringify(game));
 		let gameRef = gameListRef.push(game);
 
 		// Get gid
@@ -253,20 +278,21 @@ router.put("/leave-game", async (req, res) => {
 
 		let promises = [];
 		{
-			// Remove from game
+			// Remove user from game
 			if (uid === game.uid_white) {
 				if (!game.uid_black)
 					promises.push(gameRef.remove());
 				else
-					promises.push(gameRef.update({ uid_white: null }));
+					promises.push(gameRef.update({ uid_white: 0, display_name_white: '' }));
 			}
 			else if (uid === game.uid_black) {
 				if (!game.uid_white)
 					promises.push(gameRef.remove());
 				else
-					promises.push(gameRef.update({ uid_black: null }));
+					promises.push(gameRef.update({ uid_black: 0, display_name_black: '' }));
 			}
 
+			// Remove game from user
 			promises.push(db.ref('users/' + uid).update({ inGame: false, gid: null }));
 		}
 		await Promise.all(promises);

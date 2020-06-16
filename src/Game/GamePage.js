@@ -17,7 +17,7 @@ const CANVAS_HEIGHT = 360;
 const INITIAL_STATE = {
 	loadingPlay: true,
 	inGame: false,
-	openGames: [],
+	gameList: [],
 	isWaiting: false,
 	isWhite: false,
 	historyPosition: 0,
@@ -79,20 +79,20 @@ class GamePage extends React.Component {
 				.then((token) => {
 					api.getPlay(token)
 						.then((res) => {
-							const userPlayObject = res.data;
+							const { inGame, isWhite, isWaiting, moves, gameList } = res.data;
 
 							// Game list
-							if (!userPlayObject.inGame) {
-								this.setState({ openGames: userPlayObject.openGames });
+							if (!inGame) {
+								this.setState({ gameList });
 								return;
 							}
 
 							// In-game
 							this.game.start();
-							this.setState({ inGame: true, isWhite: userPlayObject.isWhite, isWaiting: userPlayObject.isWaiting }, () => {
-								if (!this.state.isWaiting)
-									this.game.doMoves(userPlayObject.moves);
-							});
+							this.setState({ inGame, isWhite, isWaiting });
+							if (!isWaiting)
+								this.game.doMoves(moves);
+
 						})
 						.catch((err) => alert(err.message))
 						.finally(() => this.setState({ loadingPlay: false }));
@@ -110,13 +110,15 @@ class GamePage extends React.Component {
 				);
 	};
 
-	onJoinButton = (gid) =>
-		this.props.firebase.auth.currentUser.getIdToken()
-			.then((token) =>
-				api.joinGame(token, gid)
-					.then((res) => this.getPlay())
-					.catch((err) => alert(err.message))
-			);
+	onJoinButton = (gid) => {
+		if (this.user)
+			this.user.getIdToken()
+				.then((token) =>
+					api.joinGame(token, gid)
+						.then((res) => this.getPlay())
+						.catch((err) => alert(err.message))
+				);
+	};
 	onClickCanvas = () => {
 		// Is it user's turn?
 
@@ -158,9 +160,9 @@ class GamePage extends React.Component {
 		return (
 			<div align='center'>
 				<div style={{ display: gameListDisplay }}>
-					<h1>Open Games List</h1>
+					<h1>Game List</h1>
 					<Button onClick={this.onCreateGame}>Create Game</Button>
-					<GameList openGames={this.state.openGames}
+					<GameList gameList={this.state.gameList}
 						joinGameCallback={this.onJoinButton} />
 				</div>
 				<div style={{ display: gameDisplay }}>

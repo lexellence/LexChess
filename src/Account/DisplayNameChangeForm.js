@@ -5,6 +5,7 @@ import { withFirebase } from '../Firebase';
 const INITIAL_STATE = {
 	displayName: '',
 	error: null,
+	message: '',
 };
 
 class DisplayNameChangeForm extends Component {
@@ -17,7 +18,7 @@ class DisplayNameChangeForm extends Component {
 		const { displayName } = this.state;
 		this.props.firebase.doDisplayNameUpdate(displayName)
 			.then(() => {
-				this.setState({ ...INITIAL_STATE });
+				this.setState({ ...INITIAL_STATE, message: "Updated." });
 			})
 			.catch(error => {
 				this.setState({ error });
@@ -45,7 +46,8 @@ class DisplayNameChangeForm extends Component {
 				<button disabled={isInvalid} type="submit">
 					Change My Display Name
         		</button>
-				{error && <p>{error.message}</p>}
+				{error && <span>{error.message}</span>}
+				{this.state.message && <span>{this.state.message}</span>}
 			</form>
 		);
 	}
