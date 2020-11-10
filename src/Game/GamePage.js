@@ -6,7 +6,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import Game, { PieceTypes, TeamNames } from './Game';
+import Game, { /*PieceTypes,*/ TeamNames } from './Game';
 import GameCanvas from './GameCanvas';
 import GameList from './GameList';
 import * as api from '../api';
@@ -16,10 +16,13 @@ const CANVAS_HEIGHT = 360;
 
 const INITIAL_STATE = {
 	loadingPlay: true,
-	inGame: false,
 	gameList: [],
-	isWaiting: false,
-	isWhite: false,
+	inGame: false,
+	gameStatus: '',
+	team: '',
+	displayNameWhite: '',
+	displayNameBlack: '',
+	displayNameDefer: '',
 	historyPosition: 0,
 };
 
@@ -34,7 +37,7 @@ class GamePage extends React.Component {
 	componentDidMount = () => {
 		const onSignIn = authUser => {
 			this.user = authUser;
-			this.getPlay();
+			this.getPlayState();
 		};
 		const onSignOut = () => {
 			this.user = null;
@@ -47,6 +50,61 @@ class GamePage extends React.Component {
 	componentDidUpdate = () => {
 		if (this.refs.gameCanvas)
 			this.refs.gameCanvas.draw(this.game);
+	};
+
+	getPlayState = () => {
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
+			this.user.getIdToken()
+				.then((token) => {
+					api.getPlayState(token)
+						.then((res) => {
+							// const { gameList, inGame, gameStatus, team, moves } = res.data;
+							const playState = res.data;
+							this.setState({
+								gameList: playState.gameList,
+								inGame: playState.inGame,
+								gameStatus: playState.gameStatus,
+								team: playState.team,
+								displayNameWhite: playState.displayNameWhite,
+								displayNameBlack: playState.displayNameBlack,
+								displayNameDefer: playState.displayNameDefer
+							});
+
+							// In-game
+							if (playState.inGame) {
+								this.game.start();
+								this.game.doMoves(playState.moves);
+							}
+
+						})
+						.catch((err) => alert(err.message))
+						.finally(() => this.setState({ loadingPlay: false }));
+				});
+		}
+	};
+
+	onCreateGameWhite = () => this.onCreateGame('white');
+	onCreateGameBlack = () => this.onCreateGame('black');
+	onCreateGameDefer = () => this.onCreateGame('defer');
+
+	onCreateGame = (team = 'defer') => {
+		if (this.user)
+			this.user.getIdToken()
+				.then((token) =>
+					api.createGame(token, team)
+						.then((res) => this.getPlayState())
+						.catch((err) => alert(err.message))
+				);
+	};
+	onJoinButton = (gid, team) => {
+		if (this.user)
+			this.user.getIdToken()
+				.then((token) =>
+					api.joinGame(token, gid, team)
+						.then((res) => this.getPlayState())
+						.catch((err) => alert(err.message))
+				);
 	};
 
 	setHistoryState = () => this.setState({ historyPosition: this.game.movesAwayFromPresent });
@@ -67,58 +125,11 @@ class GamePage extends React.Component {
 			this.user.getIdToken()
 				.then(token =>
 					api.leaveGame(token)
-						.then((res) => this.getPlay())
+						.then((res) => this.getPlayState())
 						.catch((err) => alert(err.message))
 				);
 	};
 
-	getPlay = () => {
-		if (this.user) {
-			this.setState({ ...INITIAL_STATE });
-			this.user.getIdToken()
-				.then((token) => {
-					api.getPlay(token)
-						.then((res) => {
-							const { inGame, isWhite, isWaiting, moves, gameList } = res.data;
-
-							// Game list
-							if (!inGame) {
-								this.setState({ gameList });
-								return;
-							}
-
-							// In-game
-							this.game.start();
-							this.setState({ inGame, isWhite, isWaiting });
-							if (!isWaiting)
-								this.game.doMoves(moves);
-
-						})
-						.catch((err) => alert(err.message))
-						.finally(() => this.setState({ loadingPlay: false }));
-				});
-		}
-	};
-
-	onCreateGame = () => {
-		if (this.user)
-			this.user.getIdToken()
-				.then((token) =>
-					api.createGame(token)
-						.then((res) => this.getPlay())
-						.catch((err) => alert(err.message))
-				);
-	};
-
-	onJoinButton = (gid) => {
-		if (this.user)
-			this.user.getIdToken()
-				.then((token) =>
-					api.joinGame(token, gid)
-						.then((res) => this.getPlay())
-						.catch((err) => alert(err.message))
-				);
-	};
 	onClickCanvas = () => {
 		// Is it user's turn?
 
@@ -137,41 +148,56 @@ class GamePage extends React.Component {
 		if (this.state.loadingPlay)
 			return <div align='center'>Loading...</div>;
 
-		const gameMode = !!this.state.inGame;
-		const gameListDisplay = !gameMode ? 'block' : 'none';
-		const gameDisplay = gameMode ? 'block' : 'none';
+		const displayGameList = !this.state.inGame ? 'block' : 'none';
+		const displayGame = this.state.inGame ? 'block' : 'none';
 
-		const myTeamText = this.state.isWhite ? 'White' : 'Black';
-		const blackText = !this.state.isWhite ? 'Your move' : 'Their move';
-		const whiteText = this.state.isWhite ? 'Your move' : 'Their move';
+		const myTeamText = this.state.team;
+		const blackPossessivePronoun = this.state.team === 'black' ? 'Your' : 'Their';
+		const whitePossessivePronoun = this.state.team === 'white' ? 'Your' : 'Their';
+		const blackMoveText = blackPossessivePronoun + ' move';
+		const whiteMoveText = whitePossessivePronoun + ' move';
 
-		const isWaiting = this.state.isWaiting;
-		const waitingVisibility = isWaiting ? 'visible' : 'hidden';
-		const isGameOver = !!this.game.winnerTeam;
+		const isWaiting = (this.state.gameStatus === 'waiting');
+		let gameTitleText;
+		switch (this.state.gameStatus) {
+			case 'waiting': gameTitleText = 'Waiting for opponent...'; break;
+			case 'playing': gameTitleText = 'Game in progress.'; break;
+			case 'draw': gameTitleText = 'Game ended in a draw.'; break;
+			case 'checkmate_white': gameTitleText = 'Checkmate! ' + this.state.displayNameWhite + ' wins.'; break;
+			case 'checkmate_black': gameTitleText = 'Checkmate! ' + this.state.displayNameBlack + ' wins.'; break;
+			case 'concede_white': gameTitleText = this.state.displayNameWhite + ' concedes. ' + this.state.displayNameBlack + ' wins!'; break;
+			case 'concede_black': gameTitleText = this.state.displayNameBlack + ' concedes. ' + this.state.displayNameWhite + ' wins!'; break;
+			default: gameTitleText = ''; break;
+		}
+		const gameTitleVisibility = true ? 'visible' : 'hidden';
+		// const isGameOver = !!this.game.winnerTeam;
 		const gameControlsVisibility = !isWaiting ? 'visible' : 'hidden';
 
-		const winnerText = this.game.winnerTeam === TeamNames.WHITE ? 'White' : 'Black';
-		const winnerVisibility = isGameOver ? 'visible' : 'hidden';
-		const blackTurnTextVisibility = !isGameOver && !isWaiting && this.game.turnTeam === TeamNames.BLACK ? 'visible' : 'hidden';
-		const whiteTurnTextVisibility = !isGameOver && !isWaiting && this.game.turnTeam === TeamNames.WHITE ? 'visible' : 'hidden';
+		// const winnerText = this.game.winnerTeam === TeamNames.WHITE ? 'White' : 'Black';
+		// const winnerText = this.state.gameStatus === '' ? 'White' : 'Black';
+		// const winnerVisibility = isGameOver ? 'visible' : 'hidden';
+		const blackTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === TeamNames.BLACK ? 'visible' : 'hidden';
+		const whiteTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === TeamNames.WHITE ? 'visible' : 'hidden';
 		const lastMoveVisibility = this.game.hasMoreHistory() ? 'visible' : 'hidden';
 		const nextMoveVisibility = !this.game.isOnCurrentMove() ? 'visible' : 'hidden';
 
 		return (
 			<div align='center'>
-				<div style={{ display: gameListDisplay }}>
+				<div style={{ display: displayGameList }}>
 					<h1>Game List</h1>
-					<Button onClick={this.onCreateGame}>Create Game</Button>
+					<Button onClick={() => this.onCreateGame('white')}>Create game as white</Button>
+					<Button onClick={() => this.onCreateGame('black')}>Create game as black</Button>
+					<Button onClick={() => this.onCreateGame('defer')}>Create game and defer</Button>
 					<GameList gameList={this.state.gameList}
 						joinGameCallback={this.onJoinButton} />
 				</div>
-				<div style={{ display: gameDisplay }}>
-					<h4 style={{ visibility: waitingVisibility }}>Waiting for opponent...</h4>
-					<p style={{ visibility: winnerVisibility }}> {winnerText} is the winner!</p>
+				<div style={{ display: displayGame }}>
+					<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
+					{/* <p style={{ visibility: winnerVisibility }}> {winnerText} is the winner!</p> */}
 
-					<p style={{ visibility: blackTurnTextVisibility }}>{blackText}</p>
+					<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
 					<GameCanvas ref='gameCanvas' width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={this.onClickCanvas()} />
-					<p style={{ visibility: whiteTurnTextVisibility }}>{whiteText}</p>
+					<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 					<div style={{ visibility: gameControlsVisibility }}>
 						<Button onClick={this.onShowPrevious} style={{ visibility: lastMoveVisibility }}>Back</Button>

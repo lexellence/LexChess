@@ -24,104 +24,162 @@ async function getGameList() {
 	let gameList = gameListSnapshot.val();
 	if (!gameList)
 		return [];
-	let convertedGameList = Object.entries(gameList).map((game, i) => {
-		return {
-			gid: game[0],
-			uid_white: game[1].uid_white,
-			uid_black: game[1].uid_black,
-			display_name_white: game[1].display_name_white,
-			display_name_black: game[1].display_name_black,
-			moves: game[1].moves
-		};
-	});
-	console.log(convertedGameList);
+	let convertedGameList = Object.entries(gameList)
+		.map((game, i) => {
+			return {
+				gid: game[0],
+				status: game[1].status,
+				uid_white: game[1].uid_white,
+				uid_black: game[1].uid_black,
+				uid_defer: game[1].uid_defer,
+				display_name_white: game[1].display_name_white,
+				display_name_black: game[1].display_name_black,
+				display_name_defer: game[1].display_name_defer
+			};
+		});
 	return convertedGameList;
 }
-
 //+------------------------\----------------------------------
-//|	 	   getUser    	   | throws Errors
+//|	 	   getUser    	   |
 //\------------------------/
-//	If user record not found, it is created with inGame=false
+//	If database user record not found, it is created.
+// 	Returns { userRef, user }
 //------------------------------------------------------------
 async function getUser(uid) {
 	let userRef = db.ref('users/' + uid);
 	let snapshot = await userRef.once('value');
-	if (snapshot.val() !== null)
-		return snapshot.val();
-	else {
-		let newUser = { inGame: false };
-		userRef.set(newUser);
-		return newUser;
+	let user = snapshot.val();
+	if (user === null) {
+		user = { gid: 0 };
+		userRef.set(user);
 	}
+	return { userRef: userRef, user: user };
 }
-
 //+------------------------\----------------------------------
-//|	  getUserPlayObject    | throws Errors
+//|	 	   getGame    	   |
 //\------------------------/
-//	Get inGame. 
-//		If false, get games[].
-//		If true, get isWhite, isWaiting.
-//				If !isWaiting, get moves[].
+// 	Returns { gameRef, game }
 //------------------------------------------------------------
-async function getUserPlayObject(uid) {
-	let userPlayObject = {};
+async function getGame(gid) {
+	let gameRef = db.ref('games/' + gid);
+	let snapshot = await gameRef.once('value');
+	let game = snapshot.val();
+	return { gameRef: gameRef, game: game };
+}
+//+------------------------\----------------------------------
+//|	  getUserPlayState     | throws Errors
+//\------------------------/
+// 	gameList: array of available games
+// 	inGame: T/F
+//	gameStatus: waiting, playing, draw, checkmate, concede, stalemate
+//	team: white, black, defer, observe
+//	moves: array of 'nnnnp' formatted moves (if ingame)
+//------------------------------------------------------------
+async function getUserPlayState(uid) {
+	let userPlayObject = {
+		gameList: await getGameList(),
+		inGame: false,
+		gameStatus: '',
+		team: '',
+		displayNameWhite: '',
+		displayNameBlack: '',
+		displayNameDefer: '',
+		moves: []
+	};
 
-	// Get user info
-	let gid;
-	{
-		let user = await getUser(uid);
-		userPlayObject.inGame = user.inGame;
-		gid = user.gid;
+	let { userRef, user } = await getUser(uid);
+	if (user.gid) {
+		let { gameRef, game } = await getGame(user.gid);
+		if (game) {
+			// Status
+			userPlayObject.inGame = true;
+			userPlayObject.gameStatus = game.status;
+
+			// User's team
+			if (uid === game.uid_white)
+				userPlayObject.team = 'white';
+			else if (uid === game.uid_black)
+				userPlayObject.team = 'black';
+			else if (uid === game.uid_defer)
+				userPlayObject.team = 'defer';
+			else
+				userPlayObject.team = 'observe';
+
+			// Names
+			userPlayObject.displayNameWhite = game.display_name_white;
+			userPlayObject.displayNameBlack = game.display_name_black;
+			userPlayObject.displayNameDefer = game.display_name_defer;
+			userPlayObject.moves = game.moves ? game.moves : [];
+		}
+		else {
+			// Game not found, reset user's gid
+			await userRef.update({ gid: 0 });
+		}
 	}
-
-	// User not in game? Return game list
-	if (!userPlayObject.inGame) {
-		userPlayObject.gameList = await getGameList();
-		return userPlayObject;
-	}
-
-	// User in game -> get game info
-	let game;
-	{
-		if (!gid || gid.length < 1)
-			throw new Error('missing gid');
-
-		let gameRef = db.ref('games/' + gid);
-		let gameSnapshot = await gameRef.once('value');
-		game = gameSnapshot.val();
-		if (!game)
-			throw new Error('no game found with gid=' + gid);
-	}
-
-	// Get isWhite
-	if (uid === game.uid_white)
-		userPlayObject.isWhite = true;
-	else if (uid === game.uid_black)
-		userPlayObject.isWhite = false;
-	else
-		throw new Error("user uid not found in game with gid=" + gid);
-
-	// Get isWaiting, moves
-	userPlayObject.isWaiting = (!game.uid_white || !game.uid_black);
-	if (!userPlayObject.isWaiting)
-		userPlayObject.moves = game.moves ? game.moves : [];
 
 	return userPlayObject;
 }
-//+------------------------\----------------------------------
-//|	    GET /get-play      |
-//\------------------------/
+//+------------------------------\----------------------------
+//|	    GET /get-play-state      |
+//\------------------------------/
 //	Get inGame. 
 //		If false, get openGames[].
 //		If true, get isWhite, isWaiting.
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
-router.get("/get-play", async (req, res) => {
+router.get("/get-play-state", async (req, res) => {
 	let { uid } = req.decodedClaims;
 
 	try {
-		let userPlayObject = await getUserPlayObject(uid);
-		res.status(httpCodes.OK).json(userPlayObject);
+		let userPlayState = await getUserPlayState(uid);
+		console.log('***** Sending User PlayState *****');
+		console.log(userPlayState);
+		res.status(httpCodes.OK).json(userPlayState);
+		return;
+	}
+	catch (err) {
+		console.log(err.message);
+		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
+		return;
+	}
+});
+//+------------------------------\----------------------------
+//|	  POST /create-game/:team    | 
+//\------------------------------/
+//	starts game as :team = 'white' or 'black'
+//	Any other values of :team will defer team choice
+//------------------------------------------------------------
+router.post("/create-game/:team", async (req, res) => {
+	let { uid, name } = req.decodedClaims;
+	let isWhite = (req.params.team === 'white');
+	let isBlack = (req.params.team === 'black');
+
+	try {
+		let { userRef, user } = await getUser(uid);
+		if (user.gid)
+			throw new Error('User already in game');
+
+		// New game
+		let game = {
+			status: 'waiting',
+			uid_white: isWhite ? uid : 0,
+			uid_black: isBlack ? uid : 0,
+			uid_defer: (!isWhite && !isBlack) ? uid : 0,
+			display_name_white: isWhite ? name : '',
+			display_name_black: isBlack ? name : '',
+			display_name_defer: (!isWhite && !isBlack) ? name : '',
+			moves: []
+		};
+
+		console.log('***** Game Created *****');
+		console.log(game);
+		let gameRef = await db.ref('games').push(game);
+
+		// Update user's gid
+		let gameSnapshot = await gameRef.once('value');
+		await userRef.update({ gid: gameSnapshot.key });
+
+		res.sendStatus(httpCodes.OK);
 		return;
 	}
 	catch (err) {
@@ -135,108 +193,67 @@ router.get("/get-play", async (req, res) => {
 //\------------------------/
 //
 //------------------------------------------------------------
-router.put("/join-game/:gid", async (req, res) => {
+router.put("/join-game/:gid/:team", async (req, res) => {
 	let { uid, name } = req.decodedClaims;
-	let gid = req.params.gid;
-
+	let { gid, team } = req.params;
 	try {
-		let dbUser = await getUser(uid);
+		let { userRef, user } = await getUser(uid);
+		let movesStub = ['3133', '4644', '3344p', '6755', '4455k', '6655p'];
 
 		// Can't join if you're already in a game
-		if (dbUser.inGame)
-			throw new Error('user already in game');
+		if (user.gid)
+			throw new Error('User already in game.');
 
 		// Find game
-		let gameRef = db.ref('games/' + gid);
-		let gameSnapshot = await gameRef.once('value');
-		let game = gameSnapshot.val();
+		let { gameRef, game } = await getGame(gid);
 		if (!game)
-			throw new Error('no game found with gid=' + gid);
-
-		// Make sure it's not over
-		if (game.uid_winner)
-			throw new Error('can not join closed game');
-
-		// Am I already in the game?
-		if (uid === game.uid_white || uid === game.uid_black)
-			throw new Error('already in that game');
-
-		// Is it already full?
-		if (game.uid_white && game.uid_black)
-			throw new Error('game is full');
+			throw new Error('Game not found.');
 
 		let promises = [];
-		{
-			// Fill a spot
-			let moves = ['3133', '4644', '3344p', '6755', '4455k', '6655p'];
-			if (!game.uid_white)
-				promises.push(gameRef.update({ uid_white: uid, display_name_white: name, moves: moves }));
-			else
-				promises.push(gameRef.update({ uid_black: uid, display_name_black: name, moves: moves }));
+		if (game.status === 'waiting') {
+			if (team === 'white') {
+				if (!game.uid_white) {
+					// Join white team
+					promises.push(gameRef.update({ status: 'playing', uid_white: uid, display_name_white: name, moves: movesStub }));
 
-			promises.push(db.ref('users/' + uid).update({ inGame: true, gid: gid }));
+					// Move defer player to black
+					if (game.uid_defer) {
+						promises.push(gameRef.update({
+							uid_black: game.uid_defer,
+							display_name_black: game.display_name_defer,
+							uid_defer: 0,
+							display_name_defer: ''
+						}));
+					}
+				}
+			}
+			else if (team === 'black') {
+				if (!game.uid_black) {
+					// Join black team
+					promises.push(gameRef.update({ status: 'playing', uid_black: uid, display_name_black: name, moves: movesStub }));
+
+					// Move defer player to white
+					if (game.uid_defer) {
+						promises.push(gameRef.update({
+							uid_white: game.uid_defer,
+							display_name_white: game.display_name_defer,
+							uid_defer: 0,
+							display_name_defer: ''
+						}));
+					}
+				}
+			}
 		}
+
+		// Add game to user
+		promises.push(userRef.update({ gid: gid }));
+
 		await Promise.all(promises);
 		res.sendStatus(httpCodes.OK);
-		return;
 	}
 	catch (err) {
 		console.log(err.message);
 		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-		return;
-	}
-});
-//+------------------------\----------------------------------
-//|	  POST /create-game    | 
-//\------------------------/
-//	starts game as black, unless white is specified as :team
-//------------------------------------------------------------
-router.post("/create-game/:team?", async (req, res) => {
-	let { uid, name } = req.decodedClaims;
-
-	let isWhite = (req.params.team === 'white');
-
-	try {
-		let dbUser = await getUser(uid);
-
-		if (dbUser.inGame)
-			throw new Error('user already in game');
-
-		// New game
-		let gameListRef = db.ref('games');
-		let game;
-		if (isWhite)
-			game = {
-				uid_white: uid,
-				uid_black: 0,
-				display_name_white: name,
-				display_name_black: '',
-				moves: []
-			};
-		else
-			game = {
-				uid_white: 0,
-				uid_black: uid,
-				display_name_white: '',
-				display_name_black: name,
-				moves: []
-			};
-		console.log(JSON.stringify(game));
-		let gameRef = gameListRef.push(game);
-
-		// Get gid
-		let gameSnapshot = await gameRef.once('value');
-		let gid = gameSnapshot.key;
-
-		// Update user
-		await db.ref('users/' + uid).update({ inGame: true, gid: gid });
-		res.sendStatus(httpCodes.OK);
-		return;
-	}
-	catch (err) {
-		console.log(err.message);
-		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-		return;
 	}
 });
 //+------------------------\----------------------------------
@@ -258,42 +275,40 @@ router.put("/leave-game", async (req, res) => {
 
 	try {
 		// Get user info
-		let gid = null;
-		{
-			let user = await getUser(uid);
-			if (!user.inGame)
-				throw new Error('user not in game');
-			gid = user.gid;
+		let { userRef, user } = await getUser(uid);
+		if (!user.gid) {
+			res.sendStatus(httpCodes.OK);
+			return;
 		}
 
-		// User in game -> get game info
-		if (!gid || gid.length < 1)
-			throw new Error('missing gid');
+		// Get game
+		let { gameRef, game } = await getGame(user.gid);
 
-		let gameRef = db.ref('games/' + gid);
-		let gameSnapshot = await gameRef.once('value');
-		let game = gameSnapshot.val();
-		if (!game)
-			throw new Error('no game found with gid=' + gid);
+		// Game not found
+		if (!game) {
+			await userRef.update({ gid: 0 });
+			res.sendStatus(httpCodes.OK);
+			return;
+		}
 
+		// Leave the game
 		let promises = [];
 		{
-			// Remove user from game
-			if (uid === game.uid_white) {
-				if (!game.uid_black)
-					promises.push(gameRef.remove());
-				else
-					promises.push(gameRef.update({ uid_white: 0, display_name_white: '' }));
-			}
-			else if (uid === game.uid_black) {
-				if (!game.uid_white)
-					promises.push(gameRef.remove());
-				else
-					promises.push(gameRef.update({ uid_black: 0, display_name_black: '' }));
+			// Delete game not yet started, if user is a player
+			let userIsPlayer = (uid === game.uid_white || uid === game.uid_black || uid === game.uid_defer);
+			if (game.status === 'waiting' && userIsPlayer)
+				promises.push(gameRef.remove());
+
+			// Concede defeat if user is one of the players
+			else if (game.status === 'playing') {
+				if (uid === game.uid_white)
+					promises.push(gameRef.update({ status: 'concede_white', uid_winner: game.uid_black, display_name_winner: game.display_name_black }));
+				else if (uid === game.uid_black)
+					promises.push(gameRef.update({ status: 'concede_black', uid_winner: game.uid_white, display_name_winner: game.display_name_white }));
 			}
 
 			// Remove game from user
-			promises.push(db.ref('users/' + uid).update({ inGame: false, gid: null }));
+			promises.push(userRef.update({ gid: 0 }));
 		}
 		await Promise.all(promises);
 		res.sendStatus(httpCodes.OK);
