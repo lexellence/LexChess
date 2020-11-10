@@ -5,6 +5,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 2. Fill in the values in "/.env.template" and rename to "/.env" (verify .env is in .gitignore)
 3. Retrieve Firebase AdminSDK credentials file (*.json) from Firebase Realtime Database and place into "/../"
 4. Open "/package.json" and edit filename in path GOOGLE_APPLICATION_CREDENTIALS="../../credentialsFile.json" to match file from #3 
+(Both the credentials file and the values in .env should be kept out of the repository, for security)
 
 ## Available Scripts
 
