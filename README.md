@@ -22,12 +22,9 @@ npm run deploy
 # Optional start-up script
 ### Personally, I keep a notes file and my VS Code workspace file in "/../" and name my root folder "repo". I create a batch file "/../chess.bat" with the following script to start my development environment:
 @echo off
+
 start ./changes-notes.txt
 start ./chess.code-workspace
 start cmd /k "TITLE dev & cd repo & npm run dev"
 start cmd /k "TITLE grok & cd repo & npm run grok"
 start cmd /k "TITLE git & cd repo"
-
-
-
-
