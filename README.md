@@ -24,7 +24,11 @@ npm run deploy
 @echo off
 
 start ./changes-notes.txt
+
 start ./chess.code-workspace
+
 start cmd /k "TITLE dev & cd repo & npm run dev"
+
 start cmd /k "TITLE grok & cd repo & npm run grok"
+
 start cmd /k "TITLE git & cd repo"
