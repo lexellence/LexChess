@@ -9,21 +9,22 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Available Scripts
 
-## Start dev-mode, a combination of:
-## 	front-end react-app dev mode, and 
-## 	firebase function emulation
+# Start dev-mode, a combination of:
+# 	front-end react-app dev mode, and 
+# 	firebase function emulation
 npm run dev
 
-## In a separate command prompt, get a grok public URL, start public url forwarding to your local development server, so sign-in works during development.
-## Afterwards, open the public URL in your browser.
+# In a separate command prompt, get a grok public URL, start public url forwarding to your local development server, so sign-in works during development.
+# Afterwards, open the public URL in your browser.
 npm run grok
 
-## After editing, build react and deploy to firebase.
-## Afterwards, the site will be live. Access through URL assigned by firebase hosting.
+# After editing, build react and deploy to firebase.
+# Afterwards, the site will be live. Access through URL assigned by firebase hosting.
 npm run deploy
 
-## Personally, I keep a notes file and my VS Code workspace file in "/../".
-## I create a batch file "/../chess.bat" with the following script to start my development environment:
+## Optional start-up script
+# Personally, I keep a notes file and my VS Code workspace file in "/../".
+# I create a batch file "/../chess.bat" with the following script to start my development environment:
 @echo off
 start ./changes-notes.txt
 start ./chess.code-workspace
