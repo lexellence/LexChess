@@ -152,15 +152,15 @@ class GamePage extends React.Component {
 		const displayGame = this.state.inGame ? 'block' : 'none';
 
 		const myTeamText = this.state.team;
-		const blackPossessivePronoun = this.state.team === 'black' ? 'Your' : 'Their';
-		const whitePossessivePronoun = this.state.team === 'white' ? 'Your' : 'Their';
-		const blackMoveText = blackPossessivePronoun + ' move';
-		const whiteMoveText = whitePossessivePronoun + ' move';
+		const blackPossessiveName = (this.state.team === 'observe' || this.state.team === 'white') ? this.state.displayNameBlack + '\'s' : 'Your';
+		const whitePossessiveName = (this.state.team === 'observe' || this.state.team === 'black') ? this.state.displayNameBlack + '\'s' : 'Your';
+		const blackMoveText = blackPossessiveName + ' move';
+		const whiteMoveText = whitePossessiveName + ' move';
 
 		const isWaiting = (this.state.gameStatus === 'waiting');
 		let gameTitleText;
 		switch (this.state.gameStatus) {
-			case 'waiting': gameTitleText = 'Waiting for opponent...'; break;
+			case 'waiting': gameTitleText = 'Waiting for another player to join...'; break;;
 			case 'playing': gameTitleText = 'Game in progress.'; break;
 			case 'draw': gameTitleText = 'Game ended in a draw.'; break;
 			case 'checkmate_white': gameTitleText = 'Checkmate! ' + this.state.displayNameWhite + ' wins.'; break;
@@ -169,7 +169,8 @@ class GamePage extends React.Component {
 			case 'concede_black': gameTitleText = this.state.displayNameBlack + ' concedes. ' + this.state.displayNameWhite + ' wins!'; break;
 			default: gameTitleText = ''; break;
 		}
-		const gameTitleVisibility = true ? 'visible' : 'hidden';
+		// const gameTitleVisibility = true ? 'visible' : 'hidden';
+		const gameTitleVisibility = 'visible';
 		// const isGameOver = !!this.game.winnerTeam;
 		const gameControlsVisibility = !isWaiting ? 'visible' : 'hidden';
 
