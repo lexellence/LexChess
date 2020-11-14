@@ -131,8 +131,8 @@ router.get("/get-play-state", async (req, res) => {
 	let { uid } = req.decodedClaims;
 
 	try {
+		console.log('***** Getting User PlayState *****');
 		let userPlayState = await getUserPlayState(uid);
-		console.log('***** Sending User PlayState *****');
 		console.log(userPlayState);
 		res.status(httpCodes.OK).json(userPlayState);
 		return;
@@ -179,7 +179,7 @@ router.post("/create-game/:team", async (req, res) => {
 		let gameSnapshot = await gameRef.once('value');
 		await userRef.update({ gid: gameSnapshot.key });
 
-		res.sendStatus(httpCodes.OK);
+		res.status(httpCodes.OK).json(await getUserPlayState(uid));
 		return;
 	}
 	catch (err) {
@@ -209,7 +209,11 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 		if (!game)
 			throw new Error('Game not found.');
 
+		// Add game to user
 		let promises = [];
+		promises.push(userRef.update({ gid: gid }));
+
+		// Add user to game
 		if (game.status === 'waiting') {
 			if (team === 'white') {
 				if (!game.uid_white) {
@@ -244,12 +248,9 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 				}
 			}
 		}
-
-		// Add game to user
-		promises.push(userRef.update({ gid: gid }));
-
 		await Promise.all(promises);
-		res.sendStatus(httpCodes.OK);
+
+		res.status(httpCodes.OK).json(await getUserPlayState(uid));
 	}
 	catch (err) {
 		console.log(err.message);
@@ -311,7 +312,8 @@ router.put("/leave-game", async (req, res) => {
 			promises.push(userRef.update({ gid: 0 }));
 		}
 		await Promise.all(promises);
-		res.sendStatus(httpCodes.OK);
+
+		res.status(httpCodes.OK).json(await getUserPlayState(uid));
 		return;
 	}
 	catch (err) {

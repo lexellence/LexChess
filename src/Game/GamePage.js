@@ -56,31 +56,30 @@ class GamePage extends React.Component {
 		if (this.user) {
 			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
-				.then((token) => {
+				.then((token) =>
 					api.getPlayState(token)
-						.then((res) => {
-							// const { gameList, inGame, gameStatus, team, moves } = res.data;
-							const playState = res.data;
-							this.setState({
-								gameList: playState.gameList,
-								inGame: playState.inGame,
-								gameStatus: playState.gameStatus,
-								team: playState.team,
-								displayNameWhite: playState.displayNameWhite,
-								displayNameBlack: playState.displayNameBlack,
-								displayNameDefer: playState.displayNameDefer
-							});
-
-							// In-game
-							if (playState.inGame) {
-								this.game.start();
-								this.game.doMoves(playState.moves);
-							}
-
-						})
+						.then((res) => this.setPlayState(res.data))
 						.catch((err) => alert(err.message))
-						.finally(() => this.setState({ loadingPlay: false }));
-				});
+						.finally(() => this.setState({ loadingPlay: false })));
+		}
+	};
+	setPlayState = (playState) => {
+		if (playState) {
+			// In-game
+			if (playState.inGame) {
+				this.game.start();
+				this.game.doMoves(playState.moves);
+			}
+
+			this.setState({
+				gameList: playState.gameList,
+				inGame: playState.inGame,
+				gameStatus: playState.gameStatus,
+				team: playState.team,
+				displayNameWhite: playState.displayNameWhite,
+				displayNameBlack: playState.displayNameBlack,
+				displayNameDefer: playState.displayNameDefer
+			});
 		}
 	};
 
@@ -89,22 +88,26 @@ class GamePage extends React.Component {
 	onCreateGameDefer = () => this.onCreateGame('defer');
 
 	onCreateGame = (team = 'defer') => {
-		if (this.user)
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
 				.then((token) =>
 					api.createGame(token, team)
-						.then((res) => this.getPlayState())
+						.then((res) => this.setPlayState(res.data))
 						.catch((err) => alert(err.message))
-				);
+						.finally(() => this.setState({ loadingPlay: false })));
+		}
 	};
 	onJoinButton = (gid, team) => {
-		if (this.user)
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
 				.then((token) =>
 					api.joinGame(token, gid, team)
-						.then((res) => this.getPlayState())
+						.then((res) => this.setPlayState(res.data))
 						.catch((err) => alert(err.message))
-				);
+						.finally(() => this.setState({ loadingPlay: false })));
+		}
 	};
 
 	setHistoryState = () => this.setState({ historyPosition: this.game.movesAwayFromPresent });
@@ -121,13 +124,15 @@ class GamePage extends React.Component {
 		this.setHistoryState();
 	};
 	onLeaveGame = () => {
-		if (this.user)
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
 				.then(token =>
 					api.leaveGame(token)
-						.then((res) => this.getPlayState())
+						.then((res) => this.setPlayState(res.data))
 						.catch((err) => alert(err.message))
-				);
+						.finally(() => this.setState({ loadingPlay: false })));
+		}
 	};
 
 	onClickCanvas = () => {
@@ -169,14 +174,9 @@ class GamePage extends React.Component {
 			case 'concede_black': gameTitleText = this.state.displayNameBlack + ' concedes. ' + this.state.displayNameWhite + ' wins!'; break;
 			default: gameTitleText = ''; break;
 		}
-		// const gameTitleVisibility = true ? 'visible' : 'hidden';
 		const gameTitleVisibility = 'visible';
-		// const isGameOver = !!this.game.winnerTeam;
 		const gameControlsVisibility = !isWaiting ? 'visible' : 'hidden';
 
-		// const winnerText = this.game.winnerTeam === TeamNames.WHITE ? 'White' : 'Black';
-		// const winnerText = this.state.gameStatus === '' ? 'White' : 'Black';
-		// const winnerVisibility = isGameOver ? 'visible' : 'hidden';
 		const blackTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === TeamNames.BLACK ? 'visible' : 'hidden';
 		const whiteTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === TeamNames.WHITE ? 'visible' : 'hidden';
 		const lastMoveVisibility = this.game.hasMoreHistory() ? 'visible' : 'hidden';
@@ -194,7 +194,6 @@ class GamePage extends React.Component {
 				</div>
 				<div style={{ display: displayGame }}>
 					<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
-					{/* <p style={{ visibility: winnerVisibility }}> {winnerText} is the winner!</p> */}
 
 					<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
 					<GameCanvas ref='gameCanvas' width={CANVAS_WIDTH} height={CANVAS_HEIGHT} onClick={this.onClickCanvas()} />
