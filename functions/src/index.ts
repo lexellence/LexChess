@@ -1,23 +1,21 @@
-"use strict";
-const functions = require('firebase-functions');
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const cors = require('cors')({ origin: true });
-const cookieParser = require('cookie-parser');
-var boolParser = require('express-query-boolean');
-const httpCodes = require("http-status-codes");
+// import functions from 'firebase-functions';
+// import express from 'express';
+import express, { NextFunction } from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+// import boolParser from 'express-query-boolean';
+import httpCodes from 'http-status-codes';
+import admin from 'firebase-admin';
 
-const admin = require('firebase-admin');
 admin.initializeApp();
-// const COOKIE_EXPIRES_IN = 60 * 60 * 24 * 5 * 1000;	// 5 days
-
+const app = express();
 
 // Express middleware that validates Firebase ID Tokens passed in the Authorization HTTP header.
 // The Firebase ID token needs to be passed as a Bearer token in the Authorization HTTP header like this:
 // `Authorization: Bearer <Firebase ID Token>`.
 // when decoded successfully, the ID Token content will be added as `req.decodedClaims`.
-const validateFirebaseIdToken = async (req, res, next) => {
+const validateFirebaseIdToken = async (req: any, res: any, next: NextFunction) => {
 	console.log('*****  validateFirebaseIdToken  *****');
 
 	if ((!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) &&
@@ -26,7 +24,7 @@ const validateFirebaseIdToken = async (req, res, next) => {
 			'Make sure you authorize your request by providing the following HTTP header:',
 			'Authorization: Bearer <Firebase ID Token>',
 			'or by passing a "__session" cookie.');
-		res.status(403).send('Unauthorized');
+		res.status(httpCodes.FORBIDDEN).send('Unauthorized');
 		return;
 	}
 
@@ -41,7 +39,7 @@ const validateFirebaseIdToken = async (req, res, next) => {
 		idToken = req.cookies.__session;
 	} else {
 		// No cookie
-		res.status(403).send('Unauthorized');
+		res.status(httpCodes.FORBIDDEN).send('Unauthorized');
 		return;
 	}
 
@@ -53,7 +51,7 @@ const validateFirebaseIdToken = async (req, res, next) => {
 		return;
 	} catch (error) {
 		console.error('Error while verifying Firebase ID token:', error);
-		res.status(403).send('Unauthorized');
+		res.status(httpCodes.FORBIDDEN).send('Unauthorized');
 		return;
 	}
 };
@@ -63,14 +61,34 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Change 'true'/'false' values to bool in req.query
-app.use(boolParser());
+// app.use(boolParser());
 
 // Automatically allow cross-origin requests
-app.use(cors);
+app.use(cors({ origin: true }));
 
 // Parse cookies
 app.use(cookieParser());
 
+// Handle API requests
+app.use('/', validateFirebaseIdToken, require('./api.route'));
+
+// Expose Express API as a single Cloud Function:
+exports.api = require('firebase-functions').https.onRequest(app);
+
+
+
+
+
+
+
+
+
+
+// ****************************************************************************
+// ***  OLD LOGIN SYSTEM WITHOUT USING FIREBASE AUTHENTICATION ON FRONT-END ***
+// ****************************************************************************
+
+// const COOKIE_EXPIRES_IN = 60 * 60 * 24 * 5 * 1000;	// 5 days
 //+------------------------\----------------------------------
 //|	  GET /session-login   | Generate session cookie
 //\------------------------/
@@ -92,7 +110,6 @@ app.use(cookieParser());
 // 			res.status(httpCodes.BAD_REQUEST).send(error);
 // 		});
 // });
-
 //+------------------------\----------------------------------
 //|		verifyCookie 	   |
 //\------------------------/
@@ -110,7 +127,6 @@ app.use(cookieParser());
 // 			res.sendStatus(httpCodes.UNAUTHORIZED);
 // 		});
 // }
-
 //+------------------------\----------------------------------
 //|	  	GET /sign-out 	   | Clear session cookie
 //\------------------------/----------------------------------
@@ -119,11 +135,6 @@ app.use(cookieParser());
 // 	res.clearCookie(SESSION_COOKIE_NAME);
 // 	res.sendStatus(httpCodes.OK);
 // });
-
-// app.use('/', require('./api.route'));
-app.use('/', validateFirebaseIdToken, require('./api.route'));
 // app.use('/', verifyCookie, require('./api.route'));
 
-// Expose Express API as a single Cloud Function:
-exports.api = functions.https.onRequest(app);
 

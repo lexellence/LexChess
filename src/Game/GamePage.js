@@ -6,7 +6,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import Game, { /*PieceTypes,*/ TeamNames } from './Game';
+import Game, { /*PieceTypes,*/ TeamNames } from './ChessGameFrontend';
 import GameCanvas from './GameCanvas';
 import GameList from './GameList';
 import * as api from '../api';
@@ -52,25 +52,15 @@ class GamePage extends React.Component {
 			this.refs.gameCanvas.draw(this.game);
 	};
 
-	getPlayState = () => {
-		if (this.user) {
-			this.setState({ ...INITIAL_STATE });
-			this.user.getIdToken()
-				.then((token) =>
-					api.getPlayState(token)
-						.then((res) => this.setPlayState(res.data))
-						.catch((err) => alert(err.message))
-						.finally(() => this.setState({ loadingPlay: false })));
-		}
-	};
 	setPlayState = (playState) => {
 		if (playState) {
-			// In-game
+			// Start game
 			if (playState.inGame) {
 				this.game.start();
 				this.game.doMoves(playState.moves);
 			}
 
+			// Update state
 			this.setState({
 				gameList: playState.gameList,
 				inGame: playState.inGame,
@@ -82,12 +72,18 @@ class GamePage extends React.Component {
 			});
 		}
 	};
-
-	onCreateGameWhite = () => this.onCreateGame('white');
-	onCreateGameBlack = () => this.onCreateGame('black');
-	onCreateGameDefer = () => this.onCreateGame('defer');
-
-	onCreateGame = (team = 'defer') => {
+	getPlayState = () => {
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
+			this.user.getIdToken()
+				.then((token) =>
+					api.getPlayState(token)
+						.then((res) => this.setPlayState(res.data))
+						.catch((err) => alert(err.message))
+						.finally(() => this.setState({ loadingPlay: false })));
+		}
+	};
+	createGame = (team = 'defer') => {
 		if (this.user) {
 			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
@@ -98,7 +94,7 @@ class GamePage extends React.Component {
 						.finally(() => this.setState({ loadingPlay: false })));
 		}
 	};
-	onJoinButton = (gid, team) => {
+	joinGame = (gid, team) => {
 		if (this.user) {
 			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
@@ -109,21 +105,7 @@ class GamePage extends React.Component {
 						.finally(() => this.setState({ loadingPlay: false })));
 		}
 	};
-
-	setHistoryState = () => this.setState({ historyPosition: this.game.movesAwayFromPresent });
-	onShowPrevious = () => {
-		this.game.backOneMove();
-		this.setHistoryState();
-	};
-	onShowNext = () => {
-		this.game.forwardOneMove();
-		this.setHistoryState();
-	};
-	onShowPresent = () => {
-		this.game.jumpToPresent();
-		this.setHistoryState();
-	};
-	onLeaveGame = () => {
+	leaveGame = () => {
 		if (this.user) {
 			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
@@ -133,6 +115,20 @@ class GamePage extends React.Component {
 						.catch((err) => alert(err.message))
 						.finally(() => this.setState({ loadingPlay: false })));
 		}
+	};
+
+	setHistoryState = () => this.setState({ historyPosition: this.game.movesAwayFromPresent });
+	showPrevious = () => {
+		this.game.backOneMove();
+		this.setHistoryState();
+	};
+	showNext = () => {
+		this.game.forwardOneMove();
+		this.setHistoryState();
+	};
+	showPresent = () => {
+		this.game.jumpToPresent();
+		this.setHistoryState();
 	};
 
 	onClickCanvas = () => {
@@ -186,11 +182,11 @@ class GamePage extends React.Component {
 			<div align='center'>
 				<div style={{ display: displayGameList }}>
 					<h1>Game List</h1>
-					<Button onClick={() => this.onCreateGame('white')}>Create game as white</Button>
-					<Button onClick={() => this.onCreateGame('black')}>Create game as black</Button>
-					<Button onClick={() => this.onCreateGame('defer')}>Create game and defer</Button>
+					<Button onClick={() => this.createGame('white')}>Create game as white</Button>
+					<Button onClick={() => this.createGame('black')}>Create game as black</Button>
+					<Button onClick={() => this.createGame('defer')}>Create game and defer</Button>
 					<GameList gameList={this.state.gameList}
-						joinGameCallback={this.onJoinButton} />
+						joinGameCallback={this.joinGame} />
 				</div>
 				<div style={{ display: displayGame }}>
 					<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
@@ -200,9 +196,9 @@ class GamePage extends React.Component {
 					<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 					<div style={{ visibility: gameControlsVisibility }}>
-						<Button onClick={this.onShowPrevious} style={{ visibility: lastMoveVisibility }}>Back</Button>
-						<Button onClick={this.onShowNext} style={{ visibility: nextMoveVisibility }}>Forward</Button>
-						<Button onClick={this.onShowPresent} style={{ visibility: nextMoveVisibility }}>Now</Button><br />
+						<Button onClick={this.showPrevious} style={{ visibility: lastMoveVisibility }}>Back</Button>
+						<Button onClick={this.showNext} style={{ visibility: nextMoveVisibility }}>Forward</Button>
+						<Button onClick={this.showPresent} style={{ visibility: nextMoveVisibility }}>Now</Button><br />
 						<p style={{ visibility: nextMoveVisibility }}>Moves back: {this.state.historyPosition}</p>
 						<table style={{ width: '300px' }}>
 							<tr><th>Your time</th><th>Their time</th></tr>
@@ -211,7 +207,7 @@ class GamePage extends React.Component {
 						<p>My team: {myTeamText}</p>
 					</div>
 
-					<Button onClick={this.onLeaveGame}>Quit</Button>
+					<Button onClick={this.leaveGame}>Quit</Button>
 				</div>
 			</div >
 		);

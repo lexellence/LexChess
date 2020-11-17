@@ -1,4 +1,4 @@
-import { PieceTypes, TeamNames } from './Game';
+import { PieceTypes, TeamNames } from './ChessGameFrontend';
 const dir = 'images/';
 const imageSources = [
 	dir + 'chessboard/chessboard.png',

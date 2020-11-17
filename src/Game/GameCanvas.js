@@ -1,6 +1,6 @@
 import React from 'react';
 import GameImages from './GameImages';
-import { PieceTypes } from './Game';
+import { PieceTypes } from './ChessGameFrontend';
 
 class GameCanvas extends React.Component {
 	loading = true;

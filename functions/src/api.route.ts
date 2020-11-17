@@ -1,16 +1,13 @@
-"use strict";
-const express = require("express");
-const router = express.Router();
-const httpCodes = require("http-status-codes");
+import express from 'express';
+import httpCodes from 'http-status-codes';
+import { validateBody, schemas } from './validator';
+// import Joi from '@hapi/joi';
+// import to = require('await-to-js').default ;
+import admin from 'firebase-admin';
+import { ChessGameBackend, Team, chessMoveFromString } from './ChessGameBackend';
 
-const { validateBody, schemas } = require("./validator");
-const Joi = require("@hapi/joi");
-const to = require('await-to-js').default;
-
-var admin = require("firebase-admin");
-var db = admin.database();
-
-const { Game, PieceTypes, TeamNames } = require('./Game');
+const apiRouter = express.Router();
+const db = admin.database();
 
 //+------------------------\----------------------------------
 //|	 	 getGameList  	   | throws Errors
@@ -18,14 +15,14 @@ const { Game, PieceTypes, TeamNames } = require('./Game');
 //	
 //------------------------------------------------------------
 async function getGameList() {
-	let gameListSnapshot = await db.ref('games').once('value');
+	const gameListSnapshot = await db.ref('games').once('value');
 	if (!gameListSnapshot.exists)
 		return [];
-	let gameList = gameListSnapshot.val();
+	const gameList = gameListSnapshot.val();
 	if (!gameList)
 		return [];
-	let convertedGameList = Object.entries(gameList)
-		.map((game, i) => {
+	const convertedGameList = Object.entries(gameList)
+		.map((game: any, i) => {
 			return {
 				gid: game[0],
 				status: game[1].status,
@@ -34,7 +31,7 @@ async function getGameList() {
 				uid_defer: game[1].uid_defer,
 				display_name_white: game[1].display_name_white,
 				display_name_black: game[1].display_name_black,
-				display_name_defer: game[1].display_name_defer
+				display_name_defer: game[1].display_name_defer,
 			};
 		});
 	return convertedGameList;
@@ -45,13 +42,13 @@ async function getGameList() {
 //	If database user record not found, it is created.
 // 	Returns { userRef, user }
 //------------------------------------------------------------
-async function getUser(uid) {
-	let userRef = db.ref('users/' + uid);
-	let snapshot = await userRef.once('value');
+async function getUser(uid: string) {
+	const userRef = db.ref('users/' + uid);
+	const snapshot = await userRef.once('value');
 	let user = snapshot.val();
 	if (user === null) {
 		user = { gid: 0 };
-		userRef.set(user);
+		await userRef.set(user);
 	}
 	return { userRef: userRef, user: user };
 }
@@ -60,10 +57,10 @@ async function getUser(uid) {
 //\------------------------/
 // 	Returns { gameRef, game }
 //------------------------------------------------------------
-async function getGame(gid) {
-	let gameRef = db.ref('games/' + gid);
-	let snapshot = await gameRef.once('value');
-	let game = snapshot.val();
+async function getGame(gid: string) {
+	const gameRef = db.ref('games/' + gid);
+	const snapshot = await gameRef.once('value');
+	const game = snapshot.val();
 	return { gameRef: gameRef, game: game };
 }
 //+------------------------\----------------------------------
@@ -75,8 +72,8 @@ async function getGame(gid) {
 //	team: white, black, defer, observe
 //	moves: array of 'nnnnp' formatted moves (if ingame)
 //------------------------------------------------------------
-async function getUserPlayState(uid) {
-	let userPlayObject = {
+async function getUserPlayState(uid: string) {
+	const userPlayObject = {
 		gameList: await getGameList(),
 		inGame: false,
 		gameStatus: '',
@@ -84,12 +81,12 @@ async function getUserPlayState(uid) {
 		displayNameWhite: '',
 		displayNameBlack: '',
 		displayNameDefer: '',
-		moves: []
+		moves: [],
 	};
 
-	let { userRef, user } = await getUser(uid);
+	const { userRef, user } = await getUser(uid);
 	if (user.gid) {
-		let { gameRef, game } = await getGame(user.gid);
+		const { game } = await getGame(user.gid);
 		if (game) {
 			// Status
 			userPlayObject.inGame = true;
@@ -127,21 +124,14 @@ async function getUserPlayState(uid) {
 //		If true, get isWhite, isWaiting.
 //				If !isWaiting, get moves[].
 //------------------------------------------------------------
-router.get("/get-play-state", async (req, res) => {
-	let { uid } = req.decodedClaims;
+apiRouter.get("/get-play-state", async (req: any, res: any) => {
+	const { uid } = req.decodedClaims;
 
-	try {
-		console.log('***** Getting User PlayState *****');
-		let userPlayState = await getUserPlayState(uid);
-		console.log(userPlayState);
-		res.status(httpCodes.OK).json(userPlayState);
-		return;
-	}
-	catch (err) {
-		console.log(err.message);
-		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-		return;
-	}
+	console.log('***** Getting User PlayState *****');
+	const userPlayState = await getUserPlayState(uid);
+	console.log(userPlayState);
+	res.status(httpCodes.OK).json(userPlayState);
+	return;
 });
 //+------------------------------\----------------------------
 //|	  POST /create-game/:team    | 
@@ -149,18 +139,18 @@ router.get("/get-play-state", async (req, res) => {
 //	starts game as :team = 'white' or 'black'
 //	Any other values of :team will defer team choice
 //------------------------------------------------------------
-router.post("/create-game/:team", async (req, res) => {
-	let { uid, name } = req.decodedClaims;
-	let isWhite = (req.params.team === 'white');
-	let isBlack = (req.params.team === 'black');
+apiRouter.post("/create-game/:team", async (req: any, res: any) => {
+	const { uid, name } = req.decodedClaims;
+	const isWhite = (req.params.team === 'white');
+	const isBlack = (req.params.team === 'black');
 
 	try {
-		let { userRef, user } = await getUser(uid);
+		const { userRef, user } = await getUser(uid);
 		if (user.gid)
 			throw new Error('User already in game');
 
 		// New game
-		let game = {
+		const game = {
 			status: 'waiting',
 			uid_white: isWhite ? uid : 0,
 			uid_black: isBlack ? uid : 0,
@@ -168,15 +158,15 @@ router.post("/create-game/:team", async (req, res) => {
 			display_name_white: isWhite ? name : '',
 			display_name_black: isBlack ? name : '',
 			display_name_defer: (!isWhite && !isBlack) ? name : '',
-			moves: []
+			moves: [],
 		};
 
 		console.log('***** Game Created *****');
 		console.log(game);
-		let gameRef = await db.ref('games').push(game);
+		const gameRef = await db.ref('games').push(game);
 
 		// Update user's gid
-		let gameSnapshot = await gameRef.once('value');
+		const gameSnapshot = await gameRef.once('value');
 		await userRef.update({ gid: gameSnapshot.key });
 
 		res.status(httpCodes.OK).json(await getUserPlayState(uid));
@@ -193,24 +183,23 @@ router.post("/create-game/:team", async (req, res) => {
 //\------------------------/
 //
 //------------------------------------------------------------
-router.put("/join-game/:gid/:team", async (req, res) => {
-	let { uid, name } = req.decodedClaims;
-	let { gid, team } = req.params;
+apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
+	const { uid, name } = req.decodedClaims;
+	const { gid, team } = req.params;
 	try {
-		let { userRef, user } = await getUser(uid);
-		let movesStub = ['3133', '4644', '3344p', '6755', '4455k', '6655p'];
+		const { userRef, user } = await getUser(uid);
 
 		// Can't join if you're already in a game
 		if (user.gid)
 			throw new Error('User already in game.');
 
 		// Find game
-		let { gameRef, game } = await getGame(gid);
+		const { gameRef, game } = await getGame(gid);
 		if (!game)
 			throw new Error('Game not found.');
 
 		// Add game to user
-		let promises = [];
+		const promises = [];
 		promises.push(userRef.update({ gid: gid }));
 
 		// Add user to game
@@ -218,7 +207,7 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 			if (team === 'white') {
 				if (!game.uid_white) {
 					// Join white team
-					promises.push(gameRef.update({ status: 'playing', uid_white: uid, display_name_white: name, moves: movesStub }));
+					promises.push(gameRef.update({ status: 'playing', uid_white: uid, display_name_white: name }));
 
 					// Move defer player to black
 					if (game.uid_defer) {
@@ -226,7 +215,7 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 							uid_black: game.uid_defer,
 							display_name_black: game.display_name_defer,
 							uid_defer: 0,
-							display_name_defer: ''
+							display_name_defer: '',
 						}));
 					}
 				}
@@ -234,7 +223,7 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 			else if (team === 'black') {
 				if (!game.uid_black) {
 					// Join black team
-					promises.push(gameRef.update({ status: 'playing', uid_black: uid, display_name_black: name, moves: movesStub }));
+					promises.push(gameRef.update({ status: 'playing', uid_black: uid, display_name_black: name }));
 
 					// Move defer player to white
 					if (game.uid_defer) {
@@ -242,7 +231,7 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 							uid_white: game.uid_defer,
 							display_name_white: game.display_name_defer,
 							uid_defer: 0,
-							display_name_defer: ''
+							display_name_defer: '',
 						}));
 					}
 				}
@@ -258,72 +247,121 @@ router.put("/join-game/:gid/:team", async (req, res) => {
 	}
 });
 //+------------------------\----------------------------------
-//|	      PUT /move        |
-//\------------------------/
-//
-//------------------------------------------------------------
-router.put("/move", validateBody(schemas.move), async (req, res) => {
-	let uid = req.decodedClaims.uid;
-
-});
-//+------------------------\----------------------------------
 //|	   PUT /leave-game     |
 //\------------------------/
 //
 //------------------------------------------------------------
-router.put("/leave-game", async (req, res) => {
-	let uid = req.decodedClaims.uid;
+apiRouter.put("/leave-game", async (req: any, res: any) => {
+	const { uid } = req.decodedClaims;
 
-	try {
-		// Get user info
-		let { userRef, user } = await getUser(uid);
-		if (!user.gid) {
-			res.sendStatus(httpCodes.OK);
-			return;
-		}
+	// Get user info
+	const { userRef, user } = await getUser(uid);
 
+	// If user in a game
+	if (user.gid) {
 		// Get game
-		let { gameRef, game } = await getGame(user.gid);
+		const { gameRef, game } = await getGame(user.gid);
 
 		// Game not found
-		if (!game) {
+		if (!game)
 			await userRef.update({ gid: 0 });
-			res.sendStatus(httpCodes.OK);
+		else {
+			// Game found, leave game
+			const promises = [];
+			{
+				// Delete game not yet started, if user is a player
+				const userIsPlayer = (uid === game.uid_white || uid === game.uid_black || uid === game.uid_defer);
+				if (game.status === 'waiting' && userIsPlayer)
+					promises.push(gameRef.remove());
+
+				// Concede defeat if user is one of the players
+				else if (game.status === 'playing') {
+					if (uid === game.uid_white)
+						promises.push(gameRef.update({ status: 'concede_white', uid_winner: game.uid_black, display_name_winner: game.display_name_black }));
+					else if (uid === game.uid_black)
+						promises.push(gameRef.update({ status: 'concede_black', uid_winner: game.uid_white, display_name_winner: game.display_name_white }));
+				}
+
+				// Remove game from user
+				promises.push(userRef.update({ gid: 0 }));
+			}
+			await Promise.all(promises);
+		}
+	}
+
+	res.status(httpCodes.OK).json(await getUserPlayState(uid));
+	return;
+});
+//+------------------------\----------------------------------
+//|	      PUT /move        |
+//\------------------------/
+//
+//------------------------------------------------------------
+apiRouter.put("/move", validateBody(schemas.move), async (req: any, res: any) => {
+	const { uid } = req.decodedClaims;
+	const move = req.body;
+	// Get user info
+	const { userRef, user } = await getUser(uid);
+
+	// If user in a game
+	if (user.gid) {
+		// Get game
+		const { gameRef, game } = await getGame(user.gid);
+
+		if (!game) {
+			// Game not found
+			await userRef.update({ gid: 0 });
+			res.status(httpCodes.CONFLICT).send("Cannot move: game not found -- removing game reference from user");
 			return;
 		}
 
-		// Leave the game
-		let promises = [];
-		{
-			// Delete game not yet started, if user is a player
-			let userIsPlayer = (uid === game.uid_white || uid === game.uid_black || uid === game.uid_defer);
-			if (game.status === 'waiting' && userIsPlayer)
-				promises.push(gameRef.remove());
-
-			// Concede defeat if user is one of the players
-			else if (game.status === 'playing') {
-				if (uid === game.uid_white)
-					promises.push(gameRef.update({ status: 'concede_white', uid_winner: game.uid_black, display_name_winner: game.display_name_black }));
-				else if (uid === game.uid_black)
-					promises.push(gameRef.update({ status: 'concede_black', uid_winner: game.uid_white, display_name_winner: game.display_name_white }));
-			}
-
-			// Remove game from user
-			promises.push(userRef.update({ gid: 0 }));
+		if (game.status !== 'playing') {
+			// Game over
+			res.status(httpCodes.CONFLICT).send("Cannot move: game finished");
+			return;
 		}
-		await Promise.all(promises);
 
-		res.status(httpCodes.OK).json(await getUserPlayState(uid));
-		return;
-	}
-	catch (err) {
-		console.log(err.message);
-		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
-		return;
+		// Determine user's team
+		let team = Team.NONE;
+		if (uid === game.uid_white)
+			team = Team.WHITE;
+		else if (uid === game.uid_black)
+			team = Team.BLACK;
+		else {
+			// Not playing
+			res.status(httpCodes.CONFLICT).send("Cannot move: user not playing");
+			return;
+		}
+
+		const chessGame = new ChessGameBackend();
+		chessGame.doMoveHistory(game.moves);
+		if (team !== game.turnTeam) {
+			// Not user's turn
+			res.status(httpCodes.CONFLICT).send("Cannot move: not user's turn");
+			return;
+		}
+
+		if (!chessGame.isValidMove(chessMoveFromString(move))) {
+			// Illegal move
+			res.status(httpCodes.CONFLICT).send("Illegal move: " + move);
+			return;
+		}
+
+		// Make move
+		gameRef.child('moves').push(move, async (err) => {
+			if (err) {
+				// Move failed
+				console.log(err.message);
+				res.status(httpCodes.INTERNAL_SERVER_ERROR).send(err);
+				return;
+			}
+			else {
+				// Move successful
+				res.status(httpCodes.OK).json(await getUserPlayState(uid));
+				return;
+			}
+		});
 	}
 });
 
-module.exports = router;
-
-
-
+module.exports = apiRouter;
