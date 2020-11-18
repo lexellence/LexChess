@@ -1,6 +1,6 @@
 import { PieceType, Team } from './Chess';
 const dir = 'images/';
-const imageSources = [
+const imageSources: string[] = [
 	dir + 'chessboard/chessboard.png',
 	dir + 'white/white_king.png',
 	dir + 'white/white_queen.png',
@@ -16,12 +16,12 @@ const imageSources = [
 	dir + 'black/black_pawn.png'
 ];
 
-function loadImagesThen(sources, callback) {
+function loadImages(sources: string[], onLoadCompletion: () => void) {
 	let counter = 0;
 	let images = [];
 	function onLoad() {
 		counter++;
-		if (counter === sources.length) callback();
+		if (counter === sources.length) onLoadCompletion();
 	}
 	for (let source of sources) {
 		let img = new Image();
@@ -33,19 +33,18 @@ function loadImagesThen(sources, callback) {
 };
 
 class GameImages {
-	constructor(callback) {
-		this.loading = true;
-		this.images = loadImagesThen(imageSources, () => {
+	loading = true;
+	images: HTMLImageElement[] = [];
+	constructor(onLoadCompletion: () => void) {
+		this.images = loadImages(imageSources, () => {
 			this.loading = false;
-			callback();
+			onLoadCompletion();
 		});
 	}
-	getBoardImage = () => {
-		if (this.loading)
-			return null;
+	getBoardImage = (): null | HTMLImageElement => {
 		return this.images[0];
 	};
-	getPieceImage = (team, type) => {
+	getPieceImage = (team: Team, type: PieceType): null | HTMLImageElement => {
 		if (this.loading)
 			return null;
 		switch (type) {

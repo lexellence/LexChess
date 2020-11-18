@@ -2,18 +2,18 @@ import React from 'react';
 import GameImages from './GameImages';
 import { ChessGame, ChessPosition, PieceType } from './Chess';
 
-interface Props {
+interface GameCanvasProps {
 	width: number;
 	height: number;
 	onClick: () => void;
 }
 
-interface State {
+interface GameCanvasState {
 	loading: boolean;
 }
 
-class GameCanvas extends React.Component<Props, State> {
-	state: State = {
+class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
+	state: GameCanvasState = {
 		loading: true
 	};
 	images: GameImages = new GameImages(() => {
