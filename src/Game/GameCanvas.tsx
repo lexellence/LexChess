@@ -1,35 +1,47 @@
 import React from 'react';
 import GameImages from './GameImages';
-import { PieceTypes } from './ChessGameFrontend';
+import { ChessGame, ChessPosition, PieceType } from './Chess';
 
-class GameCanvas extends React.Component {
-	loading = true;
-	savedDraw = null;
-	componentDidMount = () => {
-		// Load images
-		this.images = new GameImages(() => {
-			this.loading = false;
-			if (this.savedDraw) {
-				this.savedDraw();
-				this.savedDraw = null;
-			}
-		});
+interface Props {
+	width: number;
+	height: number;
+	onClick: () => void;
+}
 
+interface State {
+	loading: boolean;
+}
 
-		this.refs.gameBoard.addEventListener('mousedown', this.props.onClick, false);
+class GameCanvas extends React.Component<Props, State> {
+	state: State = {
+		loading: true
 	};
-	draw = (game) => {
-		if (this.loading) {
+	images: GameImages = new GameImages(() => {
+		this.setState({ loading: false });
+		this.savedDraw();
+		this.savedDraw = () => { };
+
+	});
+	gameBoard = React.createRef<HTMLCanvasElement>();
+	savedDraw = () => { };
+
+	componentDidMount() {
+		// Load images
+
+		this.gameBoard.current!.addEventListener('mousedown', this.props.onClick, false);
+	};
+	draw(game: ChessGame): void {
+		if (this.state.loading) {
 			this.savedDraw = () => {
 				this.draw(game);
 			};
 			return;
 		}
-		if (!this.refs.gameBoard || !this.refs.gameBoard.getContext)
+		if (!this.gameBoard.current || !this.gameBoard.current.getContext)
 			return;
 
 		// Save drawing context
-		const ctx = this.refs.gameBoard.getContext('2d', { alpha: true });
+		const ctx = this.gameBoard.current.getContext('2d', { alpha: true });
 		if (!ctx)
 			return;
 
@@ -52,23 +64,26 @@ class GameCanvas extends React.Component {
 		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
 		// Draw checkerboard
-		if (!this.loading && !this.images.loading)
-			ctx.drawImage(this.images.getBoardImage(), boardImageX, boardImageY, boardImageSize, boardImageSize);
+		const boardImage = this.images.getBoardImage();
+		if (boardImage)
+			ctx.drawImage(boardImage, boardImageX, boardImageY, boardImageSize, boardImageSize);
 
 		// Draw canvas border
 		ctx.strokeStyle = "black";
 		ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
 
 		// Draw game pieces
-		if (this.loading || !game)
+		if (this.state.loading || !game)
 			return;
 		for (let col = 0; col < 8; col++)
 			for (let row = 0; row < 8; row++) {
 				// If position has a piece
-				const type = game.getPieceType(col, row);
-				if (type !== PieceTypes.EMPTY) {
+				const position = new ChessPosition(col, row);
+				const type = game.pieceAt(position).type;
+				if (type !== PieceType.NONE) {
 					// Get piece image
-					const image = this.images.getPieceImage(game.getPieceTeam(col, row), type);
+					const team = game.pieceAt(position).team;
+					const image = this.images.getPieceImage(team, type);
 					if (image) {
 						// Calculate position
 						const boardStartX = boardImageX + boardMargin;
@@ -83,8 +98,9 @@ class GameCanvas extends React.Component {
 			}
 	};
 	render() {
+		const { width, height } = this.props;
 		return (
-			<canvas ref='gameBoard' width={this.props.width} height={this.props.height}>Canvas tag not supported.</canvas>
+			<canvas ref={this.gameBoard} width={width} height={height}>Canvas tag not supported.</canvas>
 		);
 	}
 }

@@ -6,7 +6,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import Game, { /*PieceTypes,*/ TeamNames } from './ChessGameFrontend';
+import { ChessGame, Team } from './Chess';
 import GameCanvas from './GameCanvas';
 import GameList from './GameList';
 import * as api from '../api';
@@ -30,12 +30,12 @@ class GamePage extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
-		this.game = new Game();
+		this.game = new ChessGame();
 		this.user = null;
 	}
 
-	componentDidMount = () => {
-		const onSignIn = authUser => {
+	componentDidMount() {
+		const onSignIn = (authUser) => {
 			this.user = authUser;
 			this.getPlayState();
 		};
@@ -45,9 +45,11 @@ class GamePage extends React.Component {
 		};
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 	};
-	componentWillUnmount = () => this.unregisterAuthListener();
+	componentWillUnmount() {
+		this.unregisterAuthListener();
+	}
 
-	componentDidUpdate = () => {
+	componentDidUpdate() {
 		if (this.refs.gameCanvas)
 			this.refs.gameCanvas.draw(this.game);
 	};
@@ -57,7 +59,7 @@ class GamePage extends React.Component {
 			// Start game
 			if (playState.inGame) {
 				this.game.start();
-				this.game.doMoves(playState.moves);
+				this.game.doMoveHistory(playState.moves);
 			}
 
 			// Update state
@@ -83,7 +85,7 @@ class GamePage extends React.Component {
 						.finally(() => this.setState({ loadingPlay: false })));
 		}
 	};
-	createGame = (team = 'defer') => {
+	createGame = (team) => {
 		if (this.user) {
 			this.setState({ ...INITIAL_STATE });
 			this.user.getIdToken()
@@ -116,8 +118,21 @@ class GamePage extends React.Component {
 						.finally(() => this.setState({ loadingPlay: false })));
 		}
 	};
+	move = () => {
+		if (this.user) {
+			this.setState({ ...INITIAL_STATE });
+			this.user.getIdToken()
+				.then(token =>
+					api.leaveGame(token)
+						.then((res) => this.setPlayState(res.data))
+						.catch((err) => alert(err.message))
+						.finally(() => this.setState({ loadingPlay: false })));
+		}
+	};
 
-	setHistoryState = () => this.setState({ historyPosition: this.game.movesAwayFromPresent });
+	setHistoryState = () => {
+		this.setState({ historyPosition: this.game.movesAwayFromPresent });
+	};
 	showPrevious = () => {
 		this.game.backOneMove();
 		this.setHistoryState();
@@ -173,8 +188,8 @@ class GamePage extends React.Component {
 		const gameTitleVisibility = 'visible';
 		const gameControlsVisibility = !isWaiting ? 'visible' : 'hidden';
 
-		const blackTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === TeamNames.BLACK ? 'visible' : 'hidden';
-		const whiteTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === TeamNames.WHITE ? 'visible' : 'hidden';
+		const blackTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === Team.BLACK ? 'visible' : 'hidden';
+		const whiteTurnTextVisibility = this.state.gameStatus === 'playing' && this.game.turnTeam === Team.WHITE ? 'visible' : 'hidden';
 		const lastMoveVisibility = this.game.hasMoreHistory() ? 'visible' : 'hidden';
 		const nextMoveVisibility = !this.game.isOnCurrentMove() ? 'visible' : 'hidden';
 

@@ -1,10 +1,8 @@
 import express from 'express';
 import httpCodes from 'http-status-codes';
 import { validateBody, schemas } from './validator';
-// import Joi from '@hapi/joi';
-// import to = require('await-to-js').default ;
 import admin from 'firebase-admin';
-import { ChessGameBackend, Team, chessMoveFromString } from './ChessGameBackend';
+import { ChessGame, Team, chessMoveFromString } from './Chess';
 
 const apiRouter = express.Router();
 const db = admin.database();
@@ -333,7 +331,7 @@ apiRouter.put("/move", validateBody(schemas.move), async (req: any, res: any) =>
 			return;
 		}
 
-		const chessGame = new ChessGameBackend();
+		const chessGame = new ChessGame();
 		chessGame.doMoveHistory(game.moves);
 		if (team !== game.turnTeam) {
 			// Not user's turn

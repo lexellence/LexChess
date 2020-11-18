@@ -1,4 +1,4 @@
-const enum PieceType {
+enum PieceType {
 	KING,
 	QUEEN,
 	BISHOP,
@@ -7,7 +7,7 @@ const enum PieceType {
 	PAWN,
 	NONE,
 };
-const enum Team {
+enum Team {
 	WHITE,
 	BLACK,
 	NONE,
@@ -64,7 +64,7 @@ class ChessPiece {
 		this.type = PieceType.NONE;
 	}
 }
-class ChessGameBackend {
+class ChessGame {
 	movesAwayFromPresent: number = 0;
 	history: ChessMove[] = [];
 	turnTeam: Team = Team.WHITE;
@@ -141,7 +141,7 @@ class ChessGameBackend {
 	}
 	moveUndo(move: ChessMove) {
 		// Determine teams
-		const movingTeam = this.colRowGrid[move.source.col][move.source.row].team;
+		const movingTeam = this.pieceAt(move.dest).team;
 		const nonMovingTeam = otherTeam(movingTeam);
 		if (nonMovingTeam !== this.turnTeam)
 			throw new Error("Tried to undo move for team that did not make the last move");
@@ -160,7 +160,7 @@ class ChessGameBackend {
 	};
 	moveRedo(move: ChessMove) {
 		// Determine teams
-		const movingTeam = this.colRowGrid[move.source.col][move.source.row].team;
+		const movingTeam = this.pieceAt(move.source).team;
 		if (movingTeam !== this.turnTeam)
 			throw new Error("Tried to redo move for team when it's not their turn");
 
@@ -234,4 +234,4 @@ class ChessGameBackend {
 // 	return game.isValidMove(chessMoveFromString(nextMove));
 // }
 
-export { ChessGameBackend, Team, chessMoveFromString };
+export { ChessGame, Team, PieceType, ChessPiece, ChessPosition, chessMoveFromString };

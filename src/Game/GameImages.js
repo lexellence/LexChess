@@ -1,4 +1,4 @@
-import { PieceTypes, TeamNames } from './ChessGameFrontend';
+import { PieceType, Team } from './Chess';
 const dir = 'images/';
 const imageSources = [
 	dir + 'chessboard/chessboard.png',
@@ -49,18 +49,18 @@ class GameImages {
 		if (this.loading)
 			return null;
 		switch (type) {
-			case PieceTypes.KING:
-				return (team === TeamNames.WHITE) ? this.images[1] : this.images[7];
-			case PieceTypes.QUEEN:
-				return (team === TeamNames.WHITE) ? this.images[2] : this.images[8];
-			case PieceTypes.BISHOP:
-				return (team === TeamNames.WHITE) ? this.images[3] : this.images[9];
-			case PieceTypes.KNIGHT:
-				return (team === TeamNames.WHITE) ? this.images[4] : this.images[10];
-			case PieceTypes.ROOK:
-				return (team === TeamNames.WHITE) ? this.images[5] : this.images[11];
-			case PieceTypes.PAWN:
-				return (team === TeamNames.WHITE) ? this.images[6] : this.images[12];
+			case PieceType.KING:
+				return (team === Team.WHITE) ? this.images[1] : this.images[7];
+			case PieceType.QUEEN:
+				return (team === Team.WHITE) ? this.images[2] : this.images[8];
+			case PieceType.BISHOP:
+				return (team === Team.WHITE) ? this.images[3] : this.images[9];
+			case PieceType.KNIGHT:
+				return (team === Team.WHITE) ? this.images[4] : this.images[10];
+			case PieceType.ROOK:
+				return (team === Team.WHITE) ? this.images[5] : this.images[11];
+			case PieceType.PAWN:
+				return (team === Team.WHITE) ? this.images[6] : this.images[12];
 			default:
 				return null;
 		}
