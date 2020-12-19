@@ -21,10 +21,13 @@ function otherTeam(team: Team): Team {
 		return Team.NONE;
 }
 
+function isValidPosition(col: number, row: number) {
+	return (col >= 0 && col <= 7 && row >= 0 && row <= 7);
+}
 class ChessPosition {
 	constructor(public col: number, public row: number) {
-		if (col < 0 || col > 7 || row < 0 || row > 7)
-			throw new Error('Invalid chess square')
+		if (!isValidPosition(col, row))
+			throw new Error('Tried to construct invalid chess position');
 	}
 }
 
@@ -49,9 +52,9 @@ class ChessMove {
 	constructor(public source: ChessPosition, public dest: ChessPosition, public capturedPieceType: PieceType) { }
 }
 
-class ChessPiece {
+class ChessBoardSquare {
 	constructor(public team: Team, public type: PieceType) { }
-	copyFrom(other: ChessPiece) {
+	copyFrom(other: ChessBoardSquare) {
 		this.team = other.team;
 		this.type = other.type;
 	}
@@ -64,12 +67,21 @@ class ChessPiece {
 		this.type = PieceType.NONE;
 	}
 }
+function canLandOnSquare(square: ChessBoardSquare, movingTeam: Team): boolean {
+	if (movingTeam === Team.NONE)
+		return false;
+	if (square.type === PieceType.NONE)
+		return true;
+	if (square.team === otherTeam(movingTeam))
+		return true;
+	return false;
+}
 class ChessGame {
 	movesAwayFromPresent: number = 0;
 	history: ChessMove[] = [];
 	turnTeam: Team = Team.WHITE;
 	winnerTeam: Team = Team.NONE;
-	colRowGrid: ChessPiece[][] = [];
+	colRowGrid: ChessBoardSquare[][] = [];
 	constructor() {
 		this.start()
 	}
@@ -80,11 +92,11 @@ class ChessGame {
 		this.winnerTeam = Team.NONE;
 
 		// Create empty grid
-		this.colRowGrid = new Array<Array<ChessPiece>>();
+		this.colRowGrid = new Array<Array<ChessBoardSquare>>();
 		for (let col = 0; col <= 7; col++) {
-			const newCol: ChessPiece[] = new Array<ChessPiece>();
+			const newCol: ChessBoardSquare[] = new Array<ChessBoardSquare>();
 			for (let row = 0; row <= 7; row++)
-				newCol.push(new ChessPiece(Team.NONE, PieceType.NONE));
+				newCol.push(new ChessBoardSquare(Team.NONE, PieceType.NONE));
 			this.colRowGrid.push(newCol);
 		}
 
@@ -112,7 +124,7 @@ class ChessGame {
 		for (let col = 0; col <= 7; col++)
 			this.colRowGrid[col][6].set(Team.BLACK, PieceType.PAWN)
 	}
-	pieceAt(pos: ChessPosition): ChessPiece {
+	getSquare(pos: ChessPosition): ChessBoardSquare {
 		return this.colRowGrid[pos.col][pos.row];
 	}
 	hasMoreHistory() {
@@ -141,32 +153,32 @@ class ChessGame {
 	}
 	moveUndo(move: ChessMove) {
 		// Determine teams
-		const movingTeam = this.pieceAt(move.dest).team;
+		const movingTeam = this.getSquare(move.dest).team;
 		const nonMovingTeam = otherTeam(movingTeam);
 		if (nonMovingTeam !== this.turnTeam)
 			throw new Error("Tried to undo move for team that did not make the last move");
 
 		// Move piece
-		this.pieceAt(move.source).copyFrom(this.pieceAt(move.dest));
+		this.getSquare(move.source).copyFrom(this.getSquare(move.dest));
 
 		// Replace captured piece, if there is one
 		if (move.capturedPieceType === PieceType.NONE)
-			this.pieceAt(move.dest).clear();
+			this.getSquare(move.dest).clear();
 		else
-			this.pieceAt(move.dest).set(nonMovingTeam, move.capturedPieceType);
+			this.getSquare(move.dest).set(nonMovingTeam, move.capturedPieceType);
 
 		// Change turn
 		this.turnTeam = movingTeam;
 	};
 	moveRedo(move: ChessMove) {
 		// Determine teams
-		const movingTeam = this.pieceAt(move.source).team;
+		const movingTeam = this.getSquare(move.source).team;
 		if (movingTeam !== this.turnTeam)
 			throw new Error("Tried to redo move for team when it's not their turn");
 
 		// Move piece
-		this.pieceAt(move.dest).copyFrom(this.pieceAt(move.source));
-		this.pieceAt(move.source).clear();
+		this.getSquare(move.dest).copyFrom(this.getSquare(move.source));
+		this.getSquare(move.source).clear();
 
 		this.turnTeam = otherTeam(movingTeam);
 	};
@@ -174,23 +186,95 @@ class ChessGame {
 	// moveExposesKing(fromCol, fromRow, toCol, toRow) {
 	// 	return false;
 	// }
-	getValidMoves(source: ChessPosition): ChessPosition[] {
-		const validMoves: ChessPosition[] = [];
+	wasLastMovePawnDoubleStepTo(position: ChessPosition): boolean {
+		if (this.history.length === 0)
+			return false;
+		const lastMove: ChessMove = this.history[this.history.length - 1];
 
-		return validMoves;
 	}
+
+	getReachableDestinations(sourcePosition: ChessPosition): ChessPosition[] {
+		let reachableDestinations: ChessPosition[] = [];
+		let potentialDestinations: ChessPosition[] = [];
+
+		const sourcePiece: ChessBoardSquare = this.getSquare(sourcePosition);
+		const sourceTeam: Team = sourcePiece.team;
+		const sourceType: PieceType = sourcePiece.type;
+		if (sourceTeam === Team.NONE || sourceType === PieceType.NONE)
+			return reachableDestinations;
+
+		const sourceCol = sourcePosition.col;
+		const sourceRow = sourcePosition.row;
+		let col: number;
+		let row: number;
+		const ONE_ROW_FORWARD = (sourceTeam === Team.WHITE) ? 1 : -1;
+		const ONE_COL_RIGHT = (sourceTeam === Team.WHITE) ? 1 : -1;
+
+		switch (sourceType) {
+			case PieceType.PAWN:
+
+				// Move forward
+				col = sourceCol;
+				row = sourceRow + ONE_ROW_FORWARD;
+				if (isValidPosition(col, row)) {
+					const dest = new ChessPosition(col, row);
+					if (canLandOnSquare(this.getSquare(dest), sourceTeam))
+						potentialDestinations.push();
+				}
+
+				// Capture right
+				col = sourceCol + ONE_COL_RIGHT;
+				row = sourceRow + ONE_ROW_FORWARD;
+				if (isValidPosition(col, row)) {
+					const dest = new ChessPosition(col, row);
+					if (canLandOnSquare(this.getSquare(dest), sourceTeam))
+						potentialDestinations.push();
+				}
+
+				// Capture left
+				col = sourceCol - ONE_COL_RIGHT;
+				row = sourceRow + ONE_ROW_FORWARD;
+				if (isValidPosition(col, row)) {
+					const dest = new ChessPosition(col, row);
+					if (canLandOnSquare(this.getSquare(dest), sourceTeam))
+						potentialDestinations.push();
+				}
+
+
+				break;
+			case PieceType.ROOK:
+				break;
+			case PieceType.KNIGHT:
+				break;
+			case PieceType.BISHOP:
+				break;
+			case PieceType.QUEEN:
+				break;
+			case PieceType.KING:
+				break;
+			default:
+				break;
+		}
+
+
+		return reachableDestinations;
+	}
+
 	isValidMove(move: ChessMove): boolean {
-		// Empty source square
-		if (this.pieceAt(move.source).type === PieceType.NONE)
+		if (this.getSquare(move.source).type === PieceType.NONE) {
+			// Empty source square
 			return false;
+		}
 
-		// It's not this piece's team's turn
-		if (this.pieceAt(move.source).team !== this.turnTeam)
+		if (this.getSquare(move.source).team !== this.turnTeam) {
+			// It's not this piece's team's turn
 			return false;
+		}
 
-		// Captured piece is not on destination square
-		if (this.pieceAt(move.dest).type !== move.capturedPieceType)
+		if (this.getSquare(move.dest).type !== move.capturedPieceType) {
+			// Captured piece is not on destination square
 			return false;
+		}
 
 		// Piece can't move there
 		// if (!this.getValidMoves(move.source).includes(move.dest))
@@ -206,8 +290,8 @@ class ChessGame {
 			return false;
 
 		// Move
-		this.pieceAt(move.dest).copyFrom(this.pieceAt(move.source));
-		this.pieceAt(move.source).clear();
+		this.getSquare(move.dest).copyFrom(this.getSquare(move.source));
+		this.getSquare(move.source).clear();
 
 		// Record
 		this.history.push(move);
@@ -234,4 +318,4 @@ class ChessGame {
 // 	return game.isValidMove(chessMoveFromString(nextMove));
 // }
 
-export { ChessGame, Team, PieceType, ChessPiece, ChessPosition, chessMoveFromString };
+export { ChessGame, Team, PieceType, ChessBoardSquare as ChessPiece, ChessPosition, chessMoveFromString };
