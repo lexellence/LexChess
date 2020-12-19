@@ -79,10 +79,10 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 			for (let row = 0; row < 8; row++) {
 				// If position has a piece
 				const position = new ChessPosition(col, row);
-				const type = game.pieceAt(position).type;
+				const type = game.getSquare(position).type;
 				if (type !== PieceType.NONE) {
 					// Get piece image
-					const team = game.pieceAt(position).team;
+					const team = game.getSquare(position).team;
 					const image = this.images.getPieceImage(team, type);
 					if (image) {
 						// Calculate position

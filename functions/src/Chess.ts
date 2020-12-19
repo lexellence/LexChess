@@ -189,8 +189,10 @@ class ChessGame {
 	wasLastMovePawnDoubleStepTo(position: ChessPosition): boolean {
 		if (this.history.length === 0)
 			return false;
-		const lastMove: ChessMove = this.history[this.history.length - 1];
+		// const lastMove: ChessMove = this.history[this.history.length - 1];
 
+
+		return false;
 	}
 
 	getReachableDestinations(sourcePosition: ChessPosition): ChessPosition[] {
