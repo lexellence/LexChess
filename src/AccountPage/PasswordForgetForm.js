@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withFirebase } from '../Firebase';
 
 const INITIAL_STATE = {
@@ -7,7 +7,7 @@ const INITIAL_STATE = {
 	message: '',
 };
 
-class PasswordForgetForm extends Component {
+class PasswordForgetForm extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
@@ -33,9 +33,7 @@ class PasswordForgetForm extends Component {
 	};
 
 	render() {
-		const { email, error } = this.state;
-
-		const isInvalid = email === '';
+		const isInvalid = (this.state.email === '');
 
 		return (
 			<form onSubmit={this.onSubmit}>
@@ -47,8 +45,8 @@ class PasswordForgetForm extends Component {
 					placeholder="Email Address" />
 				<button disabled={isInvalid} type="submit">
 					Reset My Password
-        		</button>
-				{error && <p>{error.message}</p>}
+				</button>
+				{this.state.error && <p>{this.state.error.message}</p>}
 				{this.state.message && <p>{this.state.message}</p>}
 			</form>
 		);

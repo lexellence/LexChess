@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 
 import { withFirebase } from '../Firebase';
 
@@ -8,7 +8,7 @@ const INITIAL_STATE = {
 	message: '',
 };
 
-class DisplayNameChangeForm extends Component {
+class DisplayNameChangeForm extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
@@ -31,22 +31,20 @@ class DisplayNameChangeForm extends Component {
 	};
 
 	render() {
-		const { displayName, error } = this.state;
-		const isInvalid =
-			displayName === '';
+		const isInvalid = (this.state.displayName === '');
 
 		return (
 			<form onSubmit={this.onSubmit}>
 				<input
 					name="displayName"
-					value={displayName}
+					value={this.state.displayName}
 					onChange={this.onChange}
 					type="text"
 					placeholder="New Display Name" />
 				<button disabled={isInvalid} type="submit">
 					Change My Display Name
-        		</button>
-				{error && <span>{error.message}</span>}
+				</button>
+				{this.state.error && <span>{this.state.error.message}</span>}
 				{this.state.message && <span>{this.state.message}</span>}
 			</form>
 		);

@@ -1,4 +1,4 @@
-import Joi from '@hapi/joi';
+// import Joi from '@hapi/joi';
 import httpCodes from 'http-status-codes';
 import { NextFunction } from 'express';
 
@@ -20,14 +20,14 @@ export function validateBody(schema: any) {
 };
 export const schemas = {
 	// Sign-in, Sign-up input fields
-	auth: Joi.object({
-		// Email pattern
-		email: Joi.string().email().required(),
+	// auth: Joi.object({
+	// 	// Email pattern
+	// 	email: Joi.string().email().required(),
 
-		// 3-30 alphanumeric
-		password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
-	}),
+	// 	// 3-30 alphanumeric
+	// 	password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
+	// }),
 	// Chess move: string with 4 digits 0-7, plus optional piece-taken char
-	move: Joi.string().pattern(new RegExp('^[0-7]{4}[qbkrp]?$')).required(),
+	// move: Joi.string().pattern(new RegExp('^[0-7]{4}[qbkrp]?$')).required(),
 };
 

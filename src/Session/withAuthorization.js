@@ -1,6 +1,5 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import { compose } from 'recompose';
 
 import AuthUserContext from './AuthUserContext';
 import { withFirebase } from '../Firebase';
@@ -9,13 +8,14 @@ import * as ROUTES from '../constants/routes';
 //+----------------------\------------------------------------
 //|	 withAuthorization	 |
 //\----------------------/
-//	Wrap around other components to protect them from unauthorized users
+//	Wrap around other components to protect them from unauthorized users,
+//		who get redirected to sign-in page.
 //\-----------------------------------------------------------
-const withAuthorization = condition => Component => {
+const withAuthorization = (conditionFunc) => (Component) => {
 	class WithAuthorization extends React.Component {
 		componentDidMount() {
-			const onSignIn = authUser => {
-				if (!condition(authUser))
+			const onSignIn = (authUser) => {
+				if (!conditionFunc(authUser))
 					this.props.history.push(ROUTES.SIGN_IN);
 			};
 			const onSignOut = () =>
@@ -31,16 +31,14 @@ const withAuthorization = condition => Component => {
 			return (
 				<AuthUserContext.Consumer >
 					{authUser =>
-						condition(authUser) ? <Component {...this.props} /> : null
+						// conditionFunc(authUser) ? <Component {...this.props} /> : null
+						conditionFunc(authUser) ? <Component {...this.props} /> : <p>Not Authorized</p>
 					}
 				</AuthUserContext.Consumer >
 			);
 		}
 	}
 
-	return compose(
-		withRouter,
-		withFirebase,
-	)(WithAuthorization);
+	return withRouter(withFirebase(WithAuthorization));
 };
 export default withAuthorization;

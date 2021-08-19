@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-class MessageItem extends Component {
+class MessageItem extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {

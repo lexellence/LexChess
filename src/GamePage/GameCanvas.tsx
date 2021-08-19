@@ -1,10 +1,11 @@
 import React from 'react';
 import GameImages from './GameImages';
-import { ChessGame, ChessPosition, PieceType } from './Chess';
+import { ChessInstance } from 'chess.js';
 
 interface GameCanvasProps {
 	width: number;
 	height: number;
+	chess: ChessInstance;
 	onClick: () => void;
 }
 
@@ -12,36 +13,29 @@ interface GameCanvasState {
 	loading: boolean;
 }
 
+const INITIAL_STATE = {
+	loading: true
+};
+
 class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
-	state: GameCanvasState = {
-		loading: true
-	};
+	readonly state = { ...INITIAL_STATE };
+	private canvas = React.createRef<HTMLCanvasElement>();
 	images: GameImages = new GameImages(() => {
 		this.setState({ loading: false });
-		this.savedDraw();
-		this.savedDraw = () => { };
-
 	});
-	gameBoard = React.createRef<HTMLCanvasElement>();
-	savedDraw = () => { };
-
 	componentDidMount() {
-		// Load images
-
-		this.gameBoard.current!.addEventListener('mousedown', this.props.onClick, false);
+		// this.canvas.current!.addEventListener('mousedown', this.props.onClick, false);
+		this.draw();
 	};
-	draw(game: ChessGame): void {
-		if (this.state.loading) {
-			this.savedDraw = () => {
-				this.draw(game);
-			};
-			return;
-		}
-		if (!this.gameBoard.current || !this.gameBoard.current.getContext)
+	componentDidUpdate() {
+		this.draw();
+	};
+	private draw = () => {
+		if (!this.canvas || !this.canvas.current || !this.canvas.current.getContext)
 			return;
 
 		// Save drawing context
-		const ctx = this.gameBoard.current.getContext('2d', { alpha: true });
+		const ctx = this.canvas.current.getContext('2d', { alpha: true });
 		if (!ctx)
 			return;
 
@@ -72,35 +66,33 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 		ctx.strokeStyle = "black";
 		ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
 
-		// Draw game pieces
-		if (this.state.loading || !game)
+		if (this.state.loading)
 			return;
-		for (let col = 0; col < 8; col++)
-			for (let row = 0; row < 8; row++) {
-				// If position has a piece
-				const position = new ChessPosition(col, row);
-				const type = game.getSquare(position).type;
-				if (type !== PieceType.NONE) {
-					// Get piece image
-					const team = game.getSquare(position).team;
-					const image = this.images.getPieceImage(team, type);
+
+		// Draw game pieces
+		const board = this.props.chess.board();
+		for (let rank = 0; rank < 8; rank++)
+			for (let file = 0; file < 8; file++) {
+				const piece = board[rank][file];
+				if (piece) {
+					const image = this.images.getPieceImage(piece.color, piece.type);
 					if (image) {
 						// Calculate position
 						const boardStartX = boardImageX + boardMargin;
-						const x = boardStartX + col * squareSize + squareMargin;
+						const x = boardStartX + file * squareSize + squareMargin;
 						const boardEndY = boardImageY + boardImageSize - boardMargin;
-						const y = boardEndY - (row + 1) * squareSize + squareMargin;
+						const y = boardEndY - (rank + 1) * squareSize + squareMargin;
 
 						// Draw piece
 						ctx.drawImage(image, x, y, pieceImageSize, pieceImageSize);
 					}
 				}
-			}
-	};
+			};
+	}
 	render() {
 		const { width, height } = this.props;
 		return (
-			<canvas ref={this.gameBoard} width={width} height={height}>Canvas tag not supported.</canvas>
+			<canvas ref={this.canvas} width={width} height={height}>Canvas tag not supported. Try a different browser.</canvas>
 		);
 	}
 }

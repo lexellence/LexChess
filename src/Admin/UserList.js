@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../constants/routes';
 
-class UserList extends Component {
+class UserList extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -36,7 +36,7 @@ class UserList extends Component {
 	render() {
 		const { users, loading } = this.state;
 		return (
-			<div>
+			<React.Fragment>
 				<h2>Users</h2>
 				{loading && <div>Loading ...</div>}
 				<ul>
@@ -60,12 +60,12 @@ class UserList extends Component {
 										state: { user },
 									}}>
 									Details
-                				</Link>
+								</Link>
 							</span>
 						</li>
 					))}
 				</ul>
-			</div>
+			</React.Fragment>
 		);
 	}
 }

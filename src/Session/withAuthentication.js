@@ -8,7 +8,7 @@ import { withFirebase } from '../Firebase';
 //	Wrap a component to act as the single provider of 
 //	information about the signed-in user.
 //\-----------------------------------------------------------
-const withAuthentication = Component => {
+const withAuthentication = (Component) => {
 	class WithAuthentication extends React.Component {
 		constructor(props) {
 			super(props);
@@ -18,7 +18,7 @@ const withAuthentication = Component => {
 		}
 
 		componentDidMount() {
-			const onSignIn = authUser => {
+			const onSignIn = (authUser) => {
 				localStorage.setItem('authUser', JSON.stringify(authUser));
 				this.setState({ authUser });
 			};

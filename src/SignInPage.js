@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link, withRouter } from 'react-router-dom';
-// import { Redirect } from 'react-router';
-import { compose } from 'recompose';
 
 import { withFirebase } from './Firebase';
 import * as ROUTES from './constants/routes';
@@ -129,27 +127,27 @@ class SignInTwitterBase extends React.Component {
 	}
 }
 
-const SignInForm = compose(
-	withRouter,
-	withFirebase,
-)(SignInFormBase);
+const SignInForm =
+	withRouter(
+		withFirebase(
+			SignInFormBase));
 
-const SignInGoogle = compose(
-	withRouter,
-	withFirebase,
-)(SignInGoogleBase);
+const SignInGoogle =
+	withRouter(
+		withFirebase(
+			SignInGoogleBase));
 
-const SignInFacebook = compose(
-	withRouter,
-	withFirebase,
-)(SignInFacebookBase);
+const SignInFacebook =
+	withRouter(
+		withFirebase(
+			SignInFacebookBase));
 
-const SignInTwitter = compose(
-	withRouter,
-	withFirebase,
-)(SignInTwitterBase);
+const SignInTwitter =
+	withRouter(
+		withFirebase(
+			SignInTwitterBase));
 
-class SignInPage extends React.Component {
+class SignInPageBase extends React.Component {
 	componentDidMount() {
 		// Redirect on sign-in
 		const onSignIn = authUser => this.props.history.push(ROUTES.GAME);
@@ -160,7 +158,7 @@ class SignInPage extends React.Component {
 
 	render() {
 		return (
-			<div>
+			<React.Fragment>
 				<h1>Sign In</h1>
 				<SignInForm />
 				<SignInGoogle />
@@ -169,12 +167,15 @@ class SignInPage extends React.Component {
 				<p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p>
 				<pre><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Sign-up</Link></p></pre>
 
-			</div>
+			</React.Fragment>
 		);
 	}
 }
-export default compose(
-	withRouter,
-	withFirebase,
-)(SignInPage);
+
+const SignInPage =
+	withRouter(
+		withFirebase(
+			SignInPageBase));
+
+export default SignInPage;
 

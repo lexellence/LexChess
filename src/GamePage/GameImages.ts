@@ -1,4 +1,3 @@
-import { PieceType, Team } from './Chess';
 const dir = 'images/';
 const imageSources: string[] = [
 	dir + 'chessboard/chessboard.png',
@@ -25,6 +24,7 @@ function loadImages(sources: string[], onLoadCompletion: () => void) {
 	}
 	for (let source of sources) {
 		let img = new Image();
+		// TODO: Should I implement an error handler?
 		img.onload = img.onerror = onLoad;
 		img.src = source;
 		images.push(img);
@@ -35,6 +35,7 @@ function loadImages(sources: string[], onLoadCompletion: () => void) {
 class GameImages {
 	loading = true;
 	images: HTMLImageElement[] = [];
+	// TODO: Is this the proper way to rep a function parameter?
 	constructor(onLoadCompletion: () => void) {
 		this.images = loadImages(imageSources, () => {
 			this.loading = false;
@@ -44,22 +45,22 @@ class GameImages {
 	getBoardImage = (): null | HTMLImageElement => {
 		return this.images[0];
 	};
-	getPieceImage = (team: Team, type: PieceType): null | HTMLImageElement => {
+	getPieceImage = (team: 'w' | 'b', type: "p" | "n" | "b" | "r" | "q" | "k"): null | HTMLImageElement => {
 		if (this.loading)
 			return null;
 		switch (type) {
-			case PieceType.KING:
-				return (team === Team.WHITE) ? this.images[1] : this.images[7];
-			case PieceType.QUEEN:
-				return (team === Team.WHITE) ? this.images[2] : this.images[8];
-			case PieceType.BISHOP:
-				return (team === Team.WHITE) ? this.images[3] : this.images[9];
-			case PieceType.KNIGHT:
-				return (team === Team.WHITE) ? this.images[4] : this.images[10];
-			case PieceType.ROOK:
-				return (team === Team.WHITE) ? this.images[5] : this.images[11];
-			case PieceType.PAWN:
-				return (team === Team.WHITE) ? this.images[6] : this.images[12];
+			case 'k':
+				return (team === 'w') ? this.images[1] : this.images[7];
+			case 'q':
+				return (team === 'w') ? this.images[2] : this.images[8];
+			case 'b':
+				return (team === 'w') ? this.images[3] : this.images[9];
+			case 'n':
+				return (team === 'w') ? this.images[4] : this.images[10];
+			case 'r':
+				return (team === 'w') ? this.images[5] : this.images[11];
+			case 'p':
+				return (team === 'w') ? this.images[6] : this.images[12];
 			default:
 				return null;
 		}

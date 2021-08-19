@@ -2,16 +2,16 @@ import React from 'react';
 import { Switch, Route } from "react-router-dom";
 
 import HomePage from "../HomePage";
-import GamePage from "../Game/GamePage";
+import GamePage from "../GamePage";
 import SignInPage from "../SignInPage";
 import SignUpPage from "../SignUpPage";
-import PasswordForgetPage from '../Account/PasswordForgetPage';
-import AccountPage from '../Account/AccountPage';
+import PasswordForgetPage from '../AccountPage';
+import AccountPage from '../AccountPage';
 import AdminPage from '../Admin/AdminPage';
 
 import * as ROUTES from "../constants/routes";
 
-const RouteList = () => {
+function RouteList() {
 	return (
 		<Switch>
 			<Route exact path={ROUTES.LANDING} component={HomePage} />
@@ -23,6 +23,6 @@ const RouteList = () => {
 			<Route path={ROUTES.ADMIN} component={AdminPage} />
 		</Switch>
 	);
-};
+}
 export default RouteList;
 

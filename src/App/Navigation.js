@@ -10,20 +10,22 @@ import SignOutButton from './SignOutButton';
 import * as ROUTES from "../constants/routes";
 import * as ROLES from '../constants/roles';
 
-const NavigationNonAuth = () => (
-	<Navbar bg="dark" variant="dark">
-		<Container>
-			<Navbar.Brand>
-				<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
-			</Navbar.Brand>
-			<Nav className="justify-content-end">
-				<Nav>
-					<Link to={ROUTES.SIGN_IN} className="nav-link">Sign in</Link>
+function NavigationNonAuth() {
+	return (
+		<Navbar bg="dark" variant="dark">
+			<Container>
+				<Navbar.Brand>
+					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
+				</Navbar.Brand>
+				<Nav className="justify-content-end">
+					<Nav>
+						<Link to={ROUTES.SIGN_IN} className="nav-link">Sign in</Link>
+					</Nav>
 				</Nav>
-			</Nav>
-		</Container>
-	</Navbar>
-);
+			</Container>
+		</Navbar>
+	);
+}
 
 class NavigationAuthBase extends React.Component {
 	state = { userRoles: {} };
@@ -59,14 +61,18 @@ class NavigationAuthBase extends React.Component {
 		);
 	}
 }
-const NavigationAuth = withFirebase(NavigationAuthBase);
+const NavigationAuth =
+	withFirebase(
+		NavigationAuthBase);
 
-const Navigation = () => (
-	<AuthUserContext.Consumer>
-		{authUser =>
-			authUser ? <NavigationAuth /> : <NavigationNonAuth />
-		}
-	</AuthUserContext.Consumer>
-);
+function Navigation() {
+	return (
+		<AuthUserContext.Consumer>
+			{authUser =>
+				authUser ? <NavigationAuth /> : <NavigationNonAuth />
+			}
+		</AuthUserContext.Consumer>
+	);
+}
 
 export default Navigation;

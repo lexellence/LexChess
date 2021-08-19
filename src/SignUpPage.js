@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withRouter } from 'react-router-dom';
-import { compose } from 'recompose';
+
+// import { Form, Button, Card, Alert } from "react-bootstrap";
+// import { useAuth } from "../contexts/AuthContext";
 
 import { withFirebase } from './Firebase';
 import * as ROUTES from './constants/routes';
-// import * as ROLES from './constants/roles';
 
 const INITIAL_STATE = {
 	email: '',
@@ -22,13 +23,13 @@ const ERROR_MSG_ACCOUNT_EXISTS = `
 	If you think the account is already used from one of the social logins, try to sign in with one of them.
 	Afterward, associate your accounts on your personal account page.`;
 
-class SignUpFormBase extends Component {
+class SignUpFormBase extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
 	}
 
-	onSubmit = event => {
+	onSubmit = (event) => {
 		// const { email, passwordOne, displayName, isAdmin } = this.state;
 		const { email, passwordOne, displayName } = this.state;
 		// const roles = {};
@@ -55,7 +56,7 @@ class SignUpFormBase extends Component {
 		event.preventDefault();
 	};
 
-	onChange = event => {
+	onChange = (event) => {
 		this.setState({ [event.target.name]: event.target.value });
 	};
 
@@ -106,16 +107,18 @@ class SignUpFormBase extends Component {
 	}
 }
 
-const SignUpForm = compose(
-	withRouter,
-	withFirebase,
-)(SignUpFormBase);
+const SignUpForm =
+	withRouter(
+		withFirebase(
+			SignUpFormBase
+		)
+	);
 
 const SignUpPage = () => (
-	<div>
+	<React.Fragment>
 		<h1>Sign Up</h1>
 		<SignUpForm />
-	</div>
+	</React.Fragment>
 );
-export default SignUpPage;
 
+export default SignUpPage;

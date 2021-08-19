@@ -8,16 +8,16 @@ const MessageList = ({
 	onEditMessage,
 	onRemoveMessage,
 }) => (
-		<ul>
-			{messages.map(message =>
-				<MessageItem
-					authUser={authUser}
-					key={message.uid}
-					message={message}
-					onEditMessage={onEditMessage}
-					onRemoveMessage={onRemoveMessage} />
-			)}
-		</ul>
-	);
+	<ul>
+		{messages.map(message =>
+			<MessageItem
+				authUser={authUser}
+				key={message.uid}
+				message={message}
+				onEditMessage={onEditMessage}
+				onRemoveMessage={onRemoveMessage} />
+		)}
+	</ul>
+);
 
 export default MessageList;

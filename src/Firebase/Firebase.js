@@ -1,7 +1,7 @@
-import app from 'firebase/app';
+import firebaseApp from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
-import * as ROLES from '../constants/roles';
+// import * as ROLES from '../constants/roles';
 
 const config = {
 	apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -15,20 +15,20 @@ const config = {
 
 class Firebase {
 	constructor() {
-		app.initializeApp(config);
+		firebaseApp.initializeApp(config);
 
 		// Helper for Messages
-		// this.serverValue = app.database.ServerValue;
+		this.serverValue = firebaseApp.database.ServerValue;
 
 		// Firebase
-		this.auth = app.auth();
-		this.db = app.database();
+		this.auth = firebaseApp.auth();
+		this.db = firebaseApp.database();
 
 		// Sign In Method Providers
-		this.emailAuthProvider = app.auth.EmailAuthProvider;
-		this.googleProvider = new app.auth.GoogleAuthProvider();
-		this.facebookProvider = new app.auth.FacebookAuthProvider();
-		this.twitterProvider = new app.auth.TwitterAuthProvider();
+		this.emailAuthProvider = firebaseApp.auth.EmailAuthProvider;
+		this.googleProvider = new firebaseApp.auth.GoogleAuthProvider();
+		this.facebookProvider = new firebaseApp.auth.FacebookAuthProvider();
+		this.twitterProvider = new firebaseApp.auth.TwitterAuthProvider();
 
 	}
 
@@ -63,11 +63,11 @@ class Firebase {
 			});
 	};
 
-	doPasswordUpdate = password => {
+	doPasswordUpdate = (password) => {
 		if (this.auth.currentUser)
 			return this.auth.currentUser.updatePassword(password);
 	};
-	doDisplayNameUpdate = displayName => {
+	doDisplayNameUpdate = (displayName) => {
 		if (this.auth.currentUser)
 			return this.auth.currentUser.updateProfile({ displayName });
 	};
@@ -84,7 +84,7 @@ class Firebase {
 			authUser.roles = {};
 			this.userRef(authUser.uid).child('roles').once('value')
 				.then(snapshot => {
-					if (snapshot.val() !== null)
+					if (snapshot.exists())
 						authUser.roles = snapshot.val();
 					next(authUser);
 					return;

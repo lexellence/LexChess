@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import { compose } from 'recompose';
+import React from 'react';
 
 import {
 	AuthUserContext,
@@ -38,7 +37,7 @@ const SocialLoginToggle = ({
 			Link {signInMethod.id}
 		</button>;
 
-class DefaultLoginToggle extends Component {
+class DefaultLoginToggle extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { passwordOne: '', passwordTwo: '' };
@@ -90,7 +89,7 @@ class DefaultLoginToggle extends Component {
 	}
 }
 
-class LoginManagementBase extends Component {
+class LoginManagementBase extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -140,7 +139,7 @@ class LoginManagementBase extends Component {
 	render() {
 		const { activeSignInMethods, error } = this.state;
 		return (
-			<div>
+			<React.Fragment>
 				Sign In Methods:
 				<ul>
 					{SIGN_IN_METHODS.map(signInMethod => {
@@ -168,7 +167,7 @@ class LoginManagementBase extends Component {
 					})}
 				</ul>
 				{error && error.message}
-			</div>
+			</React.Fragment>
 		);
 	}
 }
@@ -178,20 +177,19 @@ const LoginManagement = withFirebase(LoginManagementBase);
 const AccountPage = () => (
 	<AuthUserContext.Consumer>
 		{authUser => (
-			<div>
+			<React.Fragment>
 				<h1>Account: {authUser.email}</h1>
 				<DisplayNameChangeForm />
 				<PasswordForgetForm />
 				<PasswordChangeForm />
 				<LoginManagement authUser={authUser} />
-			</div>
+			</React.Fragment>
 		)}
 	</AuthUserContext.Consumer>
 );
 
-const condition = authUser => !!authUser;
-
-export default compose(
-	withEmailVerification,
-	withAuthorization(condition),
-)(AccountPage);
+const conditionFunc = authUser => !!authUser;
+export default
+	withEmailVerification(
+		withAuthorization(conditionFunc)(
+			AccountPage));
