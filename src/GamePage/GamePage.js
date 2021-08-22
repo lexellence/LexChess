@@ -6,14 +6,13 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import GameCanvas from './GameCanvas';
+import GameCanvas, { Square } from './GameCanvas';
 import GameList from './GameList';
 import * as api from '../api';
 // import { Chess } from 'chess.js';
 import * as Chess from 'chess.js';
 
-const CANVAS_WIDTH = 360;
-const CANVAS_HEIGHT = 360;
+const CANVAS_SIZE = 360;
 
 // const MODE_LOADING = 0;
 // const MODE_LIST = 1;
@@ -30,15 +29,14 @@ const INITIAL_STATE = {
 		gameList: []
 	},
 	historyPosition: 0,
+	board: null,
+	selectedSquare: null,
 };
 
 class GamePageBase extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = { ...INITIAL_STATE };
-		this.user = null;
-		this.chess = null;
-	}
+	state = { ...INITIAL_STATE };
+	user = null;
+	chess = null;
 
 	componentDidMount() {
 		const onSignIn = (authUser) => {
@@ -56,8 +54,6 @@ class GamePageBase extends React.Component {
 	}
 
 	// componentDidUpdate() {
-	// if (this.gameCanvas)
-	// this.gameCanvas.draw(this.game);
 	// };
 
 	setPlayState = (playState) => {
@@ -65,8 +61,14 @@ class GamePageBase extends React.Component {
 		if (playState) {
 			stateUpdate.playState = playState;
 
-			if (playState.inGame)
+			if (playState.inGame) {
 				this.chess = new Chess(playState.fen);
+				stateUpdate.board = this.chess.board();
+			}
+			else {
+				this.chess = null;
+				stateUpdate.board = null;
+			}
 		}
 		this.setState(stateUpdate);
 	};
@@ -160,7 +162,13 @@ class GamePageBase extends React.Component {
 	};
 	// TODO: Error handling
 
-	onClickCanvas = () => {
+	onClickCanvas = (file, rank) => {
+		// alert('File: ' + file + ' Rank: ' + rank);
+		if (file < 0 || file > 7 || rank < 0 || rank > 7)
+			return;
+
+		this.setState({ selectedSquare: new Square(file, rank) });
+
 		// Is it user's turn?
 
 		// Do they already have a piece chosen?
@@ -214,8 +222,7 @@ class GamePageBase extends React.Component {
 					<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
 					<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
-					{/* <GameCanvas ref={this.gameCanvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} chess={this.onClick = { this.onClickCanvas() } /> */}
-					<GameCanvas width={CANVAS_WIDTH} height={CANVAS_HEIGHT} chess={this.chess} onClick={this.onClickCanvas()} />
+					<GameCanvas size={CANVAS_SIZE} board={this.chess.board()} selectedSquare={this.state.selectedSquare} onClick={this.onClickCanvas} />
 					<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 					<div style={{ visibility: gameControlsVisibility }}>
