@@ -16,17 +16,18 @@ interface GameCanvasProps {
 	size: number;
 	board: Array<Array<{ type: PieceType; color: "w" | "b" } | null>>;
 	selectedSquare: Square | null;
-	onClick: (file: number, rank: number) => void;
+	onMouseDown: (file: number, rank: number) => void;
+	onMouseUp: (file: number, rank: number) => void;
 }
 
 interface GameCanvasState {
 	loading: boolean;
-	selectedSquare: Square;
+	// selectedSquare: Square;
 }
 
 const INITIAL_STATE = {
 	loading: true,
-	selectedSquare: null
+	// selectedSquare: null
 };
 
 class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
@@ -48,17 +49,27 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	pieceImageSize = this.squareSize - 2 * this.squareMargin;
 
 	componentDidMount() {
-		this.canvas.current?.addEventListener('click', this.onClick);
+		this.canvas.current?.addEventListener('mousedown', this.handleMouseDown);
+		this.canvas.current?.addEventListener('mouseup', this.handleMouseUp);
+
+		// Stop canvas double-click from selecting text outside canvas
+		document.getElementById('gameBoardCanvas').onselectstart = () => false;
+
 		this.draw();
 	};
 	componentDidUpdate() {
 		this.draw();
 	};
-	onClick = (event: MouseEvent): void => {
-		const file = Math.floor((event.offsetX - this.boardStart) / this.squareSize);
-		const rank = 7 - Math.floor((event.offsetY - this.boardStart) / this.squareSize);
-		this.props.onClick(file, rank);
+	componentDidUnmount() {
+		this.canvas.current?.removeEventListener('mousedown', this.handleMouseDown);
+		this.canvas.current?.removeEventListener('mouseup', this.handleMouseUp);
 	}
+
+	getFile = (event: MouseEvent): number => Math.floor((event.offsetX - this.boardStart) / this.squareSize);
+	getRank = (event: MouseEvent): number => (7 - Math.floor((event.offsetY - this.boardStart) / this.squareSize));
+	handleMouseDown = (event: MouseEvent): void => this.props.onMouseDown(this.getFile(event), this.getRank(event));
+	handleMouseUp = (event: MouseEvent): void => this.props.onMouseUp(this.getFile(event), this.getRank(event));
+
 	private draw = () => {
 		// Save drawing context
 		const ctx = this.canvas.current?.getContext('2d', { alpha: true });
@@ -110,7 +121,7 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	}
 	render() {
 		return (
-			<canvas ref={this.canvas} width={this.props.size} height={this.props.size}>
+			<canvas id='gameBoardCanvas' ref={this.canvas} width={this.props.size} height={this.props.size}>
 				Canvas tag not supported. Try a different browser.
 			</canvas>
 		);

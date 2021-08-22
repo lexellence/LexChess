@@ -31,6 +31,7 @@ const INITIAL_STATE = {
 	historyPosition: 0,
 	board: null,
 	selectedSquare: null,
+	possibleDestinationSquares: null,
 };
 
 class GamePageBase extends React.Component {
@@ -68,6 +69,8 @@ class GamePageBase extends React.Component {
 			else {
 				this.chess = null;
 				stateUpdate.board = null;
+				stateUpdate.selectedSquare = null;
+				stateUpdate.possibleDestinationSquares = null;
 			}
 		}
 		this.setState(stateUpdate);
@@ -162,10 +165,14 @@ class GamePageBase extends React.Component {
 	};
 	// TODO: Error handling
 
-	onClickCanvas = (file, rank) => {
-		// alert('File: ' + file + ' Rank: ' + rank);
+	handleMouseDownCanvas = (file, rank) => {
 		if (file < 0 || file > 7 || rank < 0 || rank > 7)
-			return;
+			this.setState((prev) => {
+				if (prev.selectedSquare)
+					return { selectedSquare: null };
+				else
+					return null;
+			});
 
 		this.setState({ selectedSquare: new Square(file, rank) });
 
@@ -180,7 +187,9 @@ class GamePageBase extends React.Component {
 		// Did they click on a piece that has valid moves?
 		// Indicate no moves, or highlight all possible moves 
 	};
+	handleMouseUpCanvas = (file, rank) => {
 
+	};
 	render() {
 		// Loading
 		if (this.state.loadingPlay)
@@ -205,8 +214,8 @@ class GamePageBase extends React.Component {
 				case '3fold': gameTitleText = 'Game ended in a draw due to three-fold repetition.'; break;
 				case 'cm_w': gameTitleText = 'Checkmate! ' + ps.name_w + ' wins.'; break;
 				case 'cm_b': gameTitleText = 'Checkmate! ' + ps.name_b + ' wins.'; break;
-				case 'con_w': gameTitleText = ps.name_b + ' concedes. ' + ps.name_w + ' wins!'; break;
-				case 'con_b': gameTitleText = ps.name_w + ' concedes. ' + ps.name_b + ' wins!'; break;
+				case 'con_w': gameTitleText = ps.name_b + ' conceded. ' + ps.name_w + ' wins!'; break;
+				case 'con_b': gameTitleText = ps.name_w + ' conceded. ' + ps.name_b + ' wins!'; break;
 				default: gameTitleText = ''; break;
 			}
 			const gameTitleVisibility = 'visible';
@@ -218,11 +227,15 @@ class GamePageBase extends React.Component {
 			const nextMoveVisibility = this.canGoForwardInHistory() ? 'visible' : 'hidden';
 
 			return (
-				<div align='center' style={{ display: 'block' }}>
+				<div align='center' style={{ display: 'block' }} onSelect={() => false}>
 					<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
 					<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
-					<GameCanvas size={CANVAS_SIZE} board={this.chess.board()} selectedSquare={this.state.selectedSquare} onClick={this.onClickCanvas} />
+					<GameCanvas size={CANVAS_SIZE}
+						board={this.chess.board()}
+						selectedSquare={this.state.selectedSquare}
+						onMouseDown={this.handleMouseDownCanvas}
+						onMouseUp={this.handleMouseUpCanvas} />
 					<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 					<div style={{ visibility: gameControlsVisibility }}>
