@@ -6,7 +6,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import GameCanvas, { Square } from './GameCanvas';
+import GameCanvas from './GameCanvas';
 import GameList from './GameList';
 import * as api from '../api';
 // import { Chess } from 'chess.js';
@@ -165,29 +165,63 @@ class GamePageBase extends React.Component {
 	};
 	// TODO: Error handling
 
-	handleMouseDownCanvas = (file, rank) => {
-		if (file < 0 || file > 7 || rank < 0 || rank > 7)
-			this.setState((prev) => {
-				if (prev.selectedSquare)
-					return { selectedSquare: null };
-				else
-					return null;
-			});
+	handleMouseDownCanvas = (square) => {
+		console.log('square ' + square);
 
-		this.setState({ selectedSquare: new Square(file, rank) });
+		// if (!square.isValid())
+		// 	this.setState((prev) => {
+		// 		if (prev.selectedSquare)
+		// 			return { selectedSquare: null };
+		// 		else
+		// 			return null;
+		// 	});
+
+		// Is game in progress?
+		if (this.state.playState.status !== 'play')
+			return;
 
 		// Is it user's turn?
+		if (this.state.playState.team !== this.chess.turn())
+			return;
 
 		// Do they already have a piece chosen?
-		// Did they click somewhere that's valid to move?
-		// Move
+		if (this.state.selectedSquare) {
+			// Did they cancel their selection?
+			if (this.state.selectedSquare === square) {
+				this.setState((prev) => ({ selectedSquare: null }));
+				return;
+			}
+			else {
+				// Can they move their selected piece here?
+				// if (this.chess.moves({ square: this.state.selectedSquare }).includes(square)) {
+				console.log('from ' + this.state.selectedSquare + ' to ' + square);
+				const move = this.chess.move({ from: this.state.selectedSquare, to: square });
+				if (move) {
+					this.move(move.san);
+					this.setState((prev) => ({ selectedSquare: null }));
+				}
+				// }
+				return;
 
-		// Did they click on a piece?
+			}
+		}
+
+		// Did they click on one of their pieces?
+		const piece = this.chess.get(square);
+		console.log('piece: ', piece);
+
+		if (piece) {
+			if (piece.color === this.state.playState.team) {
+				console.log('moves', this.chess.moves({ square: square }));
+				this.setState({ selectedSquare: square });
+			}
+		}
 
 		// Did they click on a piece that has valid moves?
 		// Indicate no moves, or highlight all possible moves 
+
 	};
-	handleMouseUpCanvas = (file, rank) => {
+	handleMouseUpCanvas = (square) => {
 
 	};
 	render() {
@@ -221,8 +255,8 @@ class GamePageBase extends React.Component {
 			const gameTitleVisibility = 'visible';
 			const gameControlsVisibility = !isWaiting ? 'visible' : 'hidden';
 
-			const blackTurnTextVisibility = ps.status === 'play' && this.chess.turn() === 'b' ? 'visible' : 'hidden';
-			const whiteTurnTextVisibility = this.state.gameStatus === 'play' && this.chess.turn() === 'w' ? 'visible' : 'hidden';
+			const blackTurnTextVisibility = (ps.status === 'play' && this.chess.turn() === 'b') ? 'visible' : 'hidden';
+			const whiteTurnTextVisibility = (ps.status === 'play' && this.chess.turn() === 'w') ? 'visible' : 'hidden';
 			const lastMoveVisibility = this.canGoBackInHistory() ? 'visible' : 'hidden';
 			const nextMoveVisibility = this.canGoForwardInHistory() ? 'visible' : 'hidden';
 

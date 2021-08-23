@@ -370,7 +370,7 @@ apiRouter.put("/move/:move", async (req: any, res: any) => {
 		const move = req.params.move;
 
 		// User must be in a game
-		const { game, gid } = await getUserGame(uid, false);
+		const { game, gid } = await getUserGame(uid, true);
 		if (!game) {
 			console.log('User ' + uid + ' tried to move but is not in a game');
 			res.status(httpCodes.FORBIDDEN).send('move: You are not in a game');
@@ -386,11 +386,15 @@ apiRouter.put("/move/:move", async (req: any, res: any) => {
 
 		// Redo all chess moves (constructing from fen would not detect three-fold repetition, for example)
 		const chess = new Chess();
+		console.log('game:', game);
+		console.log('moves:', game.board.moves);
 		if (game.board.moves)
-			for (const m in game.board.moves) {
-				if (!chess.move(m))
-					throw new Error('move: Invalid list of previous moves');
-			}
+			Object.values(game.board.moves).forEach(m => {
+				console.log('move:', m);
+				if (typeof (m) === 'string')
+					if (!chess.move(m))
+						throw new Error('move: Invalid list of previous moves');
+			});
 
 		// TODO: Do I really need to validate this?
 		// Validate fen string
@@ -401,7 +405,7 @@ apiRouter.put("/move/:move", async (req: any, res: any) => {
 		let team: string;
 		if (uid === game.core.uid_w)
 			team = 'w';
-		else if (uid === game.uid_b)
+		else if (uid === game.core.uid_b)
 			team = 'b';
 		else {
 			// Not playing

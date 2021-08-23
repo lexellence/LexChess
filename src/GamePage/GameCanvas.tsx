@@ -3,21 +3,35 @@ import React from 'react';
 import GameImages from './GameImages';
 import { PieceType } from 'chess.js';
 
-class Square {
-	file: number;
-	rank: number;
-	constructor(file: number, rank: number) {
-		this.file = file;
-		this.rank = rank;
-	}
-}
+const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+// class Square {
+// 	file: number;
+// 	rank: number;
+// 	constructor(file: number, rank: number) {
+// 		this.file = file;
+// 		this.rank = rank;
+// 	}
+// 	equals(otherSquare: Square): boolean {
+// 		return (this.file === otherSquare.file && this.rank === otherSquare.rank);
+// 	}
+// 	isValid(): boolean {
+// 		return !(this.file < 0 || this.file > 7 || this.rank < 0 || this.rank > 7);
+// 	}
+// 	private readonly FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+// 	getStandardNotation(): (string | null) {
+// 		if (!this.isValid())
+// 			return null;
+// 		return this.FILE_CHARS[this.file] + this.rank.toString();
+// 	}
+// }
 
 interface GameCanvasProps {
 	size: number;
 	board: Array<Array<{ type: PieceType; color: "w" | "b" } | null>>;
-	selectedSquare: Square | null;
-	onMouseDown: (file: number, rank: number) => void;
-	onMouseUp: (file: number, rank: number) => void;
+	selectedSquare: string | null;
+	onMouseDown: (square: string) => void;
+	onMouseUp: (square: string) => void;
 }
 
 interface GameCanvasState {
@@ -29,6 +43,10 @@ const INITIAL_STATE = {
 	loading: true,
 	// selectedSquare: null
 };
+
+function clamp(num: number, min: number, max: number) {
+	return Math.max(min, Math.min(num, max));
+}
 
 class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	readonly state = { ...INITIAL_STATE };
@@ -60,15 +78,32 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	componentDidUpdate() {
 		this.draw();
 	};
-	componentDidUnmount() {
+	componentWillUnmount() {
 		this.canvas.current?.removeEventListener('mousedown', this.handleMouseDown);
 		this.canvas.current?.removeEventListener('mouseup', this.handleMouseUp);
 	}
 
-	getFile = (event: MouseEvent): number => Math.floor((event.offsetX - this.boardStart) / this.squareSize);
-	getRank = (event: MouseEvent): number => (7 - Math.floor((event.offsetY - this.boardStart) / this.squareSize));
-	handleMouseDown = (event: MouseEvent): void => this.props.onMouseDown(this.getFile(event), this.getRank(event));
-	handleMouseUp = (event: MouseEvent): void => this.props.onMouseUp(this.getFile(event), this.getRank(event));
+	getFileChar = (event: MouseEvent): string => {
+		const boardOffsetX = event.offsetX - this.boardStart;
+		let file = Math.floor(boardOffsetX / this.squareSize);
+		clamp(file, 0, 7);
+		return FILE_CHARS[file];
+	}
+	getRankChar = (event: MouseEvent): string => {
+		const boardOffsetY = event.offsetY - this.boardStart;
+		let rank = 8 - Math.floor(boardOffsetY / this.squareSize);
+		clamp(rank, 1, 8);
+		return rank.toString();
+	}
+
+	handleMouseDown = (event: MouseEvent): void => {
+		const square = this.getFileChar(event) + this.getRankChar(event);
+		this.props.onMouseDown(square);
+	}
+	handleMouseUp = (event: MouseEvent): void => {
+		const square = this.getFileChar(event) + this.getRankChar(event);
+		this.props.onMouseUp(square);
+	}
 
 	private draw = () => {
 		// Save drawing context
@@ -94,19 +129,21 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 			return;
 
 		// Draw game pieces
-		for (let rank = 0; rank < 8; rank++)
-			for (let file = 0; file < 8; file++) {
-				const squareStartX = this.boardStart + file * this.squareSize;
-				const squareStartY = this.boardEnd - (rank + 1) * this.squareSize;
+		for (let row = 0; row < 8; row++) {
+			for (let col = 0; col < 8; col++) {
+				const squareStartX = this.boardStart + col * this.squareSize;
+				// const squareStartY = this.boardEnd - (row + 1) * this.squareSize;
+				const squareStartY = this.boardStart + row * this.squareSize;
 
 				// Shade selected square
-				if (this.props.selectedSquare?.file === file && this.props.selectedSquare?.rank === rank) {
-					ctx.fillStyle = "#00CC00";
-					ctx.fillRect(squareStartX, squareStartY, this.squareSize, this.squareSize);
-				}
+				if (this.props.selectedSquare)
+					if (FILE_CHARS.indexOf(this.props.selectedSquare[0]) === col && this.props.selectedSquare[1] === (8 - row).toString()) {
+						ctx.fillStyle = "#00CC00";
+						ctx.fillRect(squareStartX, squareStartY, this.squareSize, this.squareSize);
+					}
 
 				// Draw piece
-				const piece = this.props.board[rank][file];
+				const piece = this.props.board[row][col];
 				if (piece) {
 					const image = this.images.getPieceImage(piece.color, piece.type);
 					if (image) {
@@ -117,7 +154,8 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 							this.pieceImageSize);
 					}
 				}
-			};
+			}
+		}
 	}
 	render() {
 		return (
@@ -128,5 +166,4 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	}
 }
 
-export { Square };
 export default GameCanvas;
