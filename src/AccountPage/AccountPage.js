@@ -177,13 +177,13 @@ const LoginManagement = withFirebase(LoginManagementBase);
 const AccountPage = () => (
 	<AuthUserContext.Consumer>
 		{authUser => (
-			<React.Fragment>
+			<div className='selectable'>
 				<h1>Account: {authUser.email}</h1>
 				<DisplayNameChangeForm />
 				<PasswordForgetForm />
 				<PasswordChangeForm />
 				<LoginManagement authUser={authUser} />
-			</React.Fragment>
+			</div>
 		)}
 	</AuthUserContext.Consumer>
 );

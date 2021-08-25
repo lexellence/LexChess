@@ -53,8 +53,11 @@ async function getGame(gid: string, includeBoard: boolean = true): Promise<any> 
 		const gameSnapshot = await gameRef.once('value');
 		if (!gameSnapshot.exists())
 			return null;
-		else
-			return gameSnapshot.val();
+		else {
+			const game = gameSnapshot.val();
+			game.board.moves = game.board.moves ? Object.values(game.board.moves) : [];
+			return game;
+		}
 	}
 	else {
 		// Don't include board
@@ -389,11 +392,11 @@ apiRouter.put("/move/:move", async (req: any, res: any) => {
 		console.log('game:', game);
 		console.log('moves:', game.board.moves);
 		if (game.board.moves)
-			Object.values(game.board.moves).forEach(m => {
+			// Object.values(game.board.moves).forEach(m => {
+			game.board.moves.forEach((m: string) => {
 				console.log('move:', m);
-				if (typeof (m) === 'string')
-					if (!chess.move(m))
-						throw new Error('move: Invalid list of previous moves');
+				if (!chess.move(m))
+					throw new Error('move: Invalid list of previous moves');
 			});
 
 		// TODO: Do I really need to validate this?

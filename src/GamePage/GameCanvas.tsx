@@ -71,7 +71,7 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 		this.canvas.current?.addEventListener('mouseup', this.handleMouseUp);
 
 		// Stop canvas double-click from selecting text outside canvas
-		document.getElementById('gameBoardCanvas').onselectstart = () => false;
+		// document.getElementById('gameBoardCanvas')!.onselectstart = () => false;
 
 		this.draw();
 	};

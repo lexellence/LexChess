@@ -29,9 +29,9 @@ const INITIAL_STATE = {
 		gameList: []
 	},
 	historyPosition: 0,
-	board: null,
+	// board: null,
 	selectedSquare: null,
-	possibleDestinationSquares: null,
+	// possibleDestinationSquares: null,
 };
 
 class GamePageBase extends React.Component {
@@ -49,6 +49,9 @@ class GamePageBase extends React.Component {
 			this.setState({ ...INITIAL_STATE });
 		};
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+
+		// Stop double-click from selecting text outside canvas
+		// document.getElementById('gamePage').onselectstart = () => false;
 	}
 	componentWillUnmount() {
 		this.unregisterAuthListener();
@@ -63,14 +66,20 @@ class GamePageBase extends React.Component {
 			stateUpdate.playState = playState;
 
 			if (playState.inGame) {
-				this.chess = new Chess(playState.fen);
-				stateUpdate.board = this.chess.board();
+				// this.chess = new Chess(playState.fen);
+				this.chess = new Chess();
+				playState.moves.forEach(m => {
+					if (!this.chess.move(m))
+						throw new Error('Invalid list of previous moves');
+				});
+
+				// stateUpdate.board = this.chess.board();
 			}
 			else {
 				this.chess = null;
-				stateUpdate.board = null;
+				// stateUpdate.board = null;
 				stateUpdate.selectedSquare = null;
-				stateUpdate.possibleDestinationSquares = null;
+				// stateUpdate.possibleDestinationSquares = null;
 			}
 		}
 		this.setState(stateUpdate);
@@ -143,25 +152,49 @@ class GamePageBase extends React.Component {
 		}
 	};
 
-	canGoBackInHistory = () => (this.state.historyPosition < (this.state.playState.moves ? this.state.playState.moves.length : 0));
-	canGoForwardInHistory = () => (this.state.historyPosition > 0);
+	canGoBackInHistory = () => {
+		console.log('moves', this.state.playState.moves);
+		console.log('historyPosition', this.state.historyPosition);
+		return (this.state.historyPosition < this.state.playState.moves.length);
+	};
+	canGoForwardInHistory = () => {
+		return (this.state.historyPosition > 0);
+	};
 
+	undoMove = () => {
+		return this.chess.undo() ? true : false;
+	};
 	showPrevious = () => {
-		if (this.canGoBackInHistory())
-			if (this.chess.undo())
-				this.setState((state) => ({ historyPosition: state.historyPosition + 1 }));
+		if (this.canGoBackInHistory()) {
+			if (this.undoMove())
+				this.setState((prev) => ({ historyPosition: prev.historyPosition + 1 }));
+		}
 		// TODO: Error handling
 	};
+	redoMove = (moveIndex) => {
+		const move = this.state.playState.moves[moveIndex];
+		return this.chess.move(move) ? true : false;
+	};
 	showNext = () => {
-		if (this.canGoForwardInHistory())
-			if (this.chess.move(this.state.playState.moves[this.state.playState.moves.length - this.state.historyPosition]))
-				this.setState((state) => ({ historyPosition: state.historyPosition - 1 }));
+		if (this.canGoForwardInHistory()) {
+			const moveIndex = this.state.playState.moves.length - this.state.historyPosition;
+			if (this.redoMove(moveIndex))
+				this.setState((prev) => ({ historyPosition: prev.historyPosition - 1 }));
+		}
 		// TODO: Error handling
 	};
 	showPresent = () => {
-		if (this.canGoForwardInHistory())
-			if (this.chess.load(this.state.playState.fen))
-				this.setState({ historyPosition: 0 });
+		if (this.canGoForwardInHistory()) {
+			let historyPosition = this.state.historyPosition;
+			while (historyPosition > 0) {
+				const moveIndex = this.state.playState.moves.length - historyPosition;
+				if (this.redoMove(moveIndex))
+					historyPosition--;
+				else
+					break;
+			}
+			this.setState((prev) => ({ historyPosition: historyPosition }));
+		}
 	};
 	// TODO: Error handling
 
@@ -237,7 +270,6 @@ class GamePageBase extends React.Component {
 			const blackMoveText = blackPossessiveName + ' move';
 			const whiteMoveText = whitePossessiveName + ' move';
 
-			const isWaiting = (ps.status === 'wait');
 			let gameTitleText;
 			switch (ps.status) {
 				case 'wait': gameTitleText = 'Waiting for another player to join...'; break;;
@@ -253,7 +285,7 @@ class GamePageBase extends React.Component {
 				default: gameTitleText = ''; break;
 			}
 			const gameTitleVisibility = 'visible';
-			const gameControlsVisibility = !isWaiting ? 'visible' : 'hidden';
+			const gameControlsVisibility = (ps.status === 'wait') ? 'hidden' : 'visible';
 
 			const blackTurnTextVisibility = (ps.status === 'play' && this.chess.turn() === 'b') ? 'visible' : 'hidden';
 			const whiteTurnTextVisibility = (ps.status === 'play' && this.chess.turn() === 'w') ? 'visible' : 'hidden';
@@ -261,7 +293,7 @@ class GamePageBase extends React.Component {
 			const nextMoveVisibility = this.canGoForwardInHistory() ? 'visible' : 'hidden';
 
 			return (
-				<div align='center' style={{ display: 'block' }} onSelect={() => false}>
+				<div align='center' style={{ display: 'block' }}>
 					<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
 					<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>

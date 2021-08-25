@@ -12,7 +12,7 @@ import * as ROLES from '../constants/roles';
 
 function NavigationNonAuth() {
 	return (
-		<Navbar bg="dark" variant="dark">
+		<Navbar bg="dark" variant="dark" className="unselectable">
 			<Container>
 				<Navbar.Brand>
 					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
@@ -37,7 +37,7 @@ class NavigationAuthBase extends React.Component {
 	componentWillUnmount = () => this.unregisterAuthListener();
 	render() {
 		return (
-			<Navbar bg="dark" variant="dark">
+			<Navbar bg="dark" variant="dark" className="unselectable">
 				<Container>
 					<Navbar.Brand>
 						<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>

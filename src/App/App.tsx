@@ -14,7 +14,7 @@ import RouteList from "./RouteList";
 function App() {
 	return (
 		<Router>
-			<div className="App">
+			<div className="App unselectable">
 				<header className="App-header">
 					<Navigation />
 				</header>
