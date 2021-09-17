@@ -9,24 +9,33 @@ import {
 import withFirebaseListener from '../FirebaseListener';
 
 const INITIAL_STATE = {
+	authUser: null,
 	gameList: null,
-	// errorMessage: null,
 };
 class GameListPageBase extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = { ...INITIAL_STATE };
-	}
-	componentDidMount() {
-		// Auth User Listener
-		const onSignIn = (authUser) => { this.authUser = authUser; };
-		const onSignOut = () => { this.authUser = null; };
-		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+	state = { ...INITIAL_STATE };
 
-		// Game List Listener
-		// const handleGameListError = (errorMessage) => {
-		// 	this.setState({ ...INITIAL_STATE, errorMessage });
-		// };
+	componentDidMount() {
+		this.registerAuthListener();
+	};
+	componentWillUnmount() {
+		if (this.unregisterGameListListener)
+			this.unregisterGameListListener();
+
+		this.unregisterAuthListener();
+	}
+	registerAuthListener = () => {
+		const onSignIn = (authUser) => {
+			this.setState({ authUser });
+			this.registerGameListListener();
+		};
+		const onSignOut = () => {
+			this.unregisterGameListListener();
+			this.setState({ authUser: null });
+		};
+		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+	};
+	registerGameListListener = () => {
 		const handleGameListUpdate = (gameList) => {
 			if (gameList) {
 				// Convert object to array, including gid from property keys
@@ -36,58 +45,35 @@ class GameListPageBase extends React.Component {
 			}
 			else
 				gameList = [];
-			this.setState({ ...INITIAL_STATE, gameList });
+			this.setState({ gameList });
 		};
-		// this.unregisterGameListListener = this.props.firebaseListener.registerGameListListener(handleGameListUpdate, handleGameListError);
 		this.unregisterGameListListener = this.props.firebaseListener.registerGameListListener(handleGameListUpdate);
 	};
-	componentWillUnmount() {
-		this.unregisterGameListListener();
-		this.unregisterAuthListener();
-	}
-	getToken = async () => {
-		if (!this.authUser) {
-			alert("Cannot get token: user not logged in.");
-			return null;
-		}
-		try {
-			return await this.authUser.getIdToken();
-		}
-		catch (error) {
-			// TODO: error mode in render()
+	createGame = (team) => {
+		this.state.authUser.getIdToken().then(token => {
+			api.createGame(token, team).catch(errorMessage => {
+				console.log(errorMessage);
+				alert(errorMessage);
+			});
+		}).catch(error => {
 			console.log(error);
-			alert('Failed to get auth token');
-			return null;
-		};
+			alert('Failed to get auth token: ' + JSON.stringify(error));
+		});
 	};
-	createGame = async (team) => {
-		const token = await this.getToken();
-		if (token) {
-			try {
-				api.createGame(token, team);
-			} catch (errorMessage) {
+	joinGame = (gid, team) => {
+		this.state.authUser.getIdToken().then(token => {
+			api.joinGame(token, gid, team).catch(errorMessage => {
+				console.log(errorMessage);
 				alert(errorMessage);
-			}
-		}
-	};
-	joinGame = async (gid, team) => {
-		const token = await this.getToken();
-		if (token) {
-			try {
-				api.joinGame(token, gid, team);
-			} catch (errorMessage) {
-				alert(errorMessage);
-			}
-		}
+			});
+		}).catch(error => {
+			console.log(error);
+			alert('Failed to get auth token: ' + JSON.stringify(error));
+		});
 	};
 
 	render() {
-		// const { gameList, errorMessage } = this.state;
 		const { gameList } = this.state;
-
-		// // Error
-		// if (errorMessage)
-		// 	return <div align='center'>Something happened: {errorMessage}</div>;
 
 		// Loading
 		if (!gameList)

@@ -14,29 +14,46 @@ import * as api from '../api';
 
 const CANVAS_SIZE = 360;
 
-const INITIAL_STATE = {
+const INITIAL_GAME_STATE = {
 	historyPosition: 0,
 	selectedSquare: null,
 	game: null,
 	errorMessage: null,
 };
+const INITIAL_STATE = {
+	...INITIAL_GAME_STATE,
+	authUser: null,
+};
 
 class GamePageBase extends React.Component {
 	state = { ...INITIAL_STATE };
 	chess = new Chess();
-	authUser = null;
 	gid = this.props.gid;
 
 	componentDidMount() {
-		// Auth User Listener
-		const onSignIn = (authUser) => { this.authUser = authUser; };
-		const onSignOut = () => { this.authUser = null; };
-		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+		this.registerAuthListener();
+	};
+	componentWillUnmount() {
+		if (this.unregisterGameListener)
+			this.unregisterGameListener();
 
-		// Game Listener
+		this.unregisterAuthListener();
+	}
+	registerAuthListener = () => {
+		const onSignIn = (authUser) => {
+			this.setState({ authUser });
+			this.registerGameListener();
+		};
+		const onSignOut = () => {
+			this.unregisterGameListener();
+			this.setState({ authUser: null });
+		};
+		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+	};
+	registerGameListener = () => {
 		const handleGameUpdate = (game) => {
 			if (!game) {
-				this.setState({ ...INITIAL_STATE, errorMessage: 'Game does not exist' });
+				this.setState({ ...INITIAL_GAME_STATE, errorMessage: 'Game does not exist' });
 				return;
 			}
 
@@ -48,18 +65,13 @@ class GamePageBase extends React.Component {
 			if (game.moves.length)
 				for (let i = 0; i < game.moves.length; i++)
 					if (!this.chess.move(game.moves[i])) {
-						this.setState({ ...INITIAL_STATE, errorMessage: 'Invalid list of previous moves' });
+						this.setState({ ...INITIAL_GAME_STATE, errorMessage: 'Invalid list of previous moves' });
 						return;
 					}
-			this.setState({ ...INITIAL_STATE, game });
+			this.setState({ ...INITIAL_GAME_STATE, game });
 		};
 		this.unregisterGameListener = this.props.firebaseListener.registerGameListener(handleGameUpdate, this.gid);
 	};
-	componentWillUnmount() {
-		this.unregisterGameListener();
-		this.unregisterAuthListener();
-	}
-
 	canGoBackInHistory = () => {
 		return (this.state.game?.moves?.length &&
 			this.state.historyPosition < this.state.game.moves.length);
@@ -108,20 +120,18 @@ class GamePageBase extends React.Component {
 
 	getTeam = () => {
 		// Determine user's team
-		if (!this.authUser || !this.state.game)
-			return '';
-		else if (this.state.game.uid_w === this.authUser.uid)
+		if (this.state.game.uid_w === this.state.authUser.uid)
 			return 'w';
-		else if (this.state.game.uid_b === this.authUser.uid)
+		else if (this.state.game.uid_b === this.state.authUser.uid)
 			return 'b';
-		else if (this.state.game.uid_d === this.authUser.uid)
+		else if (this.state.game.uid_d === this.state.authUser.uid)
 			return 'd';
 		else
 			return 'o';
 	};
 	handleMouseDownCanvas = (square) => {
 		// Is user logged in?
-		if (!this.authUser)
+		if (!this.state.authUser)
 			return;
 
 		// Is game in progress?
@@ -130,7 +140,6 @@ class GamePageBase extends React.Component {
 
 		// Is it user's turn?
 		const team = this.getTeam();
-		// if (this.authUser.uid !== this.state.game[`uid_${this.chess.turn()}`])
 		if (this.chess.turn() !== team)
 			return;
 
@@ -168,47 +177,31 @@ class GamePageBase extends React.Component {
 
 	};
 
-	getToken = async () => {
-		if (!this.authUser) {
-			alert("Cannot get token: user not logged in.");
-			return null;
-		}
-		try {
-			return await this.authUser.getIdToken();
-		}
-		catch (error) {
-			// TODO: error mode in render()
+	leaveGame = () => {
+		this.state.authUser.getIdToken().then(token => {
+			api.leaveGame(token, this.gid).catch(errorMessage => {
+				console.log(errorMessage);
+				alert(errorMessage);
+			});
+		}).catch(error => {
 			console.log(error);
-			alert('Failed to get auth token');
-			return null;
-		};
+			alert('Failed to get auth token: ' + JSON.stringify(error));
+		});
 	};
-
-	leaveGame = async () => {
-		const token = await this.getToken();
-		if (token) {
-			try {
-				await api.leaveGame(token, this.gid);
-
-			} catch (errorMessage) {
+	move = (moveString) => {
+		this.state.authUser.getIdToken().then(token => {
+			api.move(token, this.gid, moveString).catch(errorMessage => {
+				console.log(errorMessage);
 				alert(errorMessage);
-			}
-		}
-	};
-	move = async (moveString) => {
-		const token = await this.getToken();
-		if (token) {
-			try {
-				api.move(token, this.gid, moveString);
-			} catch (errorMessage) {
-				alert(errorMessage);
-			}
-		}
+			});
+		}).catch(error => {
+			console.log(error);
+			alert('Failed to get auth token: ' + JSON.stringify(error));
+		});
 	};
 
 	render() {
 		const { historyPosition, selectedSquare, game, errorMessage } = this.state;
-		// const { historyPosition, selectedSquare, game } = this.state;
 
 		// Error
 		if (errorMessage)
@@ -228,7 +221,7 @@ class GamePageBase extends React.Component {
 
 		let gameTitleText;
 		switch (game.status) {
-			case 'wait': gameTitleText = 'Waiting for another player to join...'; break;;
+			case 'wait': gameTitleText = 'Waiting for another player to join...'; break;
 			case 'play': gameTitleText = 'Game in progress.'; break;
 			case 'draw': gameTitleText = 'Game ended in a draw.'; break;
 			case 'stale': gameTitleText = 'Game ended in a draw due to stalemate.'; break;
