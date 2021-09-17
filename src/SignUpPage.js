@@ -45,7 +45,7 @@ class SignUpFormBase extends React.Component {
 			.then(() => this.props.firebase.doSendEmailVerification())
 			.then(() => {
 				this.setState({ ...INITIAL_STATE });
-				this.props.history.push(ROUTES.GAME);
+				this.props.history.push(ROUTES.GAME_LIST);
 			})
 			.catch(error => {
 				if (error.code === ERROR_CODE_ACCOUNT_EXISTS)

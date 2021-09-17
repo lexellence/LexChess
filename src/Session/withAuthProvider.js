@@ -3,13 +3,13 @@ import AuthUserContext from './AuthUserContext';
 import { withFirebase } from '../Firebase';
 
 //+----------------------\------------------------------------
-//|	 withAuthentication	 | 
+//|	  withAuthProvider	 |
 //\----------------------/
 //	Wrap a component to act as the single provider of 
 //	information about the signed-in user.
 //\-----------------------------------------------------------
-const withAuthentication = (Component) => {
-	class WithAuthentication extends React.Component {
+const withAuthProvider = (Component) => {
+	class WithAuthProvider extends React.Component {
 		constructor(props) {
 			super(props);
 			this.state = {
@@ -42,7 +42,7 @@ const withAuthentication = (Component) => {
 		}
 	}
 
-	return withFirebase(WithAuthentication);
+	return withFirebase(WithAuthProvider);
 };
 
-export default withAuthentication;
+export default withAuthProvider;

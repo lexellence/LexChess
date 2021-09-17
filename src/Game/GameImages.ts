@@ -1,4 +1,4 @@
-const dir = 'images/';
+const dir = '/images/';
 const imageSources: string[] = [
 	dir + 'chessboard/chessboard.png',
 	dir + 'white/white_king.png',
@@ -18,14 +18,19 @@ const imageSources: string[] = [
 function loadImages(sources: string[], onLoadCompletion: () => void) {
 	let counter = 0;
 	let images = [];
-	function onLoad() {
+	const handleLoad = function () {
 		counter++;
 		if (counter === sources.length) onLoadCompletion();
+	}
+	const handleError = function (this: HTMLImageElement) {
+		alert('Error loading image ' + this.src);
 	}
 	for (let source of sources) {
 		let img = new Image();
 		// TODO: Should I implement an error handler?
-		img.onload = img.onerror = onLoad;
+		img.onload = handleLoad;
+		img.onerror = handleError;
+		console.log('source ' + source);
 		img.src = source;
 		images.push(img);
 	}
@@ -43,6 +48,8 @@ class GameImages {
 		});
 	}
 	getBoardImage = (): null | HTMLImageElement => {
+		if (this.loading)
+			return null;
 		return this.images[0];
 	};
 	getPieceImage = (team: 'w' | 'b', type: "p" | "n" | "b" | "r" | "q" | "k"): null | HTMLImageElement => {

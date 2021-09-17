@@ -73,20 +73,20 @@ class Firebase {
 	};
 
 	// *** Merge Auth and DB User API *** //
-	onAuthUserListener = (next, fallback) =>
+	onAuthUserListener = (onSignIn, onSignOut) =>
 		this.auth.onAuthStateChanged(authUser => {
-			// Fallback if no auth
 			if (!authUser) {
-				fallback();
+				onSignOut();
 				return;
 			}
+
 			// get roles from db; 
 			authUser.roles = {};
 			this.userRef(authUser.uid).child('roles').once('value')
 				.then(snapshot => {
 					if (snapshot.exists())
 						authUser.roles = snapshot.val();
-					next(authUser);
+					onSignIn(authUser);
 					return;
 				});
 		});

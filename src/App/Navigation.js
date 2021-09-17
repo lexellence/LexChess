@@ -9,6 +9,7 @@ import { withFirebase } from '../Firebase';
 import SignOutButton from './SignOutButton';
 import * as ROUTES from "../constants/routes";
 import * as ROLES from '../constants/roles';
+import withFirebaseListener from '../FirebaseListener';
 
 function NavigationNonAuth() {
 	return (
@@ -28,14 +29,41 @@ function NavigationNonAuth() {
 }
 
 class NavigationAuthBase extends React.Component {
-	state = { userRoles: {} };
+	state = { userRoles: {}, userGIDs: {} };
 	componentDidMount() {
-		const onSignIn = authUser => this.setState({ userRoles: authUser.roles });
-		const onSignOut = () => this.setState({ userRoles: {} });
+		const onSignIn = (authUser) =>
+			this.setState({ userRoles: authUser.roles });
+		const onSignOut = () =>
+			this.setState({ userRoles: {} });
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+
+		const handleUserUpdate = (user) =>
+			this.setState({ userGIDs: user?.gids ? user.gids : {} });
+		// const onUserError = (errorMessage) => {
+		// 	this.setState({ userGIDs: {} });
+		// };
+		// this.unregisterUserListener = this.props.firebaseListener.registerUserListener(onUserUpdate, onUserError);
+		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
-	componentWillUnmount = () => this.unregisterAuthListener();
+	componentWillUnmount = () => {
+		this.unregisterUserListener();
+		this.unregisterAuthListener();
+	};
 	render() {
+		// Dynamic game bar
+		const gameNavs = Object.keys(this.state.userGIDs).map((gid, i) => {
+			// const to = {
+			// 	pathname: ROUTES.PLAY,
+			// 	search: '?gid=' + gid,
+			// };
+			const to = ROUTES.PLAY_BASE + '/' + gid;
+			const title = `Play ${i}`;
+			return (
+				<Nav key={i}>
+					<Link to={to} className="nav-link">{title}</Link>
+				</Nav>
+			);
+		});
 		return (
 			<Navbar bg="dark" variant="dark" className="unselectable">
 				<Container>
@@ -43,8 +71,12 @@ class NavigationAuthBase extends React.Component {
 						<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
 					</Navbar.Brand>
 					<Nav className="justify-content-end">
+
+						{/* Dynamic game bar */}
+						{gameNavs}
+
 						<Nav>
-							<Link to={ROUTES.GAME} className="nav-link">Play</Link>
+							<Link to={ROUTES.GAME_LIST} className="nav-link">Game List</Link>
 						</Nav>
 						<Nav>
 							<Link to={ROUTES.ACCOUNT} className="nav-link">Account</Link>
@@ -62,8 +94,9 @@ class NavigationAuthBase extends React.Component {
 	}
 }
 const NavigationAuth =
-	withFirebase(
-		NavigationAuthBase);
+	withFirebaseListener(
+		withFirebase(
+			NavigationAuthBase));
 
 function Navigation() {
 	return (

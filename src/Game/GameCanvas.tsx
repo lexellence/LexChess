@@ -39,21 +39,19 @@ interface GameCanvasState {
 	// selectedSquare: Square;
 }
 
-const INITIAL_STATE = {
-	loading: true,
-	// selectedSquare: null
-};
+// const INITIAL_STATE = {
+// selectedSquare: null
+// };
 
 function clamp(num: number, min: number, max: number) {
 	return Math.max(min, Math.min(num, max));
 }
 
 class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
-	readonly state = { ...INITIAL_STATE };
+	// readonly state = { ...INITIAL_STATE };
 	canvas = React.createRef<HTMLCanvasElement>();
-	images: GameImages = new GameImages(() => {
-		this.setState({ loading: false });
-	});
+	images: any = null;
+
 	// Calculate sizes
 	boardImageStart = 0;
 	boardImageSize = this.props.size;
@@ -67,13 +65,19 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	pieceImageSize = this.squareSize - 2 * this.squareMargin;
 
 	componentDidMount() {
+		console.log(`componentDidMount GameCanvas`);
+
+		this.images = new GameImages(() => {
+			this.draw();
+		});
+
 		this.canvas.current?.addEventListener('mousedown', this.handleMouseDown);
 		this.canvas.current?.addEventListener('mouseup', this.handleMouseUp);
 
 		// Stop canvas double-click from selecting text outside canvas
 		// document.getElementById('gameBoardCanvas')!.onselectstart = () => false;
 
-		this.draw();
+		// this.draw();
 	};
 	componentDidUpdate() {
 		this.draw();
@@ -106,15 +110,18 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	}
 
 	private draw = () => {
+		if (!this.images)
+			return;
+
 		// Save drawing context
 		const ctx = this.canvas.current?.getContext('2d', { alpha: true });
 		if (!ctx)
 			return;
 
 		// Background
-		ctx.clearRect(0, 0, this.props.size, this.props.size);
-		ctx.fillStyle = "#CCCCCC";
-		ctx.fillRect(0, 0, this.props.size, this.props.size);
+		// ctx.clearRect(0, 0, this.props.size, this.props.size);
+		// ctx.fillStyle = "#CCCCCC";
+		// ctx.fillRect(0, 0, this.props.size, this.props.size);
 
 		// Draw checkerboard
 		const boardImage = this.images.getBoardImage();
@@ -124,9 +131,6 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 		// Draw canvas border
 		ctx.strokeStyle = "black";
 		ctx.strokeRect(0, 0, this.props.size, this.props.size);
-
-		if (this.state.loading)
-			return;
 
 		// Draw game pieces
 		for (let row = 0; row < 8; row++) {

@@ -60,7 +60,9 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, joinGameCallback })
 
 const GameTableRowList = ({ gameList, joinGameCallback }) => (
 	gameList.map((game, i) => {
-		return <GameTableRow gid={game.gid}
+		return <GameTableRow
+			key={i}
+			gid={game.gid}
 			status={game.status}
 			name_w={game.name_w}
 			name_b={game.name_b}

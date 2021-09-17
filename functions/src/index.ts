@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 // import boolParser from 'express-query-boolean';
 import httpCodes from 'http-status-codes';
 import admin from 'firebase-admin';
+const functions = require('firebase-functions');
+// import * as functions from 'firebase-functions'
 
 admin.initializeApp();
 const app = express();
@@ -73,10 +75,14 @@ app.use(cookieParser());
 app.use('/', validateFirebaseIdToken, require('./api.route'));
 
 // Expose Express API as a single Cloud Function:
-exports.api = require('firebase-functions').https.onRequest(app);
+exports.api = functions.https.onRequest(app);
 
-
-
+// Make sure user has an entry in the database
+exports.initDatabaseUser = functions.auth.user().onCreate(async (user: any) => {
+	const db = admin.database();
+	console.log('creating db user');
+	await db.ref(`users/${user.uid}/exists`).update(true);
+});
 
 
 

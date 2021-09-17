@@ -150,7 +150,7 @@ const SignInTwitter =
 class SignInPageBase extends React.Component {
 	componentDidMount() {
 		// Redirect on sign-in
-		const onSignIn = authUser => this.props.history.push(ROUTES.GAME);
+		const onSignIn = authUser => this.props.history.push(ROUTES.GAME_LIST);
 		const onSignOut = () => null;
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 	}

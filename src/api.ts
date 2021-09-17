@@ -14,7 +14,7 @@ async function callAPI(idToken: string, method: Method, url: string) {
 				Authorization: 'Bearer ' + idToken
 			}
 		}).then(function (response: AxiosResponse) {
-			resolve(response.data);
+			resolve(null);
 		}).catch(function (error) {
 			let rejectMessage: string;
 			if (error.response) {
@@ -40,13 +40,6 @@ async function callAPI(idToken: string, method: Method, url: string) {
 	});
 }
 //+--------------------------------\-------------------------
-//|	 	     getPlayState  	   	   |
-//\--------------------------------/
-//------------------------------------------------------------
-export async function getPlayState(idToken: string) {
-	return callAPI(idToken, 'get', ENDPOINTS.GET_PLAY);
-};
-//+--------------------------------\-------------------------
 //|	 	 	   joinGame 	   	   |
 //\--------------------------------/
 //------------------------------------------------------------
@@ -64,14 +57,14 @@ export async function createGame(idToken: string, team: string) {
 //|	 	      	move			   |
 //\--------------------------------/
 //------------------------------------------------------------
-export async function move(idToken: string, moveString: string) {
-	return callAPI(idToken, 'put', ENDPOINTS.MOVE + '/' + moveString);
+export async function move(idToken: string, gid: string, moveString: string) {
+	return callAPI(idToken, 'put', ENDPOINTS.MOVE + '/' + gid + '/' + moveString);
 };
 //+--------------------------------\-------------------------
 //|	 	 	  leaveGame	     	   |
 //\--------------------------------/
 //------------------------------------------------------------
-export async function leaveGame(idToken: string) {
-	return callAPI(idToken, 'put', ENDPOINTS.LEAVE_GAME);
+export async function leaveGame(idToken: string, gid: string) {
+	return callAPI(idToken, 'put', ENDPOINTS.LEAVE_GAME + '/' + gid);
 };
 

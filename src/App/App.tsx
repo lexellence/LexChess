@@ -3,13 +3,14 @@ import { BrowserRouter as Router } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Navigation from "./Navigation";
+import RouteList from "./RouteList";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "./App.css";
-import { withAuthentication } from "../Session"
 
-import Navigation from "./Navigation";
-import RouteList from "./RouteList";
+import { withAuthProvider } from "../Session";
+import { withFirebaseListenerProvider } from "../FirebaseListener";
 
 function App() {
 	return (
@@ -33,4 +34,4 @@ function App() {
 	)
 }
 
-export default withAuthentication(App);
+export default withFirebaseListenerProvider(withAuthProvider(App));
