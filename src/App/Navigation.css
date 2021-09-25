@@ -1,0 +1,23 @@
+.navbar-brand a{
+  color: #66DD66;
+}
+.nav-menu-link {
+  /* margin: 1em; */
+  /* font-size: 2em; */
+  /* font-family: 'Roboto', sans-serif; */
+  /* cursor: pointer; */
+  /* text-decoration: none; */
+  /* letter-spacing: .3em; */
+  /* text-indent: .3em; */
+  /* color: #181818; */
+  border-bottom: 3px solid transparent;
+}
+.nav-menu-link:hover {
+  transform: translateY(-2px);
+}
+.active-nav-link {
+  /* background-color: #001d03; */
+    /* color: #ff0000; */
+  border-bottom: 3px solid #a2ff9a;
+  transition: border-bottom .5s ease-in-out;
+}

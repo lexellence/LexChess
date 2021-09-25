@@ -1,8 +1,7 @@
+import './Navigation.css';
 import React from 'react';
-import { Link } from 'react-router-dom';
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import Container from "react-bootstrap/Container";
+import { Link, NavLink } from 'react-router-dom';
+import { Nav, Navbar, Container } from "react-bootstrap";
 
 import { AuthUserContext } from '../Session';
 import { withFirebase } from '../Firebase';
@@ -39,10 +38,6 @@ class NavigationAuthBase extends React.Component {
 
 		const handleUserUpdate = (user) =>
 			this.setState({ userGIDs: user?.gids ? user.gids : {} });
-		// const onUserError = (errorMessage) => {
-		// 	this.setState({ userGIDs: {} });
-		// };
-		// this.unregisterUserListener = this.props.firebaseListener.registerUserListener(onUserUpdate, onUserError);
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	componentWillUnmount = () => {
@@ -50,46 +45,38 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener();
 	};
 	render() {
-		// Dynamic game bar
-		const gameNavs = Object.keys(this.state.userGIDs).map((gid, i) => {
-			// const to = {
-			// 	pathname: ROUTES.PLAY,
-			// 	search: '?gid=' + gid,
-			// };
+		const dynamicGameLinks = Object.keys(this.state.userGIDs).map((gid, i) => {
 			const to = ROUTES.PLAY_BASE + '/' + gid;
 			const title = `Play ${i}`;
 			return (
 				<Nav key={i}>
-					<Link to={to} className="nav-link">{title}</Link>
+					<NavLink to={to} activeClassName="active-nav-link" className="nav-link nav-menu-link">{title}</NavLink>
 				</Nav>
 			);
 		});
 		return (
-			<Navbar bg="dark" variant="dark" className="unselectable">
+			<Navbar bg="dark" variant="dark" className="unselectable" >
 				<Container>
 					<Navbar.Brand>
 						<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
 					</Navbar.Brand>
-					<Nav className="justify-content-end">
-
-						{/* Dynamic game bar */}
-						{gameNavs}
-
+					<Nav className="justify-content-end nav-menu">
+						{dynamicGameLinks}
 						<Nav>
-							<Link to={ROUTES.GAME_LIST} className="nav-link">Game List</Link>
+							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">Game List</NavLink>
 						</Nav>
 						<Nav>
-							<Link to={ROUTES.ACCOUNT} className="nav-link">Account</Link>
+							<NavLink to={ROUTES.ACCOUNT} activeClassName="active-nav-link" className="nav-link nav-menu-link">Account</NavLink>
 						</Nav>
 						{!!this.state.userRoles[ROLES.ADMIN] && <Nav>
-							<Link to={ROUTES.ADMIN} className="nav-link">Admin</Link>
+							<NavLink to={ROUTES.ADMIN} activeClassName="active-nav-link" className="nav-link nav-menu-link">Admin</NavLink>
 						</Nav>}
 						<Nav>
 							<SignOutButton />
 						</Nav>
 					</Nav>
-				</Container>
-			</Navbar>
+				</Container >
+			</Navbar >
 		);
 	}
 }
@@ -108,4 +95,4 @@ function Navigation() {
 	);
 }
 
-export default Navigation;
+export default Navigation;;
