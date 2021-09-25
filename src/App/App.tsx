@@ -1,20 +1,16 @@
+import "./App.css";
 import React from "react";
-import { BrowserRouter as Router } from "react-router-dom";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
+import { BrowserRouter } from "react-router-dom";
+import { Container, Row, Col } from "react-bootstrap";
 import Navigation from "./Navigation";
 import RouteList from "./RouteList";
-
-import "bootstrap/dist/css/bootstrap.css";
-import "./App.css";
 
 import { withAuthProvider } from "../Session";
 import { withFirebaseListenerProvider } from "../FirebaseListener";
 
 function App() {
 	return (
-		<Router>
+		<BrowserRouter>
 			<div className="App unselectable">
 				<header className="App-header">
 					<Navigation />
@@ -30,7 +26,7 @@ function App() {
 					</Row>
 				</Container>
 			</div>
-		</Router>
+		</BrowserRouter>
 	)
 }
 
