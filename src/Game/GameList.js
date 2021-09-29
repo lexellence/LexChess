@@ -2,17 +2,7 @@ import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
-const GameTableTitleRow = () => (
-	<tr>
-		<th>Game</th>
-		<th>Status</th>
-		<th>White</th>
-		<th>Black</th>
-		<th>Spectate</th>
-	</tr>
-);
-
-const GameTableRow = ({ gid, status, name_w, name_b, name_d, joinGameCallback }) => {
+const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame }) => {
 	let names = '';
 	if (!name_w && !name_b)
 		names = name_d;
@@ -41,9 +31,9 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, joinGameCallback })
 			statusText = '';
 	}
 	let whiteTD = name_w ? <td>{name_w}</td>
-		: <td><Button className="edit-link" onClick={() => joinGameCallback(gid, 'w')}>Play as White</Button></td>;
+		: <td><Button className="edit-link" onClick={() => onJoinGame(gid, 'w')}>Play as White</Button></td>;
 	let blackTD = name_b ? <td>{name_b}</td>
-		: <td><Button className="edit-link" onClick={() => joinGameCallback(gid, 'b')}>Play as Black</Button></td>;
+		: <td><Button className="edit-link" onClick={() => onJoinGame(gid, 'b')}>Play as Black</Button></td>;
 
 	return (
 		<tr>
@@ -52,13 +42,13 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, joinGameCallback })
 			{whiteTD}
 			{blackTD}
 			<td>
-				<Button className="edit-link" onClick={() => joinGameCallback(gid, 'o')}>Watch</Button>
+				<Button className="edit-link" onClick={() => onJoinGame(gid, 'o')}>Watch</Button>
 			</td>
 		</tr >
 	);
 };
 
-const GameTableRowList = ({ gameList, joinGameCallback }) => (
+const GameTableRowList = ({ gameList, onJoinGame }) => (
 	gameList.map((game, i) => {
 		return <GameTableRow
 			key={i}
@@ -67,19 +57,25 @@ const GameTableRowList = ({ gameList, joinGameCallback }) => (
 			name_w={game.name_w}
 			name_b={game.name_b}
 			name_d={game.name_d}
-			joinGameCallback={joinGameCallback} />;
+			onJoinGame={onJoinGame} />;
 	})
 );
 
-const GameList = ({ gameList, joinGameCallback }) => (
+const GameList = ({ gameList, onJoinGame }) => (
 	<div className="table-wrapper">
 		<Table striped bordered hover>
 			<thead>
-				<GameTableTitleRow />
+				<tr>
+					<th>Game</th>
+					<th>Status</th>
+					<th>White</th>
+					<th>Black</th>
+					<th>Spectate</th>
+				</tr>
 			</thead>
 			<tbody>
 				{gameList ?
-					<GameTableRowList gameList={gameList} joinGameCallback={joinGameCallback} />
+					<GameTableRowList gameList={gameList} onJoinGame={onJoinGame} />
 					:
 					<></>
 				}
