@@ -30,7 +30,6 @@ function loadImages(sources: string[], onLoadCompletion: () => void) {
 		// TODO: Should I implement an error handler?
 		img.onload = handleLoad;
 		img.onerror = handleError;
-		console.log('source ' + source);
 		img.src = source;
 		images.push(img);
 	}
