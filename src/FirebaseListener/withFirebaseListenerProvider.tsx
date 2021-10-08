@@ -19,7 +19,7 @@ class Notifier {
 		this.initialized = false;
 		this.data = null;
 		this.onUpdateList = [];
-	};
+	}
 	register = (onUpdate: OnUpdateFunc): UnregisterFunc => {
 		this.onUpdateList.push(onUpdate);
 		if (this.initialized)
@@ -28,22 +28,22 @@ class Notifier {
 			this.onUpdateList = this.onUpdateList.filter(element => element !== onUpdate);
 		};
 		return unregister;
-	};
+	}
 	update = (newData: any): void => {
 		if (!this.initialized)
 			this.initialized = true;
 		this.data = newData;
 		this.notifyAll();
-	};
+	}
 	notify = (onUpdate: OnUpdateFunc): void => {
 		onUpdate(this.data ? { ...this.data } : null);
-	};
+	}
 	notifyAll = (): void => {
 		this.onUpdateList.forEach(onUpdate => this.notify(onUpdate));
-	};
+	}
 	hasListeners = (): boolean => {
 		return this.onUpdateList.length > 0;
-	};
+	}
 };
 //+--------------------------\--------------------------------
 //|	      GameNotifier	     |
@@ -75,59 +75,98 @@ const withFirebaseListenerProvider = (Component: any) => {
 		gameListNotifier = new Notifier();
 		unregisterAuthListener = () => { };
 
+		//+----------------------------------\------------------------
+		//|	  		 Mount/Unmount			 |
+		//\----------------------------------/------------------------
 		componentDidMount() {
-			// Listen to game list
-			this.props.firebase.db.ref('gameList').on('value', (snapshot) => {
-				this.gameListNotifier.update(snapshot.val());
-			});
-
-			// Listen to authUser
+			this.startGameListListening();
+			this.registerAuthListener();
+		}
+		componentWillUnmount() {
+			this.unregisterAuthListener();
+			this.stopAllListening();
+		}
+		registerAuthListener = () => {
 			const onSignIn = (authUser: any) => {
 				this.authUser = authUser;
 
-				// Listen to db user
-				if (this.authUser?.uid)
-					this.props.firebase?.userRef(this.authUser.uid).on('value', (snapshot) => {
-						const user = snapshot.val();
-						this.handleUserUpdate(user);
-					});
+				this.startUserListening();
 			};
 			const onSignOut = () => {
 				this.authUser = null;
 
-				// Stop listening to db user
-				this.props.firebase.userRef(this.authUser.uid).off();
-
-				// Stop listening to user games
-				this.gameNotifierMap.forEach((gameNotifier, gid) => {
-					if (gameNotifier.listening) {
-						this.props.firebase.db.ref(`games/${gid}`).off();
-						gameNotifier.listening = false;
-					}
-				});
+				// Stop user and games, but not game list
+				this.stopUserListening();
+				this.stopAllGameListening();
 				this.gameNotifierMap.clear();
 			};
 			this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 		}
-		componentWillUnmount() {
-			// Stop listening to authUser
-			this.unregisterAuthListener();
 
-			// Stop listening to game list
-			this.props.firebase.db.ref('gameList').off();
-
+		//+----------------------------------\------------------------
+		//|	  Start/Stop Firebase Listeners	 |
+		//\----------------------------------/------------------------
+		startUserListening = () => {
+			if (this.authUser?.uid)
+				this.props.firebase?.userRef(this.authUser.uid).on('value', (snapshot) => {
+					const user = snapshot.val();
+					this.handleUserUpdate(user);
+				});
 		}
+		stopUserListening = () => {
+			this.props.firebase.userRef(this.authUser.uid).off();
+		}
+		startGameListListening = () => {
+			this.props.firebase.db.ref('gameList').on('value', (snapshot) => {
+				const gameList = snapshot.val();
+				this.handleGameListUpdate(gameList);
+			});
+		}
+		stopGameListListening = () => {
+			this.props.firebase.db.ref('gameList').off();
+		}
+		startGameListening = (gid: string, onGameUpdate: OnUpdateFunc) => {
+			this.gameNotifierMap.get(gid).listening = true;
+			this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
+				const game = snapshot.val();
+				onGameUpdate(game);
+			});
+		}
+		stopGameListening = (gid: string) => {
+			this.props.firebase.db.ref(`games/${gid}`).off();
+		}
+		stopAllGameListening = () => {
+			this.gameNotifierMap.forEach((gameNotifier, gid) => {
+				if (gameNotifier.listening) {
+					this.stopGameListening(gid);
+					gameNotifier.listening = false;
+				}
+			});
+		}
+		stopAllListening = () => {
+			this.stopUserListening();
+			this.stopGameListListening();
+			this.stopAllGameListening();
+		}
+
+		//+----------------------------------\------------------------
+		//|	  		 User Update			 |
+		//\----------------------------------/------------------------
 		handleUserUpdate = (user: any) => {
 			const userGIDs = user?.gids ? Object.keys(user.gids) : [];
+			this.trimInactiveGamesListeners(userGIDs);
+			this.startNewGamesListeners(userGIDs);
 
-			// Stop listening to games that user is no longer in
+			this.userNotifier.update(user);
+		}
+		trimInactiveGamesListeners = (updatedUserGIDs: string[]) => {
 			let gidsToDelete: string[] = [];
 			this.gameNotifierMap.forEach((gameNotifier, gid) => {
 				// If user no longer in game
-				if (!userGIDs.includes(gid)) {
+				if (!updatedUserGIDs.includes(gid)) {
 					// Stop listening
 					if (gameNotifier.listening) {
-						this.props.firebase.db.ref(`games/${gid}`).off();
+						this.stopGameListening(gid);
 						gameNotifier.listening = false;
 					}
 					// Delete notifier if no listeners registered
@@ -138,33 +177,38 @@ const withFirebaseListenerProvider = (Component: any) => {
 			// Delete selected notifiers
 			for (const gid of gidsToDelete)
 				this.gameNotifierMap.delete(gid);
-
-
-			// Listen to new user games
-			for (const gid of userGIDs) {
-				// Create game notifier 
+		}
+		startNewGamesListeners = (updatedUserGIDs: string[]) => {
+			for (const gid of updatedUserGIDs) {
+				// Create game notifier if not already created
 				if (!this.gameNotifierMap.has(gid))
 					this.gameNotifierMap.set(gid, new GameNotifier(false));
 
+				// Start listener if not already started
 				if (!this.gameNotifierMap.get(gid).listening) {
-					// Listen to game
-					this.gameNotifierMap.get(gid).listening = true;
-					this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
-						this.gameNotifierMap.get(gid).update(snapshot.val());
+					this.startGameListening(gid, (data) => {
+						this.gameNotifierMap.get(gid).update(data);
 					});
 				}
 			}
-			// Notify user listeners
-			this.userNotifier.update(user);
-		};
+		}
 
+		//+----------------------------------\------------------------
+		//|	  		Game List Update		 |
+		//\----------------------------------/------------------------
+		handleGameListUpdate = (gameList: any) => {
+			this.gameListNotifier.update(gameList);
+		}
 
+		//+----------------------------------\------------------------
+		//|	  	 Registration Callbacks		 |
+		//\----------------------------------/------------------------
 		registerUserListener = (onUpdate: OnUpdateFunc): UnregisterFunc => {
 			return this.userNotifier.register(onUpdate);
-		};
+		}
 		registerGameListListener = (onUpdate: OnUpdateFunc): UnregisterFunc => {
 			return this.gameListNotifier.register(onUpdate);
-		};
+		}
 		registerGameListener = (onUpdate: OnUpdateFunc, gid: string): UnregisterFunc => {
 			// Create notifier if none exists
 			if (!this.gameNotifierMap.has(gid))
@@ -179,14 +223,18 @@ const withFirebaseListenerProvider = (Component: any) => {
 					this.gameNotifierMap.delete(gid);
 			};
 			return unregister;
-		};
+		}
+
+		//+----------------------------------\------------------------
+		//|	  	 		Render				 |
+		//\----------------------------------/------------------------
 		state = {
 			value: {
 				registerUserListener: this.registerUserListener,
 				registerGameListListener: this.registerGameListListener,
 				registerGameListener: this.registerGameListener
 			}
-		};
+		}
 		render() {
 			return (
 				<FirebaseListenerContext.Provider value={this.state.value}>
