@@ -1,63 +1,8 @@
 import React from 'react';
 import FirebaseListenerContext from './FirebaseListenerContext';
 import Firebase, { withFirebase } from '../Firebase';
-// import * as api from '../api';
+import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';
 
-//+--------------------------\--------------------------------
-//|	        Notifier	     |
-//\--------------------------/
-//	Middle-man between firebase database listeners and 
-//		internal component listeners.
-//\-----------------------------------------------------------
-type OnUpdateFunc = (data: any) => void;
-type UnregisterFunc = () => void;
-class Notifier {
-	private initialized: boolean;
-	private data: any;
-	private onUpdateList: OnUpdateFunc[];
-	constructor() {
-		this.initialized = false;
-		this.data = null;
-		this.onUpdateList = [];
-	}
-	register = (onUpdate: OnUpdateFunc): UnregisterFunc => {
-		this.onUpdateList.push(onUpdate);
-		if (this.initialized)
-			this.notify(onUpdate);
-		const unregister = () => {
-			this.onUpdateList = this.onUpdateList.filter(element => element !== onUpdate);
-		};
-		return unregister;
-	}
-	update = (newData: any): void => {
-		if (!this.initialized)
-			this.initialized = true;
-		this.data = newData;
-		this.notifyAll();
-	}
-	notify = (onUpdate: OnUpdateFunc): void => {
-		onUpdate(this.data ? { ...this.data } : null);
-	}
-	notifyAll = (): void => {
-		this.onUpdateList.forEach(onUpdate => this.notify(onUpdate));
-	}
-	hasListeners = (): boolean => {
-		return this.onUpdateList.length > 0;
-	}
-};
-//+--------------------------\--------------------------------
-//|	      GameNotifier	     |
-//\--------------------------/
-//	Adds a flag to Notifier signalling whether the Firebase 
-//		listener has been turned on.
-//\-----------------------------------------------------------
-class GameNotifier extends Notifier {
-	listening: boolean;
-	constructor(listening: boolean) {
-		super();
-		this.listening = listening;
-	}
-};
 //+----------------------------------\------------------------
 //|	  withFirebaseListenerProvider	 |
 //\----------------------------------/
@@ -70,9 +15,10 @@ type WithFirebaseListenerProviderProps = {
 const withFirebaseListenerProvider = (Component: any) => {
 	class WithFirebaseListenerProvider extends React.Component<WithFirebaseListenerProviderProps> {
 		authUser: any = null;
-		gameNotifierMap = new Map();	// key = gid, value = GameNotifier
-		userNotifier = new Notifier();
-		gameListNotifier = new Notifier();
+		gameNotifierMap = new Map<string, ValueNotifier>();	// key = gid, value = ChildAddedNotifier
+		gameListeningGIDs: string[] = [];
+		userNotifier = new ValueNotifier();
+		gameListNotifier = new ValueNotifier();
 		unregisterAuthListener = () => { };
 
 		//+----------------------------------\------------------------
@@ -125,22 +71,24 @@ const withFirebaseListenerProvider = (Component: any) => {
 		stopGameListListening = () => {
 			this.props.firebase.db.ref('gameList').off();
 		}
-		startGameListening = (gid: string, onGameUpdate: OnUpdateFunc) => {
-			this.gameNotifierMap.get(gid).listening = true;
-			this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
-				const game = snapshot.val();
-				onGameUpdate(game);
-			});
+		startGameListening = (gid: string) => {
+			if (!this.gameListeningGIDs.includes(gid)) {
+				this.gameListeningGIDs.push(gid);
+				this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
+					const game = snapshot.val();
+					this.gameNotifierMap.get(gid)!.update(game);
+				});
+			}
 		}
 		stopGameListening = (gid: string) => {
-			this.props.firebase.db.ref(`games/${gid}`).off();
+			if (this.gameListeningGIDs.includes(gid)) {
+				this.props.firebase.db.ref(`games/${gid}`).off();
+				this.gameListeningGIDs = this.gameListeningGIDs.filter(element => element !== gid);
+			}
 		}
 		stopAllGameListening = () => {
 			this.gameNotifierMap.forEach((gameNotifier, gid) => {
-				if (gameNotifier.listening) {
-					this.stopGameListening(gid);
-					gameNotifier.listening = false;
-				}
+				this.stopGameListening(gid);
 			});
 		}
 		stopAllListening = () => {
@@ -164,11 +112,8 @@ const withFirebaseListenerProvider = (Component: any) => {
 			this.gameNotifierMap.forEach((gameNotifier, gid) => {
 				// If user no longer in game
 				if (!updatedUserGIDs.includes(gid)) {
-					// Stop listening
-					if (gameNotifier.listening) {
-						this.stopGameListening(gid);
-						gameNotifier.listening = false;
-					}
+					this.stopGameListening(gid);
+
 					// Delete notifier if no listeners registered
 					if (!gameNotifier.hasListeners())
 						gidsToDelete.push(gid);
@@ -182,14 +127,9 @@ const withFirebaseListenerProvider = (Component: any) => {
 			for (const gid of updatedUserGIDs) {
 				// Create game notifier if not already created
 				if (!this.gameNotifierMap.has(gid))
-					this.gameNotifierMap.set(gid, new GameNotifier(false));
+					this.gameNotifierMap.set(gid, new ValueNotifier());
 
-				// Start listener if not already started
-				if (!this.gameNotifierMap.get(gid).listening) {
-					this.startGameListening(gid, (data) => {
-						this.gameNotifierMap.get(gid).update(data);
-					});
-				}
+				this.startGameListening(gid);
 			}
 		}
 
@@ -212,14 +152,14 @@ const withFirebaseListenerProvider = (Component: any) => {
 		registerGameListener = (onUpdate: OnUpdateFunc, gid: string): UnregisterFunc => {
 			// Create notifier if none exists
 			if (!this.gameNotifierMap.has(gid))
-				this.gameNotifierMap.set(gid, new GameNotifier(false));
+				this.gameNotifierMap.set(gid, new ValueNotifier());
 
-			const gameListenerUnregister = this.gameNotifierMap.get(gid).register(onUpdate);
+			const gameListenerUnregister = this.gameNotifierMap.get(gid)!.register(onUpdate);
 			const unregister = () => {
 				gameListenerUnregister();
 
 				// Delete notifier if stopped listening and has no listeners
-				if (!this.gameNotifierMap.get(gid).hasListeners() && !this.gameNotifierMap.get(gid).listening)
+				if (!this.gameNotifierMap.get(gid)!.hasListeners() && !this.gameListeningGIDs.includes(gid))
 					this.gameNotifierMap.delete(gid);
 			};
 			return unregister;
