@@ -219,10 +219,12 @@ class GamePageBase extends React.Component {
 		const blackMoveText = blackPossessiveName + ' move';
 		const whiteMoveText = whitePossessiveName + ' move';
 
+		const inCheck = this.chess.in_check();
+		let gameTitleVisibility = 'visible';
 		let gameTitleText;
 		switch (game.status) {
 			case 'wait': gameTitleText = 'Waiting for another player to join...'; break;
-			case 'play': gameTitleText = 'Game in progress.'; break;
+			case 'play': gameTitleText = inCheck ? 'Check!' : 'invisible'; break;
 			case 'draw': gameTitleText = 'Game ended in a draw.'; break;
 			case 'stale': gameTitleText = 'Game ended in a draw due to stalemate.'; break;
 			case 'ins': gameTitleText = 'Game ended in a draw due to insufficient material.'; break;
@@ -231,9 +233,10 @@ class GamePageBase extends React.Component {
 			case 'cm_b': gameTitleText = 'Checkmate! ' + game.name_b + ' wins.'; break;
 			case 'con_w': gameTitleText = game.name_b + ' conceded. ' + game.name_w + ' wins!'; break;
 			case 'con_b': gameTitleText = game.name_w + ' conceded. ' + game.name_b + ' wins!'; break;
-			default: gameTitleText = ''; break;
+			default: gameTitleText = 'invisible'; break;
 		}
-		const gameTitleVisibility = 'visible';
+		if (gameTitleText === 'invisible')
+			gameTitleVisibility = 'hidden';
 		const gameControlsVisibility = (game.status === 'wait') ? 'hidden' : 'visible';
 
 		const blackTurnTextVisibility = (game.status === 'play' && this.chess.turn() === 'b') ? 'visible' : 'hidden';
@@ -243,7 +246,7 @@ class GamePageBase extends React.Component {
 
 		return (
 			<div align='center' style={{ display: 'block' }}>
-				<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
+				<h4 style={{ visibility: gameTitleVisibility, display: 'block' }}>{gameTitleText}</h4>
 
 				<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
 				<GameCanvas size={CANVAS_SIZE}
