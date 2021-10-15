@@ -241,18 +241,18 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 		const { uid, name } = req.decodedClaims;
 		const { gid, team } = req.params;
 
-		// Can't join if you're already in a game
-		// let { game } = await getUserGame(uid, false);
-		// if (game) {
-		// 	console.log('User ' + uid + ' tried to join a game but is already in a game');
-		// 	res.status(httpCodes.FORBIDDEN).send('join-game: You are already in a game');
-		// 	return;
-		// }
+		// Can't join game you're already in
+		const userGIDs = (await db.ref(`users/${uid}/gids`).once('value')).val();
+		if (Object.keys(userGIDs).includes(gid)) {
+			console.log('User ' + uid + ' tried to join game ' + gid + ' but is already in it.');
+			res.status(httpCodes.FORBIDDEN).send('User already playing in that game');
+			return;
+		}
 
 		// Find game to join
 		const game = (await db.ref(`games/${gid}`).once('value')).val();
 		if (!game) {
-			console.log('User ' + uid + ' tried to join game ' + gid + ' but it does not exist');
+			console.log('User ' + uid + ' tried to join game ' + gid + ' which does not exist');
 			res.status(httpCodes.FORBIDDEN).send('Game does not exist');
 			return;
 		}
