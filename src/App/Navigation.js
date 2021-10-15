@@ -28,7 +28,7 @@ function NavigationNonAuth() {
 }
 
 class NavigationAuthBase extends React.Component {
-	state = { userRoles: {}, userGIDs: {} };
+	state = { userRoles: {}, userGIDs: [] };
 	componentDidMount() {
 		const onSignIn = (authUser) =>
 			this.setState({ userRoles: authUser.roles });
@@ -37,7 +37,7 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 
 		const handleUserUpdate = (user) =>
-			this.setState({ userGIDs: user?.gids ? user.gids : {} });
+			this.setState({ userGIDs: user.gids });
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	componentWillUnmount = () => {
@@ -45,7 +45,7 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener();
 	};
 	render() {
-		const dynamicGameLinks = Object.keys(this.state.userGIDs).map((gid, i) => {
+		const dynamicGameLinks = this.state.userGIDs.map((gid, i) => {
 			const to = ROUTES.PLAY_BASE + '/' + gid;
 			const title = `Play ${i}`;
 			return (

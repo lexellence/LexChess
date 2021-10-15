@@ -42,19 +42,11 @@ class GameListPageBase extends React.Component {
 	};
 	registerUserListener = () => {
 		const handleUserUpdate = (user) =>
-			this.setState({ userGIDs: user?.gids ? Object.keys(user.gids) : [] });
+			this.setState({ userGIDs: user.gids });
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	registerGameListListener = () => {
 		const handleGameListUpdate = (gameList) => {
-			if (gameList) {
-				// Convert object to array, including gid from property keys
-				gameList = Object.entries(gameList).map(listing => {
-					return { gid: listing[0], ...listing[1] };
-				});
-			}
-			else
-				gameList = [];
 			this.setState({ gameList });
 		};
 		this.unregisterGameListListener = this.props.firebaseListener.registerGameListListener(handleGameListUpdate);

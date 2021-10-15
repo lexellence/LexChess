@@ -76,7 +76,7 @@ const withFirebaseListenerProvider = (Component: any) => {
 				this.gameListeningGIDs.push(gid);
 				this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
 					const game = snapshot.val();
-					this.gameNotifierMap.get(gid)!.update(game);
+					this.handleGameUpdate(gid, game);
 				});
 			}
 		}
@@ -101,9 +101,15 @@ const withFirebaseListenerProvider = (Component: any) => {
 		//|	  		 User Update			 |
 		//\----------------------------------/------------------------
 		handleUserUpdate = (user: any) => {
-			const userGIDs = user?.gids ? Object.keys(user.gids) : [];
-			this.trimInactiveGamesListeners(userGIDs);
-			this.startNewGamesListeners(userGIDs);
+			// Allow non-existant user object
+			if (!user)
+				user = {};
+
+			// Convert to array of gid strings
+			user.gids = user?.gids ? Object.keys(user.gids) : [];
+
+			this.trimInactiveGamesListeners(user.gids);
+			this.startNewGamesListeners(user.gids);
 
 			this.userNotifier.update(user);
 		}
@@ -136,8 +142,32 @@ const withFirebaseListenerProvider = (Component: any) => {
 		//+----------------------------------\------------------------
 		//|	  		Game List Update		 |
 		//\----------------------------------/------------------------
-		handleGameListUpdate = (gameList: any) => {
+		handleGameListUpdate = (gameList: Object) => {
+			// Convert object to array, including gid from property keys
+			if (gameList) {
+				gameList = Object.entries(gameList).map(listing => {
+					return { gid: listing[0], ...listing[1] };
+				});
+			}
+			else
+				gameList = [];
+
 			this.gameListNotifier.update(gameList);
+		}
+
+		//+----------------------------------\------------------------
+		//|	  		  Game Update		     |
+		//\----------------------------------/------------------------
+		handleGameUpdate = (gid: string, game: any) => {
+			// Stop if game doesn't exist
+			if (!game)
+				this.stopGameListening(gid);
+			else {
+				// Convert to array of move strings
+				game.moves = game.moves ? Object.values(game.moves) : [];
+			}
+
+			this.gameNotifierMap.get(gid)!.update(game);
 		}
 
 		//+----------------------------------\------------------------

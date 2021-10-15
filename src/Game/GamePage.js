@@ -57,9 +57,6 @@ class GamePageBase extends React.Component {
 				return;
 			}
 
-			// Convert to array of move strings
-			game.moves = game.moves ? Object.values(game.moves) : [];
-
 			// Apply previous moves
 			this.chess.reset();
 			if (game.moves.length)
