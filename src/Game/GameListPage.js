@@ -10,6 +10,7 @@ import withFirebaseListener from '../FirebaseListener';
 
 const INITIAL_STATE = {
 	authUser: null,
+	userGIDs: [],
 	gameList: null,
 	createGameTeam: 'd',
 	waitingForAPI: false,
@@ -29,13 +30,20 @@ class GameListPageBase extends React.Component {
 	registerAuthListener = () => {
 		const onSignIn = (authUser) => {
 			this.setState({ authUser });
+			this.registerUserListener();
 			this.registerGameListListener();
 		};
 		const onSignOut = () => {
+			this.unregisterUserListener();
 			this.unregisterGameListListener();
 			this.setState({ authUser: null });
 		};
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+	};
+	registerUserListener = () => {
+		const handleUserUpdate = (user) =>
+			this.setState({ userGIDs: user?.gids ? Object.keys(user.gids) : [] });
+		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	registerGameListListener = () => {
 		const handleGameListUpdate = (gameList) => {
@@ -80,7 +88,7 @@ class GameListPageBase extends React.Component {
 		this.setState({ createGameTeam: team });
 	};
 	render() {
-		const { gameList, waitingForAPI } = this.state;
+		const { gameList, userGIDs, waitingForAPI } = this.state;
 
 		// Loading
 		if (!gameList)
@@ -115,7 +123,7 @@ class GameListPageBase extends React.Component {
 
 				<div>
 					<h1>Join a game</h1>
-					<GameList gameList={gameList} onJoinGame={this.handleJoinGame} />
+					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} />
 				</div>
 			</div >
 		);

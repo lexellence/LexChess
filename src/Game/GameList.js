@@ -2,7 +2,7 @@ import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
-const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame }) => {
+const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInGame }) => {
 	let names = '';
 	if (!name_w && !name_b)
 		names = name_d;
@@ -30,25 +30,44 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame }) => {
 		default:
 			statusText = '';
 	}
-	let whiteTD = name_w ? <td>{name_w}</td>
-		: <td><Button className="edit-link" onClick={() => onJoinGame(gid, 'w')}>Play as White</Button></td>;
-	let blackTD = name_b ? <td>{name_b}</td>
-		: <td><Button className="edit-link" onClick={() => onJoinGame(gid, 'b')}>Play as Black</Button></td>;
+	let whiteButton = name_w ? <td>{name_w}</td>
+		: <td>
+			<Button variant='primary'
+				disabled={userInGame}
+				style={{ visibility: userInGame ? 'hidden' : 'visible' }}
+				onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
+				Play as White
+			</Button>
+		</td>;
+	let blackButton = name_b ? <td>{name_b}</td>
+		: <td>
+			<Button variant='primary'
+				disabled={userInGame}
+				style={{ visibility: userInGame ? 'hidden' : 'visible' }}
+				onClick={userInGame ? () => { } : () => onJoinGame(gid, 'b')}>
+				Play as Black
+			</Button>
+		</td>;
+	let watchButton =
+		< Button variant={userInGame ? 'outline-secondary' : 'primary'}
+			style={{ visibility: 'hidden' }}
+			disabled={userInGame}
+			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
+			Play as White
+		</Button >;
 
 	return (
 		<tr>
 			<td>{names}</td>
 			<td>{statusText}</td>
-			{whiteTD}
-			{blackTD}
-			<td>
-				<Button className="edit-link" onClick={() => onJoinGame(gid, 'o')}>Watch</Button>
-			</td>
+			<td>{whiteButton}</td>
+			<td>{blackButton}</td>
+			<td>{watchButton}</td>
 		</tr >
 	);
 };
 
-const GameTableRowList = ({ gameList, onJoinGame }) => (
+const GameTableRowList = ({ gameList, userGIDs, onJoinGame }) => (
 	gameList.map((game, i) => {
 		return <GameTableRow
 			key={i}
@@ -57,11 +76,12 @@ const GameTableRowList = ({ gameList, onJoinGame }) => (
 			name_w={game.name_w}
 			name_b={game.name_b}
 			name_d={game.name_d}
-			onJoinGame={onJoinGame} />;
+			onJoinGame={onJoinGame}
+			userInGame={userGIDs.includes(game.gid)} />;
 	})
 );
 
-const GameList = ({ gameList, onJoinGame }) => (
+const GameList = ({ gameList, userGIDs, onJoinGame }) => (
 	<div className="table-wrapper">
 		<Table striped bordered hover>
 			<thead>
@@ -75,7 +95,7 @@ const GameList = ({ gameList, onJoinGame }) => (
 			</thead>
 			<tbody>
 				{gameList ?
-					<GameTableRowList gameList={gameList} onJoinGame={onJoinGame} />
+					<GameTableRowList gameList={gameList} userGIDs={userGIDs} onJoinGame={onJoinGame} />
 					:
 					<></>
 				}
