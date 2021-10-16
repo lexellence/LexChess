@@ -30,39 +30,35 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInG
 		default:
 			statusText = '';
 	}
-	let whiteButton = name_w ? <td>{name_w}</td>
-		: <td>
-			<Button variant='primary'
-				disabled={userInGame}
-				style={{ visibility: userInGame ? 'hidden' : 'visible' }}
-				onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
-				Play as White
-			</Button>
-		</td>;
-	let blackButton = name_b ? <td>{name_b}</td>
-		: <td>
-			<Button variant='primary'
-				disabled={userInGame}
-				style={{ visibility: userInGame ? 'hidden' : 'visible' }}
-				onClick={userInGame ? () => { } : () => onJoinGame(gid, 'b')}>
-				Play as Black
-			</Button>
-		</td>;
-	let watchButton =
-		< Button variant={userInGame ? 'outline-secondary' : 'primary'}
-			style={{ visibility: 'hidden' }}
+	let white = name_w ? name_w
+		: <Button variant='primary'
 			disabled={userInGame}
+			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
 			Play as White
+		</Button>;
+	let black = name_b ? name_b
+		: <Button variant='primary'
+			disabled={userInGame}
+			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
+			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'b')}>
+			Play as Black
+		</Button>;
+	let watch =
+		< Button variant={userInGame ? 'outline-secondary' : 'primary'}
+			disabled={userInGame}
+			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
+			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
+			Watch
 		</Button >;
 
 	return (
 		<tr>
 			<td>{names}</td>
 			<td>{statusText}</td>
-			<td>{whiteButton}</td>
-			<td>{blackButton}</td>
-			<td>{watchButton}</td>
+			<td>{white}</td>
+			<td>{black}</td>
+			<td>{watch}</td>
 		</tr >
 	);
 };
