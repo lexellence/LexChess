@@ -50,7 +50,7 @@ class ValueNotifier extends Notifier {
 		this.notifyAll();
 	}
 	notify = (onUpdate: OnUpdateFunc): void => {
-		onUpdate({ ...this.data });
+		onUpdate(this.data);
 	}
 	catchUp = (onUpdate: OnUpdateFunc): void => {
 		this.notify(onUpdate);
@@ -78,7 +78,8 @@ class ChildAddedNotifier extends Notifier {
 		this.notifyAll();
 	}
 	notify = (onUpdate: OnUpdateFunc): void => {
-		onUpdate(this.data[this.data.length - 1]);
+		const lastElement = this.data[this.data.length - 1];
+		onUpdate(lastElement);
 	}
 };
 
