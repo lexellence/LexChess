@@ -5,27 +5,6 @@ import { PieceType } from 'chess.js';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-// class Square {
-// 	file: number;
-// 	rank: number;
-// 	constructor(file: number, rank: number) {
-// 		this.file = file;
-// 		this.rank = rank;
-// 	}
-// 	equals(otherSquare: Square): boolean {
-// 		return (this.file === otherSquare.file && this.rank === otherSquare.rank);
-// 	}
-// 	isValid(): boolean {
-// 		return !(this.file < 0 || this.file > 7 || this.rank < 0 || this.rank > 7);
-// 	}
-// 	private readonly FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-// 	getStandardNotation(): (string | null) {
-// 		if (!this.isValid())
-// 			return null;
-// 		return this.FILE_CHARS[this.file] + this.rank.toString();
-// 	}
-// }
-
 interface GameCanvasProps {
 	size: number;
 	board: Array<Array<{ type: PieceType; color: "w" | "b" } | null>>;
@@ -36,19 +15,13 @@ interface GameCanvasProps {
 
 interface GameCanvasState {
 	loading: boolean;
-	// selectedSquare: Square;
 }
-
-// const INITIAL_STATE = {
-// selectedSquare: null
-// };
 
 function clamp(num: number, min: number, max: number) {
 	return Math.max(min, Math.min(num, max));
 }
 
 class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
-	// readonly state = { ...INITIAL_STATE };
 	canvas = React.createRef<HTMLCanvasElement>();
 	images: any = null;
 
@@ -65,19 +38,12 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 	pieceImageSize = this.squareSize - 2 * this.squareMargin;
 
 	componentDidMount() {
-		console.log(`componentDidMount GameCanvas`);
-
 		this.images = new GameImages(() => {
 			this.draw();
 		});
 
 		this.canvas.current?.addEventListener('mousedown', this.handleMouseDown);
 		this.canvas.current?.addEventListener('mouseup', this.handleMouseUp);
-
-		// Stop canvas double-click from selecting text outside canvas
-		// document.getElementById('gameBoardCanvas')!.onselectstart = () => false;
-
-		// this.draw();
 	};
 	componentDidUpdate() {
 		this.draw();
@@ -118,11 +84,6 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 		if (!ctx)
 			return;
 
-		// Background
-		// ctx.clearRect(0, 0, this.props.size, this.props.size);
-		// ctx.fillStyle = "#CCCCCC";
-		// ctx.fillRect(0, 0, this.props.size, this.props.size);
-
 		// Draw checkerboard
 		const boardImage = this.images.getBoardImage();
 		if (boardImage)
@@ -136,7 +97,6 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 		for (let row = 0; row < 8; row++) {
 			for (let col = 0; col < 8; col++) {
 				const squareStartX = this.boardStart + col * this.squareSize;
-				// const squareStartY = this.boardEnd - (row + 1) * this.squareSize;
 				const squareStartY = this.boardStart + row * this.squareSize;
 
 				// Shade selected square
