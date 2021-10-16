@@ -39,12 +39,12 @@ const withFirebaseListenerProvider = (Component: any) => {
 				this.startUserListening();
 			};
 			const onSignOut = () => {
-				this.authUser = null;
-
 				// Stop user and games, but not game list
 				this.stopUserListening();
 				this.stopAllGameListening();
 				this.gameNotifierMap.clear();
+
+				this.authUser = null;
 			};
 			this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 		}
@@ -60,7 +60,8 @@ const withFirebaseListenerProvider = (Component: any) => {
 				});
 		}
 		stopUserListening = () => {
-			this.props.firebase.userRef(this.authUser.uid).off();
+			if (this.authUser?.uid)
+				this.props.firebase.userRef(this.authUser.uid).off();
 		}
 		startGameListListening = () => {
 			this.props.firebase.db.ref('gameList').on('value', (snapshot) => {
