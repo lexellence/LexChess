@@ -11,6 +11,7 @@ import withFirebaseListener from '../FirebaseListener';
 import GameCanvas from './GameCanvas';
 import * as Chess from 'chess.js';
 import * as api from '../api';
+import * as ROUTES from '../constants/routes';
 
 const CANVAS_SIZE = 360;
 
@@ -53,7 +54,8 @@ class GamePageBase extends React.Component {
 	registerGameListener = () => {
 		const handleGameUpdate = (game) => {
 			if (!game) {
-				this.setState({ ...INITIAL_GAME_STATE, errorMessage: 'Game does not exist' });
+				// Game does not exist
+				this.props.history.push(ROUTES.GAME_LIST);
 				return;
 			}
 
