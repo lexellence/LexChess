@@ -185,6 +185,9 @@ const withFirebaseListenerProvider = (Component: any) => {
 			if (!this.gameNotifierMap.has(gid))
 				this.gameNotifierMap.set(gid, new ValueNotifier());
 
+			// Start listening
+			this.startGameListening(gid);
+
 			const gameListenerUnregister = this.gameNotifierMap.get(gid)!.register(onUpdate);
 			const unregister = () => {
 				gameListenerUnregister();
