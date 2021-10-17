@@ -83,7 +83,7 @@ class GameListPageBase extends React.Component {
 		this.setState({ createGameTeam: team });
 	};
 	render() {
-		const { gameList, userGIDs, waitingForAPI } = this.state;
+		const { gameList, userGIDs, waitingForAPI, createGameTeam } = this.state;
 
 		// Loading
 		if (!gameList)
@@ -99,15 +99,20 @@ class GameListPageBase extends React.Component {
 					aria-hidden="true"
 					animation="border" />;
 
+		const createGameTeamRadios = [
+			{ name: 'Defer', value: 'd' },
+			{ name: 'White', value: 'w' },
+			{ name: 'Black', value: 'b' },
+		];
 		return (
 			<div align='center' style={{ display: 'block' }}>
 				<div>
 					<h1>Create a new game</h1>
+					Play as:<br />
 					<ToggleButtonGroup type='radio' name='teamSelection' defaultValue='d' onChange={this.handleCreateGameTeamChange}>
-						<ToggleButton value={'w'} variant='outline-secondary' disabled={waitingForAPI}>Play as white</ToggleButton>
-						<ToggleButton value={'b'} variant='outline-secondary' disabled={waitingForAPI}>Play as black</ToggleButton>
-						<ToggleButton value={'d'} variant='outline-secondary' disabled={waitingForAPI}>Let opponent choose</ToggleButton>
-					</ToggleButtonGroup>
+						{createGameTeamRadios.map((radio, i) =>
+							<ToggleButton key={i} value={radio.value} variant={createGameTeam === radio.value ? 'secondary' : 'outline-secondary'} disabled={waitingForAPI}>{radio.name}</ToggleButton>)}
+					</ToggleButtonGroup >
 					<br />
 					{/* <span className='d-grid gap-2'> */}
 					<Button disabled={waitingForAPI} onClick={this.handleCreateGame}>

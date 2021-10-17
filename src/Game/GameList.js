@@ -31,21 +31,21 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInG
 			statusText = '';
 	}
 	let white = name_w ? name_w
-		: <Button variant='primary'
+		: <Button variant='light' size='sm'
 			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
 			Play as White
 		</Button>;
 	let black = name_b ? name_b
-		: <Button variant='primary'
+		: <Button variant='dark' size='sm'
 			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'b')}>
 			Play as Black
 		</Button>;
 	let watch =
-		< Button variant={userInGame ? 'outline-secondary' : 'primary'}
+		< Button variant='info' size='sm'
 			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
