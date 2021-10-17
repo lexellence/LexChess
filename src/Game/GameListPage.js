@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, ToggleButton, ToggleButtonGroup, Spinner } from 'react-bootstrap';
+import { Button, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import ButtonSpinner from '../ButtonSpinner';
 import GameList from './GameList';
 import * as api from '../api';
 import {
@@ -89,15 +90,9 @@ class GameListPageBase extends React.Component {
 		if (!gameList)
 			return <div align='center'>Loading...</div>;
 
+
 		const createGameButtonContent =
-			!waitingForAPI ? 'Create game' :
-				<Spinner
-					as="span"
-					variant="light"
-					size="sm"
-					role="status"
-					aria-hidden="true"
-					animation="border" />;
+			!waitingForAPI ? 'Create game' : <ButtonSpinner />;
 
 		const createGameTeamRadios = [
 			{ name: 'Defer', value: 'd' },
