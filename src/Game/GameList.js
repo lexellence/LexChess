@@ -2,7 +2,7 @@ import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
-const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInGame }) => {
+const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInGame, buttonsDisabled }) => {
 	let names = '';
 	if (!name_w && !name_b)
 		names = name_d;
@@ -32,21 +32,21 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInG
 	}
 	let white = name_w ? name_w
 		: <Button variant='primary'
-			disabled={userInGame}
+			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
 			Play as White
 		</Button>;
 	let black = name_b ? name_b
 		: <Button variant='primary'
-			disabled={userInGame}
+			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'b')}>
 			Play as Black
 		</Button>;
 	let watch =
 		< Button variant={userInGame ? 'outline-secondary' : 'primary'}
-			disabled={userInGame}
+			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
 			Watch
@@ -63,7 +63,7 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInG
 	);
 };
 
-const GameTableRowList = ({ gameList, userGIDs, onJoinGame }) => (
+const GameTableRowList = ({ gameList, userGIDs, onJoinGame, buttonsDisabled }) => (
 	gameList.map((game, i) => {
 		return <GameTableRow
 			key={i}
@@ -73,11 +73,12 @@ const GameTableRowList = ({ gameList, userGIDs, onJoinGame }) => (
 			name_b={game.name_b}
 			name_d={game.name_d}
 			onJoinGame={onJoinGame}
-			userInGame={userGIDs.includes(game.gid)} />;
+			userInGame={userGIDs.includes(game.gid)}
+			buttonsDisabled={buttonsDisabled} />;
 	})
 );
 
-const GameList = ({ gameList, userGIDs, onJoinGame }) => (
+const GameList = ({ gameList, userGIDs, onJoinGame, buttonsDisabled }) => (
 	<div className="table-wrapper">
 		<Table striped bordered hover>
 			<thead>
@@ -91,7 +92,7 @@ const GameList = ({ gameList, userGIDs, onJoinGame }) => (
 			</thead>
 			<tbody>
 				{gameList ?
-					<GameTableRowList gameList={gameList} userGIDs={userGIDs} onJoinGame={onJoinGame} />
+					<GameTableRowList gameList={gameList} userGIDs={userGIDs} onJoinGame={onJoinGame} buttonsDisabled={buttonsDisabled} />
 					:
 					<></>
 				}

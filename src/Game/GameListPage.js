@@ -66,10 +66,13 @@ class GameListPageBase extends React.Component {
 		});
 	};
 	handleJoinGame = (gid, team) => {
+		this.setState(prevState => ({ waitingForAPI: true }));
 		this.state.authUser.getIdToken().then(token => {
 			api.joinGame(token, gid, team).catch(errorMessage => {
 				console.log(errorMessage);
 				alert(errorMessage);
+			}).finally(() => {
+				this.setState(prevState => ({ waitingForAPI: false }));
 			});
 		}).catch(error => {
 			console.log(error);
@@ -115,7 +118,7 @@ class GameListPageBase extends React.Component {
 
 				<div>
 					<h1>Join a game</h1>
-					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} />
+					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} buttonsDisabled={waitingForAPI} />
 				</div>
 			</div >
 		);
