@@ -5,8 +5,7 @@ import HomePage from "../HomePage";
 import { GamePage, GameListPage } from "../Game";
 import SignInPage from "../SignInPage";
 import SignUpPage from "../SignUpPage";
-import PasswordForgetPage from '../AccountPage';
-import AccountPage from '../AccountPage';
+import AccountPage, { PasswordForgetPage } from '../AccountPage';
 import AdminPage from '../Admin/AdminPage';
 
 import * as ROUTES from "../constants/routes";
@@ -14,18 +13,17 @@ import * as ROUTES from "../constants/routes";
 function RouteList() {
 	return (
 		<Switch>
-			<Route exact path={ROUTES.LANDING} component={HomePage} />
-			{/* <Route path={ROUTES.PLAY} component={GamePage} /> */}
+			<Route exact path={ROUTES.LANDING}>		<HomePage />			</Route>
 			<Route path={ROUTES.PLAY} render={(props) =>
 				<GamePage gid={props.match.params.gid} key={props.match.params.gid} />
 			} />
-			<Route path={ROUTES.GAME_LIST} component={GameListPage} />
-			<Route path={ROUTES.SIGN_IN} component={SignInPage} />
-			<Route path={ROUTES.SIGN_UP} component={SignUpPage} />
-			<Route path={ROUTES.PASSWORD_FORGET} component={PasswordForgetPage} />
-			<Route path={ROUTES.ACCOUNT} component={AccountPage} />
-			<Route path={ROUTES.ADMIN} component={AdminPage} />
-		</Switch>
+			<Route path={ROUTES.GAME_LIST}>			<GameListPage />		</Route>
+			<Route path={ROUTES.SIGN_IN}>			<SignInPage />			</Route>
+			<Route path={ROUTES.SIGN_UP}>			<SignUpPage />			</Route>
+			<Route path={ROUTES.PASSWORD_FORGET}>	<PasswordForgetPage />	</Route>
+			<Route path={ROUTES.ACCOUNT}>			<AccountPage />			</Route>
+			<Route path={ROUTES.ADMIN}>				<AdminPage />			</Route>
+		</Switch >
 	);
 }
 export default RouteList;
