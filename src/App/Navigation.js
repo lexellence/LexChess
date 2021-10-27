@@ -8,7 +8,7 @@ import { withFirebase } from '../Firebase';
 import SignOutButton from './SignOutButton';
 import * as ROUTES from "../constants/routes";
 import * as ROLES from '../constants/roles';
-import withFirebaseListener from '../FirebaseListener';
+import { withFirebaseListener } from '../FirebaseListener';
 
 function NavigationNonAuth() {
 	return (

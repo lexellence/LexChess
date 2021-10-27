@@ -7,7 +7,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import withFirebaseListener from '../FirebaseListener';
+import { withFirebaseListener } from '../FirebaseListener';
 import GameCanvas from './GameCanvas';
 import * as Chess from 'chess.js';
 import * as api from '../api';

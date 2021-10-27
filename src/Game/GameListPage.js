@@ -7,7 +7,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import withFirebaseListener from '../FirebaseListener';
+import { withFirebaseListener } from '../FirebaseListener';
 
 const INITIAL_STATE = {
 	authUser: null,
