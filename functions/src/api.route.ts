@@ -243,7 +243,7 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 
 		// Can't join game you're already in
 		const userGIDs = (await db.ref(`users/${uid}/gids`).once('value')).val();
-		if (Object.keys(userGIDs).includes(gid)) {
+		if (userGIDs && Object.keys(userGIDs).includes(gid)) {
 			console.log('User ' + uid + ' tried to join game ' + gid + ' but is already in it.');
 			res.status(httpCodes.FORBIDDEN).send('User already playing in that game');
 			return;
