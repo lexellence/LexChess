@@ -1,6 +1,7 @@
 // TODO: convert to TS
 import React from 'react';
 import Button from 'react-bootstrap/Button';
+import ButtonSpinner from '../ButtonSpinner';
 import { withRouter } from 'react-router-dom';
 
 import {
@@ -187,6 +188,10 @@ class GamePageBase extends React.Component {
 		const { historyPosition, selectedSquare, game, errorMessage } = this.state;
 		const { isWaitingForMoveTable, isWaitingForQuitTable } = this.props.playAPI;
 
+		const isWaitingForMove = isWaitingForMoveTable[this.gid];
+		const isWaitingForQuit = isWaitingForQuitTable[this.gid];
+		const buttonsDisabled = isWaitingForMove || isWaitingForQuit;
+
 		// Error
 		if (errorMessage)
 			return <div align='center'>Something happened: {errorMessage}</div>;
@@ -221,7 +226,8 @@ class GamePageBase extends React.Component {
 		}
 		if (gameTitleText === 'invisible')
 			gameTitleVisibility = 'hidden';
-		const gameControlsVisibility = (game.status === 'wait') ? 'hidden' : 'visible';
+		const historyControlsVisibility = (game.status === 'wait' || game.status === 'play') ? 'hidden' : 'visible';
+		const timerVisibility = (game.status === 'play') ? 'visible' : 'hidden';
 
 		const blackTurnTextVisibility = (game.status === 'play' && this.chess.turn() === 'b') ? 'visible' : 'hidden';
 		const whiteTurnTextVisibility = (game.status === 'play' && this.chess.turn() === 'w') ? 'visible' : 'hidden';
@@ -240,21 +246,27 @@ class GamePageBase extends React.Component {
 					onMouseUp={this.handleMouseUpCanvas} />
 				<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
-				<div style={{ visibility: gameControlsVisibility }}>
-					<Button onClick={this.showPrevious} style={{ visibility: lastMoveVisibility }}>Back</Button>
-					<Button onClick={this.showNext} style={{ visibility: nextMoveVisibility }}>Forward</Button>
-					<Button onClick={this.showPresent} style={{ visibility: nextMoveVisibility }}>Now</Button><br />
+				<div style={{ visibility: historyControlsVisibility }}>
+					<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.showPrevious} style={{ visibility: lastMoveVisibility }}>Back</Button>
+					<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.showNext} style={{ visibility: nextMoveVisibility }}>Forward</Button>
+					<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.showPresent} style={{ visibility: nextMoveVisibility }}>Last</Button>
+					<br />
 					<p style={{ visibility: nextMoveVisibility }}>Moves back: {historyPosition}</p>
+				</div>
+				<div style={{ visibility: timerVisibility }}>
 					<table style={{ width: '300px' }}>
 						<tbody>
 							<tr><th>Your time</th><th>Their time</th></tr>
 							<tr><td id="yourTime">0</td><td id="theirTime">0</td></tr>
 						</tbody>
 					</table>
-					<p>My team: {team}</p>
 				</div>
 
-				<Button onClick={this.leaveGame}>Quit</Button>
+				<p>My team: {team}</p>
+
+				<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.leaveGame}>
+					{isWaitingForQuit ? <ButtonSpinner /> : 'Quit'}
+				</Button>
 			</div >
 		);
 	}
