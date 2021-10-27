@@ -10,7 +10,7 @@ import {
 import { withFirebaseListener } from '../FirebaseListener';
 import GameCanvas from './GameCanvas';
 import * as Chess from 'chess.js';
-import * as api from '../api';
+import { withPlayAPI } from '../API';
 import * as ROUTES from '../constants/routes';
 
 const CANVAS_SIZE = 360;
@@ -177,30 +177,15 @@ class GamePageBase extends React.Component {
 	};
 
 	leaveGame = () => {
-		this.state.authUser.getIdToken().then(token => {
-			api.leaveGame(token, this.gid).catch(errorMessage => {
-				console.log(errorMessage);
-				alert(errorMessage);
-			});
-		}).catch(error => {
-			console.log(error);
-			alert('Failed to get auth token: ' + JSON.stringify(error));
-		});
+		this.props.playAPI.leaveGame(this.gid);
 	};
 	move = (moveString) => {
-		this.state.authUser.getIdToken().then(token => {
-			api.move(token, this.gid, moveString).catch(errorMessage => {
-				console.log(errorMessage);
-				alert(errorMessage);
-			});
-		}).catch(error => {
-			console.log(error);
-			alert('Failed to get auth token: ' + JSON.stringify(error));
-		});
+		this.props.playAPI.move(this.gid, moveString);
 	};
 
 	render() {
 		const { historyPosition, selectedSquare, game, errorMessage } = this.state;
+		const { isWaitingForMoveTable, isWaitingForQuitTable } = this.props.playAPI;
 
 		// Error
 		if (errorMessage)
@@ -282,8 +267,9 @@ const conditionFunc = function (authUser) {
 const GamePage =
 	withRouter(
 		withFirebaseListener(
-			withEmailVerification(
-				withAuthorization(conditionFunc)(
-					GamePageBase))));
+			withPlayAPI(
+				withEmailVerification(
+					withAuthorization(conditionFunc)(
+						GamePageBase)))));
 
 export default GamePage;

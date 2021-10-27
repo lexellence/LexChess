@@ -2,7 +2,8 @@ import React from 'react';
 import { Button, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 import ButtonSpinner from '../ButtonSpinner';
 import GameList from './GameList';
-import * as api from '../api';
+import { withJoinAPI } from '../API';
+
 import {
 	withAuthorization,
 	withEmailVerification,
@@ -14,7 +15,6 @@ const INITIAL_STATE = {
 	userGIDs: [],
 	gameList: null,
 	createGameTeam: 'd',
-	waitingForAPI: false,
 };
 class GameListPageBase extends React.Component {
 	state = { ...INITIAL_STATE };
@@ -53,46 +53,21 @@ class GameListPageBase extends React.Component {
 		this.unregisterGameListListener = this.props.firebaseListener.registerGameListListener(handleGameListUpdate);
 	};
 	handleCreateGame = () => {
-		this.setState(prevState => ({ waitingForAPI: true }));
-		this.state.authUser.getIdToken().then(token => {
-			api.createGame(token, this.state.createGameTeam).catch(errorMessage => {
-				console.log(errorMessage);
-				alert(errorMessage);
-			}).finally(() => {
-				this.setState(prevState => ({ waitingForAPI: false }));
-			});
-		}).catch(error => {
-			console.log(error);
-			alert('Failed to get auth token: ' + JSON.stringify(error));
-		});
+		this.props.joinAPI.createGame(this.state.createGameTeam);
 	};
 	handleJoinGame = (gid, team) => {
-		this.setState(prevState => ({ waitingForAPI: true }));
-		this.state.authUser.getIdToken().then(token => {
-			api.joinGame(token, gid, team).catch(errorMessage => {
-				console.log(errorMessage);
-				alert(errorMessage);
-			}).finally(() => {
-				this.setState(prevState => ({ waitingForAPI: false }));
-			});
-		}).catch(error => {
-			console.log(error);
-			alert('Failed to get auth token: ' + JSON.stringify(error));
-		});
+		this.props.joinAPI.joinGame(gid, team);
 	};
 	handleCreateGameTeamChange = (team) => {
 		this.setState({ createGameTeam: team });
 	};
 	render() {
-		const { gameList, userGIDs, waitingForAPI, createGameTeam } = this.state;
+		const { gameList, userGIDs, createGameTeam } = this.state;
+		const { isWaitingForNewGame } = this.props.joinAPI;
 
 		// Loading
 		if (!gameList)
 			return <div align='center'>Loading...</div>;
-
-
-		const createGameButtonContent =
-			!waitingForAPI ? 'Create game' : <ButtonSpinner />;
 
 		const createGameTeamRadios = [
 			{ name: 'Defer', value: 'd' },
@@ -106,19 +81,19 @@ class GameListPageBase extends React.Component {
 					Play as:<br />
 					<ToggleButtonGroup type='radio' name='teamSelection' defaultValue='d' onChange={this.handleCreateGameTeamChange}>
 						{createGameTeamRadios.map((radio, i) =>
-							<ToggleButton key={i} value={radio.value} variant={createGameTeam === radio.value ? 'secondary' : 'outline-secondary'} disabled={waitingForAPI}>{radio.name}</ToggleButton>)}
+							<ToggleButton key={i} value={radio.value} variant={createGameTeam === radio.value ? 'secondary' : 'outline-secondary'} disabled={isWaitingForNewGame}>{radio.name}</ToggleButton>)}
 					</ToggleButtonGroup >
 					<br />
 					{/* <span className='d-grid gap-2'> */}
-					<Button disabled={waitingForAPI} onClick={this.handleCreateGame}>
-						{createGameButtonContent}
+					<Button disabled={isWaitingForNewGame} onClick={this.handleCreateGame}>
+						{isWaitingForNewGame ? <ButtonSpinner /> : 'Create game'}
 					</Button>
 					{/* </span> */}
 				</div>
 
 				<div>
 					<h1>Join a game</h1>
-					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} buttonsDisabled={waitingForAPI} />
+					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} buttonsDisabled={isWaitingForNewGame} />
 				</div>
 			</div >
 		);
@@ -131,8 +106,9 @@ const conditionFunc = function (authUser) {
 
 const GameListPage =
 	withFirebaseListener(
-		withEmailVerification(
-			withAuthorization(conditionFunc)(
-				GameListPageBase)));
+		withJoinAPI(
+			withEmailVerification(
+				withAuthorization(conditionFunc)(
+					GameListPageBase))));
 
 export default GameListPage;
