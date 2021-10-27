@@ -84,11 +84,9 @@ class GameListPageBase extends React.Component {
 							<ToggleButton key={i} value={radio.value} variant={createGameTeam === radio.value ? 'secondary' : 'outline-secondary'} disabled={isWaitingForNewGame}>{radio.name}</ToggleButton>)}
 					</ToggleButtonGroup >
 					<br />
-					{/* <span className='d-grid gap-2'> */}
 					<Button disabled={isWaitingForNewGame} onClick={this.handleCreateGame}>
 						{isWaitingForNewGame ? <ButtonSpinner /> : 'Create game'}
 					</Button>
-					{/* </span> */}
 				</div>
 
 				<div>

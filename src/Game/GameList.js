@@ -45,12 +45,12 @@ const GameTableRow = ({ gid, status, name_w, name_b, name_d, onJoinGame, userInG
 			Play as Black
 		</Button>;
 	let watch =
-		< Button variant='info' size='sm'
+		<Button variant='info' size='sm'
 			disabled={buttonsDisabled}
 			style={{ visibility: userInGame ? 'hidden' : 'visible' }}
 			onClick={userInGame ? () => { } : () => onJoinGame(gid, 'w')}>
 			Watch
-		</Button >;
+		</Button>;
 
 	return (
 		<tr>
