@@ -15,10 +15,10 @@ type WithFirebaseListenerProviderProps = {
 const withFirebaseListenerProvider = (Component: any) => {
 	class WithFirebaseListenerProvider extends React.Component<WithFirebaseListenerProviderProps> {
 		authUser: any = null;
-		gameNotifierMap = new Map<string, ValueNotifier>();	// key = gid, value = ChildAddedNotifier
+		gameNotifierMap: Map<string, ValueNotifier> = new Map<string, ValueNotifier>();	// key = gid, value = ChildAddedNotifier
 		gameListeningGIDs: string[] = [];
-		userNotifier = new ValueNotifier();
-		gameListNotifier = new ValueNotifier();
+		userNotifier: ValueNotifier = new ValueNotifier();
+		gameListNotifier: ValueNotifier = new ValueNotifier();
 		unregisterAuthListener = () => { };
 
 		//+----------------------------------\------------------------
@@ -160,15 +160,16 @@ const withFirebaseListenerProvider = (Component: any) => {
 		//|	  		  Game Update		     |
 		//\----------------------------------/------------------------
 		handleGameUpdate = (gid: string, game: any) => {
-			// Stop if game doesn't exist
-			if (!game)
-				this.stopGameListening(gid);
-			else {
+			if (game) {
 				// Convert to array of move strings
 				game.moves = game.moves ? Object.values(game.moves) : [];
 			}
 
-			this.gameNotifierMap.get(gid)!.update(game);
+			this.gameNotifierMap.get(gid)?.update(game);
+
+			// Stop if game doesn't exist
+			if (!game)
+				this.stopGameListening(gid);
 		}
 
 		//+----------------------------------\------------------------
@@ -185,12 +186,13 @@ const withFirebaseListenerProvider = (Component: any) => {
 			if (!this.gameNotifierMap.has(gid))
 				this.gameNotifierMap.set(gid, new ValueNotifier());
 
-			// Start listening
+			// Start listening 
 			this.startGameListening(gid);
 
-			const gameListenerUnregister = this.gameNotifierMap.get(gid)!.register(onUpdate);
+			const gameListenerUnregister = this.gameNotifierMap?.get(gid)?.register(onUpdate);
 			const unregister = () => {
-				gameListenerUnregister();
+				if (gameListenerUnregister)
+					gameListenerUnregister();
 
 				// Delete notifier if stopped listening and has no listeners
 				if (!this.gameNotifierMap.get(gid)!.hasListeners() && !this.gameListeningGIDs.includes(gid))
