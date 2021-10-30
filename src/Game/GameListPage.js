@@ -23,6 +23,8 @@ class GameListPageBase extends React.Component {
 		this.registerAuthListener();
 	};
 	componentWillUnmount() {
+		if (this.unregisterUserListener)
+			this.unregisterUserListener();
 		if (this.unregisterGameListListener)
 			this.unregisterGameListListener();
 
