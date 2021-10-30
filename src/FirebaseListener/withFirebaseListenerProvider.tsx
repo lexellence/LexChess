@@ -75,9 +75,14 @@ const withFirebaseListenerProvider = (Component: any) => {
 		startGameListening = (gid: string) => {
 			if (!this.gameListeningGIDs.includes(gid)) {
 				this.gameListeningGIDs.push(gid);
-				this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
-					const game = snapshot.val();
-					this.handleGameUpdate(gid, game);
+				this.props.firebase.db.ref(`games/${gid}/status`).once('value', (snapshot) => {
+					if (!snapshot.exists())
+						this.handleGameUpdate(gid, null);
+
+					this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
+						const game = snapshot.val();
+						this.handleGameUpdate(gid, game);
+					});
 				});
 			}
 		}
