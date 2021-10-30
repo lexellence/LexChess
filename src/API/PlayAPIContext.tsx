@@ -3,8 +3,8 @@ import React from 'react';
 type PlayAPIContextValue = {
 	move(gid: string, moveString: string): void;
 	leaveGame(gid: string): void;
-	isWaitingForMoveTable: { [gid: string]: boolean };	// key = gid
-	isWaitingForQuitTable: { [gid: string]: boolean };	// key = gid
+	isMovingTable: { [gid: string]: boolean };
+	isQuittingTable: { [gid: string]: boolean };
 }
 
 const PlayAPIContext = React.createContext<PlayAPIContextValue | undefined>(undefined);

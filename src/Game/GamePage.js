@@ -186,11 +186,9 @@ class GamePageBase extends React.Component {
 
 	render() {
 		const { historyPosition, selectedSquare, game, errorMessage } = this.state;
-		const { isWaitingForMoveTable, isWaitingForQuitTable } = this.props.playAPI;
-
-		const isWaitingForMove = isWaitingForMoveTable[this.gid];
-		const isWaitingForQuit = isWaitingForQuitTable[this.gid];
-		const buttonsDisabled = isWaitingForMove || isWaitingForQuit;
+		const { isMovingTable, isQuittingTable } = this.props.playAPI;
+		const isMoving = isMovingTable[this.gid];
+		const isQuitting = isQuittingTable[this.gid];
 
 		// Error
 		if (errorMessage)
@@ -234,6 +232,8 @@ class GamePageBase extends React.Component {
 		const lastMoveVisibility = this.canGoBackInHistory() ? 'visible' : 'hidden';
 		const nextMoveVisibility = this.canGoForwardInHistory() ? 'visible' : 'hidden';
 
+		const buttonsDisabled = isMoving || isQuitting;
+
 		return (
 			<div align='center' style={{ display: 'block' }}>
 				<h4 style={{ visibility: gameTitleVisibility, display: 'block' }}>{gameTitleText}</h4>
@@ -265,7 +265,7 @@ class GamePageBase extends React.Component {
 				<p>My team: {team}</p>
 
 				<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.leaveGame}>
-					{isWaitingForQuit ? <ButtonSpinner /> : 'Quit'}
+					{isQuitting ? <ButtonSpinner /> : 'Quit'}
 				</Button>
 			</div >
 		);

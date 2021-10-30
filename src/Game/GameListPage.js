@@ -63,7 +63,7 @@ class GameListPageBase extends React.Component {
 	};
 	render() {
 		const { gameList, userGIDs, createGameTeam } = this.state;
-		const { isWaitingForNewGame } = this.props.joinAPI;
+		const { isCreatingGame, isJoiningGame } = this.props.joinAPI;
 
 		// Loading
 		if (!gameList)
@@ -81,17 +81,17 @@ class GameListPageBase extends React.Component {
 					Play as:<br />
 					<ToggleButtonGroup type='radio' name='teamSelection' defaultValue='d' onChange={this.handleCreateGameTeamChange}>
 						{createGameTeamRadios.map((radio, i) =>
-							<ToggleButton key={i} value={radio.value} variant={createGameTeam === radio.value ? 'secondary' : 'outline-secondary'} disabled={isWaitingForNewGame}>{radio.name}</ToggleButton>)}
+							<ToggleButton key={i} value={radio.value} variant={createGameTeam === radio.value ? 'secondary' : 'outline-secondary'} disabled={isCreatingGame}>{radio.name}</ToggleButton>)}
 					</ToggleButtonGroup >
 					<br />
-					<Button disabled={isWaitingForNewGame} onClick={this.handleCreateGame}>
-						{isWaitingForNewGame ? <ButtonSpinner /> : 'Create game'}
+					<Button disabled={isCreatingGame} onClick={this.handleCreateGame}>
+						{isCreatingGame ? <ButtonSpinner /> : 'Create game'}
 					</Button>
 				</div>
 
 				<div>
 					<h1>Join a game</h1>
-					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} buttonsDisabled={isWaitingForNewGame} />
+					<GameList gameList={gameList} userGIDs={userGIDs} onJoinGame={this.handleJoinGame} buttonsDisabled={isJoiningGame} />
 				</div>
 			</div >
 		);

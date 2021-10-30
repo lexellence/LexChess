@@ -10,22 +10,23 @@ import * as api from './api';
 const APIProvider: React.FC = ({ children }) => {
 	const firebase: Firebase = useFirebaseContext();
 	const [authUser, setAuthUser] = useState<Object | null>(null);
-	const [isWaitingForNewGame, setWaitingForNewGame] = useState<boolean>(false);
+	const [isCreatingGame, setCreatingGame] = useState<boolean>(false);
+	const [isJoiningGame, setJoiningGame] = useState<boolean>(false);
 
-	const [isWaitingForMoveTable, _setWaitingForMoveTable] = useState<{ [gid: string]: boolean }>({});
-	function setWaitingForMove(gid: string, isWaiting: boolean): void {
-		const newTable = { ...isWaitingForMoveTable, [gid]: isWaiting };
-		if (!isWaiting)
+	const [isMovingTable, _setMovingTable] = useState<{ [gid: string]: boolean }>({});
+	function setMoving(gid: string, isMoving: boolean): void {
+		const newTable = { ...isMovingTable, [gid]: isMoving };
+		if (!isMoving)
 			delete newTable[gid];
-		_setWaitingForMoveTable(newTable);
+		_setMovingTable(newTable);
 	}
 
-	const [isWaitingForQuitTable, _setWaitingForQuitTable] = useState<{ [gid: string]: boolean }>({});
-	function setWaitingForQuit(gid: string, isWaiting: boolean): void {
-		const newTable = { ...isWaitingForQuitTable, [gid]: isWaiting };
-		if (!isWaiting)
+	const [isQuittingTable, _setQuittingTable] = useState<{ [gid: string]: boolean }>({});
+	function setQuitting(gid: string, isQuitting: boolean): void {
+		const newTable = { ...isQuittingTable, [gid]: isQuitting };
+		if (!isQuitting)
 			delete newTable[gid];
-		_setWaitingForQuitTable(newTable);
+		_setQuittingTable(newTable);
 	}
 
 	//+----------------------------------\------------------------
@@ -52,15 +53,15 @@ const APIProvider: React.FC = ({ children }) => {
 	//\--------------------------------/
 	//------------------------------------------------------------
 	function joinGame(gid: string, team: string) {
-		if (isWaitingForNewGame)
+		if (isJoiningGame)
 			return;
 
-		setWaitingForNewGame(true);
+		setJoiningGame(true);
 		api.joinGame(authUser, gid, team).catch(errorMessage => {
 			console.log(errorMessage);
 			alert(errorMessage);
 		}).finally(() => {
-			setWaitingForNewGame(false);
+			setJoiningGame(false);
 		});
 	};
 	//+--------------------------------\--------------------------
@@ -68,15 +69,15 @@ const APIProvider: React.FC = ({ children }) => {
 	//\--------------------------------/
 	//------------------------------------------------------------
 	function createGame(team: string) {
-		if (isWaitingForNewGame)
+		if (isCreatingGame)
 			return;
 
-		setWaitingForNewGame(true);
+		setCreatingGame(true);
 		api.createGame(authUser, team).catch(errorMessage => {
 			console.log(errorMessage);
 			alert(errorMessage);
 		}).finally(() => {
-			setWaitingForNewGame(false);
+			setCreatingGame(false);
 		});
 	};
 	//+--------------------------------\--------------------------
@@ -84,15 +85,15 @@ const APIProvider: React.FC = ({ children }) => {
 	//\--------------------------------/
 	//------------------------------------------------------------
 	function move(gid: string, moveString: string) {
-		if (isWaitingForMoveTable[gid])
+		if (isMovingTable[gid])
 			return;
 
-		setWaitingForMove(gid, true);
+		setMoving(gid, true);
 		api.move(authUser, gid, moveString).catch(errorMessage => {
 			console.log(errorMessage);
 			alert(errorMessage);
 		}).finally(() => {
-			setWaitingForMove(gid, false);
+			setMoving(gid, false);
 		});
 	};
 	//+--------------------------------\--------------------------
@@ -100,23 +101,23 @@ const APIProvider: React.FC = ({ children }) => {
 	//\--------------------------------/
 	//------------------------------------------------------------
 	function leaveGame(gid: string) {
-		if (isWaitingForQuitTable[gid])
+		if (isQuittingTable[gid])
 			return;
 
-		setWaitingForQuit(gid, true);
+		setQuitting(gid, true);
 		api.leaveGame(authUser, gid).catch(errorMessage => {
 			console.log(errorMessage);
 			alert(errorMessage);
 		}).finally(() => {
-			setWaitingForQuit(gid, false);
+			setQuitting(gid, false);
 		});
 	};
 
 	const playAPIValue: PlayAPIContextValue = {
-		move, leaveGame, isWaitingForMoveTable, isWaitingForQuitTable
+		move, leaveGame, isMovingTable, isQuittingTable
 	};
 	const joinAPIValue: JoinAPIContextValue = {
-		joinGame, createGame, isWaitingForNewGame
+		joinGame, createGame, isCreatingGame, isJoiningGame
 	};
 
 	//+----------------------------------\------------------------

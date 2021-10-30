@@ -3,7 +3,8 @@ import React from 'react';
 type JoinAPIContextValue = {
 	joinGame(gid: string, team: string): void;
 	createGame(team: string): void;
-	isWaitingForNewGame: boolean;
+	isCreatingGame: boolean;
+	isJoiningGame: boolean;
 }
 
 const JoinAPIContext = React.createContext<JoinAPIContextValue | undefined>(undefined);
