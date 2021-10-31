@@ -344,8 +344,10 @@ apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 				}
 			}
 
-			// Remove game from user
-			databaseUpdate[`users/${uid}/gids/${gid}`] = null;
+			if (game.status !== 'play') {
+				// Remove game from user
+				databaseUpdate[`users/${uid}/gids/${gid}`] = null;
+			}
 		}
 		// Save changes to database
 		await db.ref().update(databaseUpdate);

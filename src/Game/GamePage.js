@@ -2,7 +2,6 @@
 import React from 'react';
 import Button from 'react-bootstrap/Button';
 import ButtonSpinner from '../ButtonSpinner';
-import { withRouter } from 'react-router-dom';
 
 import {
 	withAuthorization,
@@ -31,6 +30,8 @@ class GamePageBase extends React.Component {
 	state = { ...INITIAL_STATE };
 	chess = new Chess();
 	gid = this.props.gid;
+	userGIDs = [];
+	nextGID = null;
 
 	componentDidMount() {
 		this.registerAuthListener();
@@ -38,25 +39,43 @@ class GamePageBase extends React.Component {
 	componentWillUnmount() {
 		if (this.unregisterGameListener)
 			this.unregisterGameListener();
+		if (this.unregisterUserListener)
+			this.unregisterUserListener();
 
 		this.unregisterAuthListener();
 	}
 	registerAuthListener = () => {
 		const onSignIn = (authUser) => {
 			this.setState({ authUser });
-			this.registerGameListener();
+			this.registerUserListener();
 		};
 		const onSignOut = () => {
 			this.unregisterGameListener();
+			this.unregisterUserListener();
 			this.setState({ authUser: null });
 		};
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+	};
+	registerUserListener = () => {
+		const handleUserUpdate = (user) => {
+			this.userGIDs = user.gids;
+			this.saveNextGID();
+			if (!this.userGIDs.includes(this.gid)) {
+				this.redirectToNextGame();
+				return;
+			}
+
+			// Listen to game after first user update
+			if (!this.unregisterGameListener)
+				this.registerGameListener();
+		};
+		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	registerGameListener = () => {
 		const handleGameUpdate = (game) => {
 			if (!game) {
 				// Game does not exist
-				this.props.history.push(ROUTES.GAME_LIST);
+				this.redirectToNextGame();
 				return;
 			}
 
@@ -71,6 +90,39 @@ class GamePageBase extends React.Component {
 			this.setState({ ...INITIAL_GAME_STATE, game });
 		};
 		this.unregisterGameListener = this.props.firebaseListener.registerGameListener(handleGameUpdate, this.gid);
+	};
+	saveNextGID = () => {
+		const thisGameIndex = this.userGIDs.findIndex(gid => gid === this.gid);
+		if (thisGameIndex < 0) {
+			// This game does not belong to user
+			if (this.userGIDs.length > 0) {
+				// Pick first game
+				this.nextGID = this.userGIDs[0];
+			}
+			else {
+				// No games to pick from
+				this.nextGID = null;
+			}
+		}
+		else {
+			if (this.userGIDs.length < 2) {
+				// No games to pick from
+				this.nextGID = null;
+			}
+			else {
+				// Pick next game
+				const nextIndex = (thisGameIndex + 1) % this.userGIDs.length;
+				this.nextGID = this.userGIDs[nextIndex];
+			}
+		}
+	};
+	redirectToNextGame = () => {
+		let redirectURL;
+		if (this.nextGID)
+			redirectURL = ROUTES.PLAY_BASE + `/${this.nextGID}`;
+		else
+			redirectURL = ROUTES.GAME_LIST;
+		this.props.history.push(redirectURL);
 	};
 	canGoBackInHistory = () => {
 		return (this.state.game?.moves?.length &&
@@ -233,6 +285,11 @@ class GamePageBase extends React.Component {
 		const nextMoveVisibility = this.canGoForwardInHistory() ? 'visible' : 'hidden';
 
 		const buttonsDisabled = isMoving || isQuitting;
+		let quitButtonContent;
+		if (game.status === 'play')
+			quitButtonContent = isQuitting ? <>Conceding...<ButtonSpinner /></> : 'Concede';
+		else
+			quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
 
 		return (
 			<div align='center' style={{ display: 'block' }}>
@@ -265,7 +322,7 @@ class GamePageBase extends React.Component {
 				<p>My team: {team}</p>
 
 				<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.leaveGame}>
-					{isQuitting ? <ButtonSpinner /> : 'Quit'}
+					{quitButtonContent}
 				</Button>
 			</div >
 		);
@@ -277,11 +334,10 @@ const conditionFunc = function (authUser) {
 };
 
 const GamePage =
-	withRouter(
-		withFirebaseListener(
-			withPlayAPI(
-				withEmailVerification(
-					withAuthorization(conditionFunc)(
-						GamePageBase)))));
+	withFirebaseListener(
+		withPlayAPI(
+			withEmailVerification(
+				withAuthorization(conditionFunc)(
+					GamePageBase))));
 
 export default GamePage;
