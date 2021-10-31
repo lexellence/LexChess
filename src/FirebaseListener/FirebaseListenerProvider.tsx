@@ -1,5 +1,5 @@
 import React from 'react';
-import FirebaseListenerContext from './FirebaseListenerContext';
+import FirebaseListenerContext, { FirebaseListenerContextValue } from './FirebaseListenerContext';
 import Firebase, { withFirebase } from '../Firebase';
 import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';
 
@@ -208,16 +208,14 @@ class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProvi
 	//+----------------------------------\------------------------
 	//|	  	 		Render				 |
 	//\----------------------------------/------------------------
-	state = {
-		value: {
-			registerUserListener: this.registerUserListener,
-			registerGameListListener: this.registerGameListListener,
-			registerGameListener: this.registerGameListener
-		}
-	}
+	value: FirebaseListenerContextValue = {
+		registerUserListener: this.registerUserListener,
+		registerGameListListener: this.registerGameListListener,
+		registerGameListener: this.registerGameListener
+	};
 	render() {
 		return (
-			<FirebaseListenerContext.Provider value={this.state.value}>
+			<FirebaseListenerContext.Provider value={this.value}>
 				{this.props.children}
 			</FirebaseListenerContext.Provider>
 		);
