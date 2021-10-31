@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PlayAPIContext, PlayAPIContextValue, JoinAPIContext, JoinAPIContextValue } from '.';
+import { PlayAPIContext, PlayAPIContextValue, JoinAPIContext, JoinAPIContextValue, JoinGameValue } from '.';
 import Firebase, { useFirebaseContext } from '../Firebase';
 import * as api from './api';
 
@@ -11,7 +11,7 @@ const APIProvider: React.FC = ({ children }) => {
 	const firebase: Firebase = useFirebaseContext();
 	const [authUser, setAuthUser] = useState<Object | null>(null);
 	const [isCreatingGame, setCreatingGame] = useState<boolean>(false);
-	const [isJoiningGame, setJoiningGame] = useState<boolean>(false);
+	const [joiningGameData, setJoiningGameData] = useState<JoinGameValue>({ isJoining: false });
 
 	const [isMovingTable, _setMovingTable] = useState<{ [gid: string]: boolean }>({});
 	function setMoving(gid: string, isMoving: boolean): void {
@@ -53,15 +53,15 @@ const APIProvider: React.FC = ({ children }) => {
 	//\--------------------------------/
 	//------------------------------------------------------------
 	function joinGame(gid: string, team: string) {
-		if (isJoiningGame)
+		if (joiningGameData.isJoining)
 			return;
 
-		setJoiningGame(true);
+		setJoiningGameData({ isJoining: true, gid, team });
 		api.joinGame(authUser, gid, team).catch(errorMessage => {
 			console.log(errorMessage);
 			alert(errorMessage);
 		}).finally(() => {
-			setJoiningGame(false);
+			setJoiningGameData({ isJoining: false });
 		});
 	};
 	//+--------------------------------\--------------------------
@@ -117,7 +117,7 @@ const APIProvider: React.FC = ({ children }) => {
 		move, leaveGame, isMovingTable, isQuittingTable
 	};
 	const joinAPIValue: JoinAPIContextValue = {
-		joinGame, createGame, isCreatingGame, isJoiningGame
+		joinGame, createGame, isCreatingGame, joiningGameData
 	};
 
 	//+----------------------------------\------------------------

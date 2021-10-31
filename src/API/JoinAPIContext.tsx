@@ -1,10 +1,15 @@
 import React from 'react';
 
+type JoinGameValue = {
+	isJoining: boolean;
+	gid?: string;
+	team?: string;
+}
 type JoinAPIContextValue = {
 	joinGame(gid: string, team: string): void;
 	createGame(team: string): void;
 	isCreatingGame: boolean;
-	isJoiningGame: boolean;
+	joiningGameData: JoinGameValue;
 }
 
 const JoinAPIContext = React.createContext<JoinAPIContextValue | undefined>(undefined);
@@ -16,6 +21,6 @@ function useJoinAPIContext() {
 	return context;
 }
 
-export type { JoinAPIContextValue };
+export type { JoinAPIContextValue, JoinGameValue };
 export { useJoinAPIContext };
 export default JoinAPIContext;

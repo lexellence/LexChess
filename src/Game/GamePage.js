@@ -304,9 +304,9 @@ class GamePageBase extends React.Component {
 				<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 				<div style={{ visibility: historyControlsVisibility }}>
-					<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.showPrevious} style={{ visibility: lastMoveVisibility }}>Back</Button>
-					<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.showNext} style={{ visibility: nextMoveVisibility }}>Forward</Button>
-					<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.showPresent} style={{ visibility: nextMoveVisibility }}>Last</Button>
+					<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? this.showPrevious : null} style={{ visibility: lastMoveVisibility }}>Back</Button>
+					<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? this.showNext : null} style={{ visibility: nextMoveVisibility }}>Forward</Button>
+					<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? this.showPresent : null} style={{ visibility: nextMoveVisibility }}>Last</Button>
 					<br />
 					<p style={{ visibility: nextMoveVisibility }}>Moves back: {historyPosition}</p>
 				</div>
@@ -321,7 +321,7 @@ class GamePageBase extends React.Component {
 
 				<p>My team: {team}</p>
 
-				<Button disabled={buttonsDisabled} onClick={buttonsDisabled ? () => { } : this.leaveGame}>
+				<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? this.leaveGame : null}>
 					{quitButtonContent}
 				</Button>
 			</div >

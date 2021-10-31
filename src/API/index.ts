@@ -4,7 +4,7 @@ import withPlayAPI from './withPlayAPI';
 
 import JoinAPIContext, { useJoinAPIContext } from './JoinAPIContext';
 import withJoinAPI from './withJoinAPI';
-import type { JoinAPIContextValue } from './JoinAPIContext';
+import type { JoinAPIContextValue, JoinGameValue } from './JoinAPIContext';
 
 
 import APIProvider from './APIProvider';
@@ -14,4 +14,4 @@ export {
 	JoinAPIContext, useJoinAPIContext, withJoinAPI,
 	APIProvider
 };
-export type { PlayAPIContextValue, JoinAPIContextValue };
+export type { PlayAPIContextValue, JoinAPIContextValue, JoinGameValue };

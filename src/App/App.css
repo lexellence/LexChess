@@ -20,6 +20,14 @@ th, td {
   	-ms-user-select: text;      /* IE 10+ */
   	user-select: text;          /* Likely future */  
 }
+.game-button {
+	width: 130px;
+	/* height: 40px; */
+}
+.join-game-button{
+	/* width: 70px; */
+	width: 100%;
+}
 
 /* create-react-app */
 .wrapper {

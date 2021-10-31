@@ -1,9 +1,9 @@
 import { Spinner } from 'react-bootstrap';
 
-const ButtonSpinner = () => (
+const ButtonSpinner = ({ variant }) => (
 	<Spinner
 		as="span"
-		variant="light"
+		variant={variant}
 		size="sm"
 		role="status"
 		aria-hidden="true"

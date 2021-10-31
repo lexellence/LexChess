@@ -63,7 +63,7 @@ class NavigationAuthBase extends React.Component {
 					<Nav className="justify-content-end nav-menu">
 						{dynamicGameLinks}
 						<Nav>
-							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">Game List</NavLink>
+							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">New Game</NavLink>
 						</Nav>
 						<Nav>
 							<NavLink to={ROUTES.ACCOUNT} activeClassName="active-nav-link" className="nav-link nav-menu-link">Account</NavLink>
