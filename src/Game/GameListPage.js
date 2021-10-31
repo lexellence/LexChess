@@ -10,7 +10,7 @@ import GameCreator from './GameCreator';
 
 const INITIAL_STATE = {
 	authUser: null,
-	userGIDs: [],
+	userGIDs: null,
 	gameList: null,
 };
 class GameListPageBase extends React.Component {
@@ -46,9 +46,8 @@ class GameListPageBase extends React.Component {
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	registerGameListListener = () => {
-		const handleGameListUpdate = (gameList) => {
+		const handleGameListUpdate = (gameList) =>
 			this.setState({ gameList });
-		};
 		this.unregisterGameListListener = this.props.firebaseListener.registerGameListListener(handleGameListUpdate);
 	};
 
@@ -56,7 +55,7 @@ class GameListPageBase extends React.Component {
 		const { gameList, userGIDs } = this.state;
 
 		// Loading
-		if (!gameList)
+		if (!gameList || !userGIDs)
 			return <div align='center'>Loading...</div>;
 
 		return (
