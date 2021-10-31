@@ -4,15 +4,57 @@ import Table from 'react-bootstrap/Table';
 import ButtonSpinner from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
 
+//+--------------------------------\--------------------------
+//|	 	      GameList   	       |
+//\--------------------------------/--------------------------
+function GameList({ gameList, userGIDs }) {
+	return (
+		<div>
+			<h1>Join a game</h1>
+			<div className='table-wrapper'>
+				<Table striped bordered hover>
+					<thead>
+						<tr>
+							{/* Game list headers */}
+							<th>Players</th>
+							<th>Status</th>
+							<th>White</th>
+							<th>Black</th>
+							<th>Spectate</th>
+						</tr>
+					</thead>
+					<tbody>
+						{/* Game list rows */}
+						{gameList.map((game, i) => {
+							return <GameTableRow
+								key={i}
+								gid={game.gid}
+								status={game.status}
+								name_w={game.name_w}
+								name_b={game.name_b}
+								name_d={game.name_d}
+								hideButtons={userGIDs.includes(game.gid)}
+							/>;
+						})}
+					</tbody>
+				</Table>
+			</div>
+		</div>
+	);
+}
+
+//+--------------------------------\--------------------------
+//|	 	    GameTableRow   	       |
+//\--------------------------------/--------------------------
 const joinGameButtonMap = new Map([
 	['w', { label: 'Play', variant: 'light', spinnerVariant: 'dark' }],
 	['b', { label: 'Play', variant: 'dark', spinnerVariant: 'light' }],
 	['o', { label: 'Watch', variant: 'secondary', spinnerVariant: 'light' }],
 ]);
-
 function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 	const { joinGame, joiningGameData } = useJoinAPIContext();
 
+	// Title
 	let gameTitle = '';
 	if (!name_w && !name_b)
 		gameTitle = name_d;
@@ -25,6 +67,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 			gameTitle = name_b;
 	}
 
+	// Status
 	let statusText;
 	switch (status) {
 		case 'wait': statusText = 'Waiting'; break;
@@ -41,6 +84,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 			statusText = '';
 	}
 
+	// Buttons
 	const disableButtons = joiningGameData.isJoining || hideButtons;
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
@@ -48,6 +92,8 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 		['b', name_b],
 		['o', null],
 	]);
+
+	// Render
 	return (
 		<tr>
 			<td>{gameTitle}</td>
@@ -72,46 +118,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 	);
 }
 
-function GameTableRowList({ gameList, userGIDs }) {
-	return gameList.map((game, i) => {
-		return <GameTableRow
-			key={i}
-			gid={game.gid}
-			status={game.status}
-			name_w={game.name_w}
-			name_b={game.name_b}
-			name_d={game.name_d}
-			hideButtons={userGIDs.includes(game.gid)}
-		/>;
-	});
-}
 
-function GameList({ gameList, userGIDs }) {
-	return (
-		<div>
-			<h1>Join a game</h1>
-			<div className='table-wrapper'>
-				<Table striped bordered hover>
-					<thead>
-						<tr>
-							<th>Players</th>
-							<th>Status</th>
-							<th>White</th>
-							<th>Black</th>
-							<th>Spectate</th>
-						</tr>
-					</thead>
-					<tbody>
-						{gameList ?
-							<GameTableRowList gameList={gameList} userGIDs={userGIDs} />
-							:
-							<></>}
-					</tbody>
-				</Table>
-			</div>
-		</div>
 
-	);
-}
 
 export default GameList;
