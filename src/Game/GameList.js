@@ -1,13 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import ButtonSpinner from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
+import { useFirebaseListenerContext } from '../FirebaseListener';
 
 //+--------------------------------\--------------------------
 //|	 	      GameList   	       |
 //\--------------------------------/--------------------------
-function GameList({ gameList, userGIDs }) {
+function GameList() {
+	const firebaseListener = useFirebaseListenerContext();
+	const [userGIDs, setUserGIDs] = useState(null);
+	const [gameList, setGameList] = useState(null);
+	let unregisterUserListener = useRef(null);
+	let unregisterGameListListener = useRef(null);
+
+	// Mount/Unmount
+	useEffect(() => {
+		function unregisterListeners() {
+			if (unregisterUserListener.current)
+				unregisterUserListener.current();
+			if (unregisterGameListListener.current)
+				unregisterGameListListener.current();
+		}
+		unregisterListeners();
+		unregisterUserListener.current =
+			firebaseListener.registerUserListener((user) => setUserGIDs(user.gids));
+		unregisterGameListListener.current =
+			firebaseListener.registerGameListListener((gameList) => setGameList(gameList));
+
+		return unregisterListeners;
+	}, [firebaseListener]);
+
+	// Render
+	if (!gameList || !userGIDs)
+		return <div align='center'>Loading game list...<ButtonSpinner variant={'dark'} /></div>;
+
 	return (
 		<div>
 			<h1>Join a game</h1>
@@ -117,8 +145,5 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 		</tr >
 	);
 }
-
-
-
 
 export default GameList;
