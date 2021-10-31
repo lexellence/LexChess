@@ -6,7 +6,6 @@ import Navigation from "./Navigation";
 import RouteList from "./RouteList";
 
 import { withAuthProvider } from "../Session";
-import { withFirebaseListenerProvider } from "../FirebaseListener";
 
 function App() {
 	return (
@@ -30,4 +29,4 @@ function App() {
 	)
 }
 
-export default withFirebaseListenerProvider(withAuthProvider(App));
+export default withAuthProvider(App);

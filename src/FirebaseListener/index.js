@@ -1,5 +1,5 @@
 import FirebaseListenerContext from './FirebaseListenerContext';
 import withFirebaseListener from './withFirebaseListener';
-import withFirebaseListenerProvider from './withFirebaseListenerProvider';
+import FirebaseListenerProvider from './FirebaseListenerProvider';
 
-export { FirebaseListenerContext, withFirebaseListener, withFirebaseListenerProvider };
+export { FirebaseListenerContext, withFirebaseListener, FirebaseListenerProvider };
