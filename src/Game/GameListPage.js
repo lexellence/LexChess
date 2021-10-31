@@ -9,7 +9,6 @@ import { withFirebaseListener } from '../FirebaseListener';
 import GameCreator from './GameCreator';
 
 const INITIAL_STATE = {
-	authUser: null,
 	userGIDs: null,
 	gameList: null,
 };
@@ -17,29 +16,15 @@ class GameListPageBase extends React.Component {
 	state = { ...INITIAL_STATE };
 
 	componentDidMount() {
-		this.registerAuthListener();
-	};
+		this.registerUserListener();
+		this.registerGameListListener();
+	}
 	componentWillUnmount() {
 		if (this.unregisterUserListener)
 			this.unregisterUserListener();
 		if (this.unregisterGameListListener)
 			this.unregisterGameListListener();
-
-		this.unregisterAuthListener();
 	}
-	registerAuthListener = () => {
-		const onSignIn = (authUser) => {
-			this.setState({ authUser });
-			this.registerUserListener();
-			this.registerGameListListener();
-		};
-		const onSignOut = () => {
-			this.unregisterUserListener();
-			this.unregisterGameListListener();
-			this.setState({ authUser: null });
-		};
-		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
-	};
 	registerUserListener = () => {
 		const handleUserUpdate = (user) =>
 			this.setState({ userGIDs: user.gids });
