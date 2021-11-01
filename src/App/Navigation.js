@@ -17,9 +17,9 @@ function NavigationNonAuth() {
 				<Navbar.Brand>
 					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
 				</Navbar.Brand>
-				<Nav className="justify-content-end">
+				<Nav className="justify-content-end nav-menu">
 					<Nav>
-						<Link to={ROUTES.SIGN_IN} className="nav-link">Sign in</Link>
+						<NavLink to={ROUTES.SIGN_IN} activeClassName="active-nav-link" className="nav-link nav-menu-link">Sign in</NavLink>
 					</Nav>
 				</Nav>
 			</Container>
