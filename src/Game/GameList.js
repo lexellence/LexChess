@@ -54,6 +54,8 @@ function GameList() {
 					<tbody>
 						{/* Game list rows */}
 						{gameList.map((game, i) => {
+							if (userGIDs?.includes(game.gid))
+								return null;
 							return <GameTableRow
 								key={i}
 								gid={game.gid}
@@ -61,7 +63,6 @@ function GameList() {
 								name_w={game.name_w}
 								name_b={game.name_b}
 								name_d={game.name_d}
-								hideButtons={userGIDs.includes(game.gid)}
 							/>;
 						})}
 					</tbody>
@@ -79,7 +80,7 @@ const joinGameButtonMap = new Map([
 	['b', { label: 'Play', variant: 'dark', spinnerVariant: 'light' }],
 	['o', { label: 'Watch', variant: 'secondary', spinnerVariant: 'light' }],
 ]);
-function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
+function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 	const { joinGame, joiningGameData } = useJoinAPIContext();
 
 	// Title
@@ -113,7 +114,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 	}
 
 	// Buttons
-	const disableButtons = joiningGameData.isJoining || hideButtons;
+	const disableButtons = joiningGameData.isJoining;
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
 		['w', name_w],
@@ -131,7 +132,6 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, hideButtons }) {
 					{teamNames.get(team) ? teamNames.get(team)
 						: <Button className='join-game-button' variant={button.variant} size='sm'
 							disabled={disableButtons}
-							style={{ visibility: hideButtons ? 'hidden' : 'visible' }}
 							onClick={!disableButtons ? () => joinGame(gid, team) : null}>
 							{/* Button Label */}
 							{(joiningThisGame && joiningGameData.team === team) ?
