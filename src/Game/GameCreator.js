@@ -15,8 +15,7 @@ const GameCreator = () => {
 	const { createGame, isCreatingGame } = useJoinAPIContext();
 
 	return (
-		<div>
-			<h1>Create a new game</h1>
+		<>
 			Play as:<br />
 			<ToggleButtonGroup type='radio' name='teamSelection' defaultValue={defaultTeamSelection}
 				onChange={!isCreatingGame ? setTeamSelection : null}>
@@ -35,7 +34,7 @@ const GameCreator = () => {
 						<ButtonSpinner variant={createGameRadioMap.get(teamSelection).spinnerVariant} /></>
 					: 'Create game'}
 			</Button>
-		</div>
+		</>
 	);
 };
 

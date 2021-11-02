@@ -8,7 +8,7 @@ import { useFirebaseListenerContext } from '../FirebaseListener';
 //+--------------------------------\--------------------------
 //|	 	      GameList   	       |
 //\--------------------------------/--------------------------
-function GameList() {
+function GameList({ isSignedIn }) {
 	const firebaseListener = useFirebaseListenerContext();
 	const [userGIDs, setUserGIDs] = useState(null);
 	const [gameList, setGameList] = useState(null);
@@ -33,41 +33,39 @@ function GameList() {
 	}, [firebaseListener]);
 
 	// Render
-	if (!gameList || !userGIDs)
+	if (!gameList || (isSignedIn && !userGIDs))
 		return <div align='center'>Loading game list...<ButtonSpinner variant={'dark'} /></div>;
 
 	return (
-		<div>
-			<h1>Join a game</h1>
-			<div className='table-wrapper'>
-				<Table striped bordered hover>
-					<thead>
-						<tr>
-							{/* Game list headers */}
-							<th>Players</th>
-							<th>Status</th>
-							<th>White</th>
-							<th>Black</th>
-							<th>Spectate</th>
-						</tr>
-					</thead>
-					<tbody>
-						{/* Game list rows */}
-						{gameList.map((game, i) => {
-							if (userGIDs?.includes(game.gid))
-								return null;
-							return <GameTableRow
-								key={i}
-								gid={game.gid}
-								status={game.status}
-								name_w={game.name_w}
-								name_b={game.name_b}
-								name_d={game.name_d}
-							/>;
-						})}
-					</tbody>
-				</Table>
-			</div>
+		<div className='table-wrapper'>
+			<Table striped bordered hover>
+				<thead>
+					<tr>
+						{/* Game list headers */}
+						<th>Players</th>
+						<th>Status</th>
+						<th>White</th>
+						<th>Black</th>
+						<th>Spectate</th>
+					</tr>
+				</thead>
+				<tbody>
+					{/* Game list rows */}
+					{gameList.map((game, i) => {
+						if (userGIDs?.includes(game.gid))
+							return null;
+						return <GameTableRow
+							key={i}
+							gid={game.gid}
+							status={game.status}
+							name_w={game.name_w}
+							name_b={game.name_b}
+							name_d={game.name_d}
+							isSignedIn={isSignedIn}
+						/>;
+					})}
+				</tbody>
+			</Table>
 		</div>
 	);
 }
@@ -80,7 +78,7 @@ const joinGameButtonMap = new Map([
 	['b', { label: 'Play', variant: 'dark', spinnerVariant: 'light' }],
 	['o', { label: 'Watch', variant: 'secondary', spinnerVariant: 'light' }],
 ]);
-function GameTableRow({ gid, status, name_w, name_b, name_d }) {
+function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn }) {
 	const { joinGame, joiningGameData } = useJoinAPIContext();
 
 	// Title
@@ -114,7 +112,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 	}
 
 	// Buttons
-	const disableButtons = joiningGameData.isJoining;
+	const disableButtons = joiningGameData.isJoining || !isSignedIn;
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
 		['w', name_w],
@@ -141,7 +139,6 @@ function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 								: button.label}
 						</Button>}
 				</td>)}
-
 		</tr >
 	);
 }
