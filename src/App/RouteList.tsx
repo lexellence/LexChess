@@ -2,7 +2,7 @@ import React from 'react';
 import { Switch, Route } from "react-router-dom";
 
 import HomePage from "../HomePage";
-import { GamePage, GameListPage } from "../Game";
+import { GamePage, GameListPage, GameHistoryPage } from "../Game";
 import SignInPage from "../SignInPage";
 import SignUpPage from "../SignUpPage";
 import AccountPage, { PasswordForgetPage } from '../AccountPage';
@@ -18,6 +18,7 @@ function RouteList() {
 				<GamePage gid={props.match.params.gid} key={props.match.params.gid} />
 			} />
 			<Route path={ROUTES.GAME_LIST}>			<GameListPage />		</Route>
+			<Route path={ROUTES.GAME_HISTORY}>			<GameHistoryPage />		</Route>
 			<Route path={ROUTES.SIGN_IN}>			<SignInPage />			</Route>
 			<Route path={ROUTES.SIGN_UP}>			<SignUpPage />			</Route>
 			<Route path={ROUTES.PASSWORD_FORGET}>	<PasswordForgetPage />	</Route>

@@ -30,7 +30,7 @@ class GamePageBase extends React.Component {
 	state = { ...INITIAL_STATE };
 	chess = new Chess();
 	gid = this.props.gid;
-	userGIDs = [];
+	gidsPlay = [];
 	nextGID = null;
 
 	componentDidMount() {
@@ -58,9 +58,9 @@ class GamePageBase extends React.Component {
 	};
 	registerUserListener = () => {
 		const handleUserUpdate = (user) => {
-			this.userGIDs = user.gids;
+			this.gidsPlay = user.gidsPlay;
 			this.saveNextGID();
-			if (!this.userGIDs.includes(this.gid)) {
+			if (!this.gidsPlay.includes(this.gid)) {
 				this.redirectToNextGame();
 				return;
 			}
@@ -92,12 +92,12 @@ class GamePageBase extends React.Component {
 		this.unregisterGameListener = this.props.firebaseListener.registerGameListener(handleGameUpdate, this.gid);
 	};
 	saveNextGID = () => {
-		const thisGameIndex = this.userGIDs.findIndex(gid => gid === this.gid);
+		const thisGameIndex = this.gidsPlay.findIndex(gid => gid === this.gid);
 		if (thisGameIndex < 0) {
 			// This game does not belong to user
-			if (this.userGIDs.length > 0) {
+			if (this.gidsPlay.length > 0) {
 				// Pick first game
-				this.nextGID = this.userGIDs[0];
+				this.nextGID = this.gidsPlay[0];
 			}
 			else {
 				// No games to pick from
@@ -105,14 +105,14 @@ class GamePageBase extends React.Component {
 			}
 		}
 		else {
-			if (this.userGIDs.length < 2) {
+			if (this.gidsPlay.length < 2) {
 				// No games to pick from
 				this.nextGID = null;
 			}
 			else {
 				// Pick next game
-				const nextIndex = (thisGameIndex + 1) % this.userGIDs.length;
-				this.nextGID = this.userGIDs[nextIndex];
+				const nextIndex = (thisGameIndex + 1) % this.gidsPlay.length;
+				this.nextGID = this.gidsPlay[nextIndex];
 			}
 		}
 	};
@@ -329,15 +329,11 @@ class GamePageBase extends React.Component {
 	}
 };
 
-const conditionFunc = function (authUser) {
-	return !!authUser;
-};
-
 const GamePage =
 	withFirebaseListener(
 		withPlayAPI(
 			withEmailVerification(
-				withAuthorization(conditionFunc)(
+				withAuthorization(authUser => !!authUser)(
 					GamePageBase))));
 
 export default GamePage;

@@ -31,7 +31,7 @@ function NavigationNonAuth() {
 }
 
 class NavigationAuthBase extends React.Component {
-	state = { userRoles: {}, userGIDs: [] };
+	state = { userRoles: {}, gidsPlay: [] };
 	componentDidMount() {
 		const onSignIn = (authUser) =>
 			this.setState({ userRoles: authUser.roles });
@@ -40,7 +40,7 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 
 		const handleUserUpdate = (user) =>
-			this.setState({ userGIDs: user.gids });
+			this.setState({ gidsPlay: user.gidsPlay });
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	componentWillUnmount = () => {
@@ -48,7 +48,7 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener();
 	};
 	render() {
-		const dynamicGameLinks = this.state.userGIDs.map((gid, i) => {
+		const dynamicGameLinks = this.state.gidsPlay.map((gid, i) => {
 			const to = ROUTES.PLAY_BASE + '/' + gid;
 			const title = `Play ${i}`;
 			return (
@@ -67,6 +67,9 @@ class NavigationAuthBase extends React.Component {
 						{dynamicGameLinks}
 						<Nav>
 							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">New Game</NavLink>
+						</Nav>
+						<Nav>
+							<NavLink to={ROUTES.GAME_HISTORY} activeClassName="active-nav-link" className="nav-link nav-menu-link">History</NavLink>
 						</Nav>
 						<Nav>
 							<NavLink to={ROUTES.ACCOUNT} activeClassName="active-nav-link" className="nav-link nav-menu-link">Account</NavLink>

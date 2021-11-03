@@ -8,9 +8,9 @@ import { useFirebaseListenerContext } from '../FirebaseListener';
 //+--------------------------------\--------------------------
 //|	 	      GameList   	       |
 //\--------------------------------/--------------------------
-function GameList({ isSignedIn }) {
+function GameList({ isSignedIn, isHistory }) {
 	const firebaseListener = useFirebaseListenerContext();
-	const [userGIDs, setUserGIDs] = useState(null);
+	const [gidsPlay, setGidsPlay] = useState(null);
 	const [gameList, setGameList] = useState(null);
 	let unregisterUserListener = useRef(null);
 	let unregisterGameListListener = useRef(null);
@@ -25,7 +25,7 @@ function GameList({ isSignedIn }) {
 		}
 		unregisterListeners();
 		unregisterUserListener.current =
-			firebaseListener.registerUserListener((user) => setUserGIDs(user.gids));
+			firebaseListener.registerUserListener((user) => setGidsPlay(user.gidsPlay));
 		unregisterGameListListener.current =
 			firebaseListener.registerGameListListener((gameList) => setGameList(gameList));
 
@@ -33,7 +33,7 @@ function GameList({ isSignedIn }) {
 	}, [firebaseListener]);
 
 	// Render
-	if (!gameList || (isSignedIn && !userGIDs))
+	if (!gameList || (isSignedIn && !gidsPlay))
 		return <div align='center'>Loading game list...<ButtonSpinner variant={'dark'} /></div>;
 
 	return (
@@ -42,18 +42,16 @@ function GameList({ isSignedIn }) {
 				<thead>
 					<tr>
 						{/* Game list headers */}
-						<th>Players</th>
-						<th>Status</th>
+						{isHistory ? null : <th>Players</th>}
+						{isHistory ? <th>Result</th> : <th>Status</th>}
 						<th>White</th>
 						<th>Black</th>
-						<th>Spectate</th>
+						{isHistory ? <th>View</th> : <th>Spectate</th>}
 					</tr>
 				</thead>
 				<tbody>
 					{/* Game list rows */}
 					{gameList.map((game, i) => {
-						if (userGIDs?.includes(game.gid))
-							return null;
 						return <GameTableRow
 							key={i}
 							gid={game.gid}
@@ -62,6 +60,8 @@ function GameList({ isSignedIn }) {
 							name_b={game.name_b}
 							name_d={game.name_d}
 							isSignedIn={isSignedIn}
+							isHistory={isHistory}
+							inGame={gidsPlay?.includes(game.gid)}
 						/>;
 					})}
 				</tbody>
@@ -76,22 +76,33 @@ function GameList({ isSignedIn }) {
 const joinGameButtonMap = new Map([
 	['w', { label: 'Play', variant: 'light', spinnerVariant: 'dark' }],
 	['b', { label: 'Play', variant: 'dark', spinnerVariant: 'light' }],
-	['o', { label: 'Watch', variant: 'secondary', spinnerVariant: 'light' }],
+	['o', { label: 'Spectate', variant: 'secondary', spinnerVariant: 'light' }],
 ]);
-function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn }) {
+function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, isHistory, inGame }) {
 	const { joinGame, joiningGameData } = useJoinAPIContext();
+
+	// Only include joinable games in join-game list
+	const gameCompleted = (status !== 'wait' && status !== 'play');
+	if (!isHistory && (gameCompleted || inGame))
+		return null;
+
+	// Only include finished games in history list
+	if (isHistory && !gameCompleted)
+		return null;
 
 	// Title
 	let gameTitle = '';
-	if (!name_w && !name_b)
-		gameTitle = name_d;
-	else if (name_w && name_b)
-		gameTitle = name_w + ' vs. ' + name_b;
-	else {
-		if (name_w)
-			gameTitle = name_w;
-		else
-			gameTitle = name_b;
+	if (!isHistory) {
+		if (!name_w && !name_b)
+			gameTitle = name_d;
+		else if (name_w && name_b)
+			gameTitle = name_w + ' vs. ' + name_b;
+		else {
+			if (name_w)
+				gameTitle = name_w;
+			else
+				gameTitle = name_b;
+		}
 	}
 
 	// Status
@@ -112,7 +123,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn }) {
 	}
 
 	// Buttons
-	const disableButtons = joiningGameData.isJoining || !isSignedIn;
+	const disableButtons = isHistory ? inGame : joiningGameData.isJoining || !isSignedIn;
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
 		['w', name_w],
@@ -123,7 +134,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn }) {
 	// Render
 	return (
 		<tr>
-			<td>{gameTitle}</td>
+			{isHistory ? null : <td>{gameTitle}</td>}
 			<td>{statusText}</td>
 			{Array.from(joinGameButtonMap).map(([team, button]) =>
 				<td key={team}>
@@ -133,10 +144,10 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn }) {
 							onClick={!disableButtons ? () => joinGame(gid, team) : null}>
 							{/* Button Label */}
 							{(joiningThisGame && joiningGameData.team === team) ?
-								<>Joining...
+								<>{isHistory ? 'Opening...' : 'Joining...'}
 									<ButtonSpinner variant={button.spinnerVariant} />
 								</>
-								: button.label}
+								: isHistory ? 'View' : button.label}
 						</Button>}
 				</td>)}
 		</tr >

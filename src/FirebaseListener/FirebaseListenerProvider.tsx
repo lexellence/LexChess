@@ -111,10 +111,11 @@ class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProvi
 			user = {};
 
 		// Convert to array of gid strings
-		user.gids = user?.gids ? Object.keys(user.gids) : [];
+		user.gidsPlay = user.gidsPlay ? Object.keys(user.gidsPlay) : [];
+		user.gidsPast = user.gidsPast ? Object.keys(user.gidsPast) : [];
 
-		this.trimInactiveGamesListeners(user.gids);
-		this.startNewGamesListeners(user.gids);
+		this.trimInactiveGamesListeners(user.gidsPlay);
+		this.startNewGamesListeners(user.gidsPlay);
 
 		this.userNotifier.update(user);
 	}

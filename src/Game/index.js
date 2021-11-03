@@ -1,3 +1,4 @@
 import GamePage from './GamePage';
 import GameListPage from './GameListPage';
-export { GamePage, GameListPage };
+import GameHistoryPage from './GameHistoryPage';
+export { GamePage, GameListPage, GameHistoryPage };
