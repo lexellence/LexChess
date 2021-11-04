@@ -14,11 +14,9 @@ function RouteList() {
 	return (
 		<Switch>
 			<Route exact path={ROUTES.LANDING}>		<HomePage />			</Route>
-			<Route path={ROUTES.PLAY} render={(props) =>
-				<GamePage gid={props.match.params.gid} key={props.match.params.gid} />
-			} />
+			<Route path={ROUTES.PLAY}>				<GamePage />			</Route>
 			<Route path={ROUTES.GAME_LIST}>			<GameListPage />		</Route>
-			<Route path={ROUTES.GAME_HISTORY}>			<GameHistoryPage />		</Route>
+			<Route path={ROUTES.GAME_HISTORY}>		<GameHistoryPage />		</Route>
 			<Route path={ROUTES.SIGN_IN}>			<SignInPage />			</Route>
 			<Route path={ROUTES.SIGN_UP}>			<SignUpPage />			</Route>
 			<Route path={ROUTES.PASSWORD_FORGET}>	<PasswordForgetPage />	</Route>

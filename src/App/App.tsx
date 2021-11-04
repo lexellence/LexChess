@@ -18,7 +18,7 @@ function App() {
 				<Container>
 					<Row>
 						<Col md={12}>
-							<div className="wrapper">
+							<div className='page-wrapper'>
 								<RouteList />
 							</div>
 						</Col>

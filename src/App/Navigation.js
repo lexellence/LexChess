@@ -31,7 +31,7 @@ function NavigationNonAuth() {
 }
 
 class NavigationAuthBase extends React.Component {
-	state = { userRoles: {}, gidsPlay: [] };
+	state = { userRoles: {}, userHasGames: false };
 	componentDidMount() {
 		const onSignIn = (authUser) =>
 			this.setState({ userRoles: authUser.roles });
@@ -40,7 +40,7 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 
 		const handleUserUpdate = (user) =>
-			this.setState({ gidsPlay: user.gidsPlay });
+			this.setState({ userHasGames: user.gidsPlay.length > 0 });
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	componentWillUnmount = () => {
@@ -48,15 +48,6 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener();
 	};
 	render() {
-		const dynamicGameLinks = this.state.gidsPlay.map((gid, i) => {
-			const to = ROUTES.PLAY_BASE + '/' + gid;
-			const title = `Play ${i}`;
-			return (
-				<Nav key={i}>
-					<NavLink to={to} activeClassName="active-nav-link" className="nav-link nav-menu-link">{title}</NavLink>
-				</Nav>
-			);
-		});
 		return (
 			<Navbar bg="dark" variant="dark" className="unselectable" >
 				<Container>
@@ -64,7 +55,11 @@ class NavigationAuthBase extends React.Component {
 						<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
 					</Navbar.Brand>
 					<Nav className="justify-content-end nav-menu">
-						{dynamicGameLinks}
+						{this.state.userHasGames &&
+							<Nav>
+								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className="nav-link nav-menu-link">Play</NavLink>
+							</Nav>
+						}
 						<Nav>
 							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">New Game</NavLink>
 						</Nav>
