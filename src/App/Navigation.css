@@ -11,6 +11,7 @@
   /* text-indent: .3em; */
   /* color: #181818; */
   border-bottom: 3px solid transparent;
+  transition: transform .2s linear, border-bottom .2s linear;
 }
 .nav-menu-link:hover {
   transform: translateY(-2px);
@@ -19,5 +20,4 @@
   /* background-color: #001d03; */
     /* color: #ff0000; */
   border-bottom: 3px solid #a2ff9a;
-  transition: border-bottom .5s ease-in-out;
-}
+}
