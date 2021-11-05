@@ -5,6 +5,7 @@ import { withAuthorization, withEmailVerification, AuthUserContext } from '../Se
 import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import Game from '../Game';
+import { usePlayAPIContext } from '../API';
 
 function getNextGID(selectedGID, gidList) {
 	if (!gidList)
@@ -43,7 +44,9 @@ function getNextGID(selectedGID, gidList) {
 function GamePage() {
 	const history = useHistory();
 	const firebaseListener = useFirebaseListenerContext();
+	const playAPI = usePlayAPIContext();
 	const [gids, setGids] = useState(null);
+	const userPlay = useRef(null);
 	const [selectedGID, setSelectedGID] = useState(null);
 	const nextGID = useRef(null);
 
@@ -51,7 +54,8 @@ function GamePage() {
 	useEffect(() => {
 		const unregisterUserListener =
 			firebaseListener.registerUserListener((user) => {
-				setGids(user.gidsPlay);
+				userPlay.current = user.play;
+				setGids(Object.keys(user.play));
 			});
 		return () => {
 			unregisterUserListener();
@@ -62,7 +66,10 @@ function GamePage() {
 		sessionStorage.setItem('GamePage::selectedGID', gid);
 		nextGID.current = getNextGID(gid, gids);
 		setSelectedGID(gid);
-	}, [gids]);
+
+		if (gid !== 'none')
+			playAPI.visitGame(gid);
+	}, [gids, playAPI]);
 
 	// Set selected gid on first load of gid list
 	useEffect(() => {
@@ -101,9 +108,10 @@ function GamePage() {
 			<Row>
 				<Col xs={2}>
 					<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID}>
-						{gids.map((gid, i) =>
+						{Object.entries(userPlay.current).map(([gid, game], i) =>
 							<ToggleButton key={i} value={gid}
-								variant={selectedGID === gid ? 'primary' : 'outline-primary'}>
+								variant={game.visited ? 'primary' : 'warning'}
+								size={selectedGID === gid ? 'lg' : 'sm'}>
 								Play {i}
 							</ToggleButton>
 						)}

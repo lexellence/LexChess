@@ -10,6 +10,9 @@ import * as ROUTES from "../constants/routes";
 import * as ROLES from '../constants/roles';
 import { withFirebaseListener } from '../FirebaseListener';
 
+const navLinkClass = 'nav-link nav-menu-link';
+const attentionNavLinkClass = 'nav-link nav-menu-link-attention';
+
 function NavigationNonAuth() {
 	return (
 		<Navbar bg="dark" variant="dark" className="unselectable">
@@ -19,10 +22,10 @@ function NavigationNonAuth() {
 				</Navbar.Brand>
 				<Nav className="justify-content-end nav-menu">
 					<Nav>
-						<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">Game List</NavLink>
+						<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>Game List</NavLink>
 					</Nav>
 					<Nav>
-						<NavLink to={ROUTES.SIGN_IN} activeClassName="active-nav-link" className="nav-link nav-menu-link">Sign in</NavLink>
+						<NavLink to={ROUTES.SIGN_IN} activeClassName="active-nav-link" className={navLinkClass}>Sign in</NavLink>
 					</Nav>
 				</Nav>
 			</Container>
@@ -31,7 +34,11 @@ function NavigationNonAuth() {
 }
 
 class NavigationAuthBase extends React.Component {
-	state = { userRoles: {}, userHasGames: false };
+	state = {
+		userRoles: {},
+		hasPlay: false,
+		newPlayGame: false,
+	};
 	componentDidMount() {
 		const onSignIn = (authUser) =>
 			this.setState({ userRoles: authUser.roles });
@@ -39,8 +46,18 @@ class NavigationAuthBase extends React.Component {
 			this.setState({ userRoles: {} });
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 
-		const handleUserUpdate = (user) =>
-			this.setState({ userHasGames: user.gidsPlay.length > 0 });
+		const handleUserUpdate = (user) => {
+			// Is there an unvisited game in the play tab?
+			const playValues = Object.values(user.play);
+			const newPlayGame = playValues.find(userGame => !userGame.visited) ? true : false;
+			if (newPlayGame !== this.state.newPlayGame)
+				this.setState({ newPlayGame });
+
+			// Is the user playing any games?
+			const hasPlay = playValues.length > 0;
+			if (hasPlay !== this.state.hasPlay)
+				this.setState({ hasPlay });
+		};
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
 	componentWillUnmount = () => {
@@ -55,22 +72,25 @@ class NavigationAuthBase extends React.Component {
 						<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
 					</Navbar.Brand>
 					<Nav className="justify-content-end nav-menu">
-						{this.state.userHasGames &&
+						{this.state.hasPlay &&
 							<Nav>
-								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className="nav-link nav-menu-link">Play</NavLink>
+								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link"
+									className={this.state.newPlayGame ? attentionNavLinkClass : navLinkClass}>
+									My Games
+								</NavLink>
 							</Nav>
 						}
 						<Nav>
-							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className="nav-link nav-menu-link">New Game</NavLink>
+							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>New Game</NavLink>
 						</Nav>
 						<Nav>
-							<NavLink to={ROUTES.GAME_HISTORY} activeClassName="active-nav-link" className="nav-link nav-menu-link">History</NavLink>
+							<NavLink to={ROUTES.GAME_HISTORY} activeClassName="active-nav-link" className={navLinkClass}>Records</NavLink>
 						</Nav>
 						<Nav>
-							<NavLink to={ROUTES.ACCOUNT} activeClassName="active-nav-link" className="nav-link nav-menu-link">Account</NavLink>
+							<NavLink to={ROUTES.ACCOUNT} activeClassName="active-nav-link" className={navLinkClass}>Account</NavLink>
 						</Nav>
 						{!!this.state.userRoles[ROLES.ADMIN] && <Nav>
-							<NavLink to={ROUTES.ADMIN} activeClassName="active-nav-link" className="nav-link nav-menu-link">Admin</NavLink>
+							<NavLink to={ROUTES.ADMIN} activeClassName="active-nav-link" className={navLinkClass}>Admin</NavLink>
 						</Nav>}
 						<Nav>
 							<SignOutButton />

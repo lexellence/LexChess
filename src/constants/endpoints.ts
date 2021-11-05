@@ -7,5 +7,6 @@ const API_URL = (process.env.NODE_ENV === 'production') ? API_URL_PROD : API_URL
 export const GET_PLAY = API_URL + '/get-play-state';
 export const JOIN_GAME = API_URL + '/join-game';
 export const CREATE_GAME = API_URL + '/create-game';
+export const VISIT_GAME = API_URL + '/visit-game';
 export const MOVE = API_URL + '/move';
 export const LEAVE_GAME = API_URL + '/leave-game';

@@ -221,7 +221,7 @@ apiRouter.post("/create-game/:team", async (req: any, res: any) => {
 		const databaseUpdate: any = {};
 		databaseUpdate[`gameList/${gid}`] = gameListing;
 		databaseUpdate[`games/${gid}`] = game;
-		databaseUpdate[`users/${uid}/gidsPlay/${gid}`] = true;
+		databaseUpdate[`users/${uid}/play/${gid}`] = { visited: false };
 		await db.ref().update(databaseUpdate);
 
 		res.status(httpCodes.OK).send();
@@ -242,8 +242,7 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 		const { gid, team } = req.params;
 
 		// Can't join game you're already in
-		const userGIDs = (await db.ref(`users/${uid}/gidsPlay`).once('value')).val();
-		if (userGIDs && Object.keys(userGIDs).includes(gid)) {
+		if ((await db.ref(`users/${uid}/play/${gid}`).once('value')).exists()) {
 			console.log('User ' + uid + ' tried to join game ' + gid + ' but is already in it.');
 			res.status(httpCodes.FORBIDDEN).send('User already playing in that game');
 			return;
@@ -257,10 +256,10 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 			return;
 		}
 
-		// Add game to user
 		const databaseUpdate: any = {};
 		{
-			databaseUpdate[`users/${uid}/gidsPlay/${gid}`] = true;
+			// Add game to user
+			databaseUpdate[`users/${uid}/play/${gid}`] = { visited: false };
 
 			// If game is not in 'wait' mode, or client tries to join unavailable team,
 			//	then user becomes a spectator and not added to game data
@@ -291,13 +290,33 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 			}
 		}
 		// Save changes to database
-		console.log('databaseUpdate', databaseUpdate);
 		await db.ref().update(databaseUpdate);
 
 		res.status(httpCodes.OK).send();
 		return;
 	} catch (error) {
 		console.log('Error in /join-game:', error);
+		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(error);
+	}
+});
+//+------------------------\----------------------------------
+//|	   PUT /visit-game     |
+//\------------------------/
+//	
+//------------------------------------------------------------
+apiRouter.put("/visit-game/:gid", async (req: any, res: any) => {
+	try {
+		const { uid } = req.decodedClaims;
+		const { gid } = req.params;
+
+		const ref = db.ref(`users/${uid}/play/${gid}`);
+		if ((await ref.once('value')).exists())
+			await ref.update({ visited: true });
+
+		res.status(httpCodes.OK).send();
+		return;
+	} catch (error) {
+		console.log('Error in /visit-game:', error);
 		res.status(httpCodes.INTERNAL_SERVER_ERROR).send(error);
 	}
 });
@@ -312,9 +331,9 @@ apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 		const { gid } = req.params;
 
 		// Can't leave if you're not in the game
-		const userInGame = (await db.ref(`users/${uid}/gidsPlay/${gid}`).once('value')).exists();
+		const isUserPlaying = (await db.ref(`users/${uid}/play/${gid}`).once('value')).exists();
 		const game = (await db.ref(`games/${gid}`).once('value')).val();
-		if (!userInGame || !game) {
+		if (!isUserPlaying || !game) {
 			console.log(`User tried to leave game but is not in it (uid=${uid} gid=${gid})`);
 			res.status(httpCodes.FORBIDDEN).send('You are not in that game');
 			return;
@@ -346,14 +365,14 @@ apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 					}
 
 					// Add game to users' histories
-					databaseUpdate[`users/${uid}/gidsPast/${gid}`] = true;
-					databaseUpdate[`users/${opponentUID}/gidsPast/${gid}`] = true;
+					databaseUpdate[`users/${uid}/past/${gid}`] = true;
+					databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
 				}
 			}
 
 			if (game.status !== 'play') {
 				// Remove game from user's playing list
-				databaseUpdate[`users/${uid}/gidsPlay/${gid}`] = null;
+				databaseUpdate[`users/${uid}/play/${gid}`] = null;
 			}
 		}
 		// Save changes to database
@@ -377,9 +396,9 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 		const { gid, move } = req.params;
 
 		// User must be in a game
-		const userInGame = (await db.ref(`users/${uid}/gidsPlay/${gid}`).once('value')).exists();
+		const isUserPlaying = (await db.ref(`users/${uid}/play/${gid}`).once('value')).exists();
 		const game = (await db.ref(`games/${gid}`).once('value')).val();
-		if (!userInGame || !game) {
+		if (!isUserPlaying || !game) {
 			console.log('User ' + uid + ' tried to move in an invalid game');
 			res.status(httpCodes.FORBIDDEN).send('move: You are not in this game');
 			return;

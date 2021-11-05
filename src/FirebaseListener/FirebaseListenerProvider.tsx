@@ -72,6 +72,9 @@ class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProvi
 		this.props.firebase.db.ref('gameList').off();
 	}
 	startGameListening = (gid: string) => {
+		if (!gid)
+			return;
+
 		if (!this.gameListeningGIDs.includes(gid)) {
 			this.gameListeningGIDs.push(gid);
 			this.props.firebase.db.ref(`games/${gid}/status`).once('value', (snapshot) => {
@@ -111,11 +114,16 @@ class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProvi
 			user = {};
 
 		// Convert to array of gid strings
-		user.gidsPlay = user.gidsPlay ? Object.keys(user.gidsPlay) : [];
-		user.gidsPast = user.gidsPast ? Object.keys(user.gidsPast) : [];
+		// user.play = user.play ? Object.keys(user.gidsPlay) : [];
+		// user.gidsPast = user.gidsPast ? Object.keys(user.gidsPast) : [];
+		if (!user.play)
+			user.play = {};
+		if (!user.past)
+			user.past = {};
 
-		this.trimInactiveGamesListeners(user.gidsPlay);
-		this.startNewGamesListeners(user.gidsPlay);
+		const userGIDs = Object.keys(user.play);
+		this.trimInactiveGamesListeners(userGIDs);
+		this.startNewGamesListeners(userGIDs);
 
 		this.userNotifier.update(user);
 	}
@@ -187,6 +195,12 @@ class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProvi
 		return this.gameListNotifier.register(onUpdate);
 	}
 	registerGameListener = (onUpdate: OnUpdateFunc, gid: string): UnregisterFunc => {
+		// Reject no-gid
+		if (!gid) {
+			onUpdate(null);
+			return () => { };
+		}
+
 		// Create notifier if none exists
 		if (!this.gameNotifierMap.has(gid))
 			this.gameNotifierMap.set(gid, new ValueNotifier());

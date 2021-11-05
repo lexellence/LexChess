@@ -1,6 +1,7 @@
 import React from 'react';
 
 type PlayAPIContextValue = {
+	visitGame(gid: string): void;
 	move(gid: string, moveString: string): void;
 	leaveGame(gid: string): void;
 	isMovingTable: { [gid: string]: boolean };

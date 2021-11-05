@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import ButtonSpinner from '../ButtonSpinner';
@@ -10,30 +10,26 @@ import { useFirebaseListenerContext } from '../FirebaseListener';
 //\--------------------------------/--------------------------
 function GameList({ isSignedIn, isHistory }) {
 	const firebaseListener = useFirebaseListenerContext();
-	const [gidsPlay, setGidsPlay] = useState(null);
+	const [playingGIDs, setPlayingGIDs] = useState(null);
 	const [gameList, setGameList] = useState(null);
-	let unregisterUserListener = useRef(null);
-	let unregisterGameListListener = useRef(null);
 
 	// Mount/Unmount
 	useEffect(() => {
-		function unregisterListeners() {
-			if (unregisterUserListener.current)
-				unregisterUserListener.current();
-			if (unregisterGameListListener.current)
-				unregisterGameListListener.current();
-		}
-		unregisterListeners();
-		unregisterUserListener.current =
-			firebaseListener.registerUserListener((user) => setGidsPlay(user.gidsPlay));
-		unregisterGameListListener.current =
+		const unregisterUserListener =
+			firebaseListener.registerUserListener((user) => {
+				setPlayingGIDs(Object.keys(user.play));
+			});
+		const unregisterGameListListener =
 			firebaseListener.registerGameListListener((gameList) => setGameList(gameList));
 
-		return unregisterListeners;
-	}, [firebaseListener]);
+		return () => {
+			unregisterUserListener();
+			unregisterGameListListener();
+		};
+	}, [firebaseListener, isHistory]);
 
 	// Render
-	if (!gameList || (isSignedIn && !gidsPlay))
+	if (!gameList || (isSignedIn && !playingGIDs))
 		return <div align='center'>Loading game list...<ButtonSpinner variant={'dark'} /></div>;
 
 	return (
@@ -61,7 +57,7 @@ function GameList({ isSignedIn, isHistory }) {
 							name_d={game.name_d}
 							isSignedIn={isSignedIn}
 							isHistory={isHistory}
-							inGame={gidsPlay?.includes(game.gid)}
+							inGame={playingGIDs?.includes(game.gid)}
 						/>;
 					})}
 				</tbody>
@@ -123,7 +119,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, isHisto
 	}
 
 	// Buttons
-	const disableButtons = isHistory ? inGame : joiningGameData.isJoining || !isSignedIn;
+	const disableButtons = isHistory ? inGame : (joiningGameData.isJoining || !isSignedIn);
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
 		['w', name_w],

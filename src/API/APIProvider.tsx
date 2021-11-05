@@ -78,6 +78,15 @@ const APIProvider: React.FC = ({ children }) => {
 		});
 	};
 	//+--------------------------------\--------------------------
+	//|	 	      visitGame 		   |
+	//\--------------------------------/--------------------------
+	function visitGame(gid: string) {
+		api.visitGame(authUser, gid).catch(errorMessage => {
+			console.log(errorMessage);
+			alert(errorMessage);
+		})
+	};
+	//+--------------------------------\--------------------------
 	//|	 	      	move			   |
 	//\--------------------------------/--------------------------
 	function move(gid: string, moveString: string) {
@@ -109,7 +118,7 @@ const APIProvider: React.FC = ({ children }) => {
 	};
 
 	const playAPIValue: PlayAPIContextValue = {
-		move, leaveGame, isMovingTable, isQuittingTable
+		visitGame, move, leaveGame, isMovingTable, isQuittingTable
 	};
 	const joinAPIValue: JoinAPIContextValue = {
 		joinGame, createGame, isCreatingGame, joiningGameData

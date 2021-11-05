@@ -92,6 +92,13 @@ export async function createGame(authUser: any, team: string) {
 	return callAPI(authUser, 'post', ENDPOINTS.CREATE_GAME + '/' + team);
 };
 //+--------------------------------\-------------------------
+//|	 	      visitGame		   |
+//\--------------------------------/
+//------------------------------------------------------------
+export async function visitGame(authUser: any, gid: string) {
+	return callAPI(authUser, 'put', ENDPOINTS.VISIT_GAME + '/' + gid);
+};
+//+--------------------------------\-------------------------
 //|	 	      	move			   |
 //\--------------------------------/
 //------------------------------------------------------------
