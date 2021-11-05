@@ -4,7 +4,7 @@ import { Container, Row, Col, ToggleButtonGroup, ToggleButton } from 'react-boot
 import { withAuthorization, withEmailVerification, AuthUserContext } from '../Session';
 import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
-import Game from './Game';
+import Game from '../Game';
 
 function getNextGID(selectedGID, gidList) {
 	if (!gidList)
