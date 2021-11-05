@@ -2,7 +2,9 @@ import React from 'react';
 import { Switch, Route } from "react-router-dom";
 
 import HomePage from "../HomePage";
-import { GamePage, GameListPage, GameHistoryPage } from "../Game";
+import GamePage from "../GamePage";
+import GameListPage from "../GameListPage";
+import GameHistoryPage from "../GameHistoryPage";
 import SignInPage from "../SignInPage";
 import SignUpPage from "../SignUpPage";
 import AccountPage, { PasswordForgetPage } from '../AccountPage';

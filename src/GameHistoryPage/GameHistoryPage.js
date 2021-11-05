@@ -1,5 +1,5 @@
 import React from 'react';
-import GameList from './GameList';
+import { GameList } from '../GameListPage';
 import {
 	withAuthorization,
 	withEmailVerification,
