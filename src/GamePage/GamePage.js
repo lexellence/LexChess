@@ -10,10 +10,6 @@ import { usePlayAPIContext } from '../API';
 function getNextGID(selectedGID, gidList) {
 	if (!gidList)
 		return null;
-	if (!selectedGID) {
-		if (gidList.length > 0)
-			return gidList[0];
-	}
 
 	const thisGameIndex = gidList.findIndex(gid => gid === selectedGID);
 	if (thisGameIndex < 0) {
@@ -40,13 +36,11 @@ function getNextGID(selectedGID, gidList) {
 	}
 };
 
-
 function GamePage() {
 	const history = useHistory();
 	const firebaseListener = useFirebaseListenerContext();
 	const playAPI = usePlayAPIContext();
-	const [gids, setGids] = useState(null);
-	const userPlay = useRef(null);
+	const [userPlay, setUserPlay] = useState(null);
 	const [selectedGID, setSelectedGID] = useState(null);
 	const nextGID = useRef(null);
 
@@ -54,8 +48,7 @@ function GamePage() {
 	useEffect(() => {
 		const unregisterUserListener =
 			firebaseListener.registerUserListener((user) => {
-				userPlay.current = user.play;
-				setGids(Object.keys(user.play));
+				setUserPlay(user.play);
 			});
 		return () => {
 			unregisterUserListener();
@@ -63,71 +56,72 @@ function GamePage() {
 	}, [firebaseListener]);
 
 	const selectGID = useCallback(gid => {
-		sessionStorage.setItem('GamePage::selectedGID', gid);
-		nextGID.current = getNextGID(gid, gids);
-		setSelectedGID(gid);
+		if (gid) {
+			sessionStorage.setItem('GamePage::selectedGID', gid);
+			setSelectedGID(gid);
 
-		if (gid && gid !== 'none')
-			if (!userPlay.current[gid].visited)
+			const gids = Object.keys(userPlay);
+			nextGID.current = getNextGID(gid, gids);
+
+			if (!userPlay[gid].visited)
 				playAPI.visitGame(gid);
-	}, [gids, playAPI]);
+		}
+	}, [userPlay, playAPI]);
 
 	// Set selected gid on first load of gid list
 	useEffect(() => {
-		if (!gids || selectedGID)
-			return;
-		const previouslySelectedGID = sessionStorage.getItem('GamePage::selectedGID');
-		if (gids.includes(previouslySelectedGID))
-			selectGID(previouslySelectedGID);
-		else if (gids.length > 0)
-			selectGID(gids[0]);
-		else
-			selectGID('none');
-	}, [gids, selectedGID, selectGID]);
-
-	// Go to next game when selected game removed from gid list
-	useEffect(() => {
-		if (!gids || !selectedGID)
-			return;
-
-		if (!gids.includes(selectedGID)) {
-			// Go to next game
-			if (nextGID.current)
-				selectGID(nextGID.current);
-			else
-				history.push(ROUTES.GAME_LIST);
+		if (userPlay && !selectedGID) {
+			const previouslySelectedGID = sessionStorage.getItem('GamePage::selectedGID');
+			const gids = Object.keys(userPlay);
+			if (previouslySelectedGID && gids.includes(previouslySelectedGID))
+				selectGID(previouslySelectedGID);
+			else if (gids.length > 0)
+				selectGID(gids[0]);
 		}
-	}, [gids, selectedGID, selectGID, history]);
+	}, [userPlay, selectedGID, selectGID]);
 
-	// Loading
-	if (!gids || !selectedGID)
-		return <div align='center'>Loading...</div>;
+	// Go to next game when selected game not in user's game list
+	useEffect(() => {
+		if (userPlay && selectedGID) {
+			const gids = Object.keys(userPlay);
+			if (!gids.includes(selectedGID)) {
+				// Go to next game
+				if (nextGID.current)
+					selectGID(nextGID.current);
+				else
+					history.push(ROUTES.GAME_LIST);
+			}
+		}
+	}, [userPlay, selectedGID, selectGID, history]);
 
 	// Render
-	return (
-		<Container>
-			<Row>
-				<Col xs={2}>
-					<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID}>
-						{Object.entries(userPlay.current).map(([gid, game], i) =>
-							<ToggleButton key={i} value={gid}
-								variant={game.visited ? 'primary' : 'warning'}
-								size={selectedGID === gid ? 'lg' : 'sm'}>
-								Play {i}
-							</ToggleButton>
-						)}
-					</ToggleButtonGroup>
-				</Col>
-				<Col>
-					<div className='page-wrapper' >
-						<AuthUserContext.Consumer>
-							{authUser => <Game gid={selectedGID} uid={authUser.uid} />}
-						</AuthUserContext.Consumer>
-					</div>
-				</Col>
-			</Row>
-		</Container >
-	);
+	if (!userPlay || !selectedGID)
+		return <div align='center'>Loading...</div>;
+	else
+		return (
+			<Container>
+				<Row>
+					<Col xs={2}>
+						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID}>
+							{Object.entries(userPlay).map(([gid, game], i) =>
+								<ToggleButton key={i} value={gid}
+									variant={game.visited ? 'primary' : 'warning'}
+									size={selectedGID === gid ? 'lg' : 'sm'}>
+									Play {i}
+								</ToggleButton>
+							)}
+						</ToggleButtonGroup>
+					</Col>
+					<Col>
+						<div className='page-wrapper' >
+							<AuthUserContext.Consumer>
+								{authUser => <Game gid={selectedGID} uid={authUser.uid} />}
+							</AuthUserContext.Consumer>
+						</div>
+					</Col>
+				</Row>
+			</Container >
+		);
 }
 
 export default
