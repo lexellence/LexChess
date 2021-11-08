@@ -67,8 +67,9 @@ function GamePage() {
 		nextGID.current = getNextGID(gid, gids);
 		setSelectedGID(gid);
 
-		if (gid !== 'none')
-			playAPI.visitGame(gid);
+		if (gid && gid !== 'none')
+			if (!userPlay.current[gid].visited)
+				playAPI.visitGame(gid);
 	}, [gids, playAPI]);
 
 	// Set selected gid on first load of gid list
