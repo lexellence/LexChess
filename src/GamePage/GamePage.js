@@ -132,9 +132,7 @@ function GamePage() {
 					</Col>
 					<Col>
 						{!game ? <div align='center'>Loading...</div>
-							: <div className='page-wrapper'>
-								<Game game={game} />
-							</div>}
+							: <Game game={game} />}
 					</Col>
 				</Row>
 			</Container>
