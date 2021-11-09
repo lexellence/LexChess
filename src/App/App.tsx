@@ -5,8 +5,6 @@ import { Container, Row, Col } from "react-bootstrap";
 import Navigation from "./Navigation";
 import RouteList from "./RouteList";
 
-import { withAuthProvider } from "../Session";
-
 function App() {
 	return (
 		<BrowserRouter>
@@ -29,4 +27,4 @@ function App() {
 	)
 }
 
-export default withAuthProvider(App);
+export default App;
