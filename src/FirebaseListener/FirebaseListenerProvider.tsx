@@ -8,11 +8,11 @@ import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';
 //\----------------------------------/
 //	The provider of firebase data notifiers
 //\-----------------------------------------------------------
-type WithFirebaseListenerProviderProps = {
+type FirebaseListenerProviderProps = {
 	firebase: Firebase;
 	children: any;
 }
-class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProviderProps> {
+class FirebaseListenerProvider extends React.Component<FirebaseListenerProviderProps> {
 	authUser: any = null;
 	gameNotifierMap: Map<string, ValueNotifier> = new Map<string, ValueNotifier>();	// key = gid, value = ChildAddedNotifier
 	gameListeningGIDs: string[] = [];
@@ -172,17 +172,32 @@ class FirebaseListenerProvider extends React.Component<WithFirebaseListenerProvi
 	//+----------------------------------\------------------------
 	//|	  		  Game Update		     |
 	//\----------------------------------/------------------------
-	handleGameUpdate = (gid: string, game: any) => {
-		if (game) {
-			// Convert to array of move strings
-			game.moves = game.moves ? Object.values(game.moves) : [];
+	handleGameUpdate = (gid: string, dbGame: any) => {
+		if (dbGame) {
+			const game: any = {
+				gid: gid,
+				status: dbGame.status,
+				name_w: dbGame.name_w,
+				name_b: dbGame.name_b,
+				name_d: dbGame.name_d,
+				moves: dbGame.moves ? Object.values(dbGame.moves) : [],
+			};
+
+			// Add user's team
+			switch (this.authUser.uid) {
+				case dbGame.uid_w: game.team = 'w'; break;
+				case dbGame.uid_b: game.team = 'b'; break;
+				case dbGame.uid_d: game.team = 'd'; break;
+				default: game.team = 'o';
+			}
+
+			// Notify
+			this.gameNotifierMap.get(gid)?.update(game);
 		}
-
-		this.gameNotifierMap.get(gid)?.update(game);
-
-		// Stop if game doesn't exist
-		if (!game)
+		else if (!dbGame) {
+			// Stop if game doesn't exist
 			this.stopGameListening(gid);
+		}
 	}
 
 	//+----------------------------------\------------------------

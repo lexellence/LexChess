@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Container, Row, Col, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
-import { withAuthorization, withEmailVerification, AuthUserContext } from '../Session';
+import { withAuthorization, withEmailVerification } from '../Session';
 import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import Game from '../Game';
@@ -40,24 +40,31 @@ function GamePage() {
 	const history = useHistory();
 	const firebaseListener = useFirebaseListenerContext();
 	const playAPI = usePlayAPIContext();
-	const [userPlay, setUserPlay] = useState(null);
+	const [userPlay, setUserPlay] = useState({});
 	const [selectedGID, setSelectedGID] = useState(null);
 	const nextGID = useRef(null);
+	const [game, setGame] = useState(null);
 
 	// Mount/Unmount
 	useEffect(() => {
 		const unregisterUserListener =
 			firebaseListener.registerUserListener((user) => {
-				setUserPlay(user.play);
+				if (!user || !user.play || Object.keys(user.play).length < 1) {
+					sessionStorage.removeItem('selectedGID');
+					history.push(ROUTES.GAME_LIST);
+				}
+				else
+					setUserPlay(user.play);
 			});
 		return () => {
 			unregisterUserListener();
 		};
-	}, [firebaseListener]);
+	}, [firebaseListener, history]);
 
+	// Select game from menu
 	const selectGID = useCallback(gid => {
 		if (gid) {
-			sessionStorage.setItem('GamePage::selectedGID', gid);
+			sessionStorage.setItem('selectedGID', gid);
 			setSelectedGID(gid);
 
 			const gids = Object.keys(userPlay);
@@ -70,42 +77,53 @@ function GamePage() {
 
 	// Set selected gid on first load of gid list
 	useEffect(() => {
-		if (userPlay && !selectedGID) {
-			const previouslySelectedGID = sessionStorage.getItem('GamePage::selectedGID');
+		if (!selectedGID) {
+			const previouslySelectedGID = sessionStorage.getItem('selectedGID');
 			const gids = Object.keys(userPlay);
 			if (previouslySelectedGID && gids.includes(previouslySelectedGID))
 				selectGID(previouslySelectedGID);
-			else if (gids.length > 0)
+			else
 				selectGID(gids[0]);
 		}
 	}, [userPlay, selectedGID, selectGID]);
 
 	// Go to next game when selected game not in user's game list
 	useEffect(() => {
-		if (userPlay && selectedGID) {
+		if (selectedGID) {
 			const gids = Object.keys(userPlay);
 			if (!gids.includes(selectedGID)) {
 				// Go to next game
-				if (nextGID.current)
+				if (gids.includes(nextGID.current))
 					selectGID(nextGID.current);
 				else
-					history.push(ROUTES.GAME_LIST);
+					selectGID(gids[0]);
 			}
 		}
 	}, [userPlay, selectedGID, selectGID, history]);
 
+	// Subscribe to selected game
+	useEffect(() => {
+		if (selectedGID) {
+			function handleGameUpdate(newGame) {
+				setGame({ ...newGame });
+			}
+			const unsubscribe = firebaseListener.registerGameListener(handleGameUpdate, selectedGID);
+			return unsubscribe;
+		}
+	}, [firebaseListener, selectedGID]);
+
 	// Render
 	if (!userPlay || !selectedGID)
 		return <div align='center'>Loading...</div>;
-	else
+	else {
 		return (
 			<Container>
 				<Row>
 					<Col xs={2}>
 						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID}>
-							{Object.entries(userPlay).map(([gid, game], i) =>
+							{Object.entries(userPlay).map(([gid, userGame], i) =>
 								<ToggleButton key={i} value={gid}
-									variant={game.visited ? 'primary' : 'warning'}
+									variant={userGame.visited ? 'primary' : 'warning'}
 									size={selectedGID === gid ? 'lg' : 'sm'}>
 									Play {i}
 								</ToggleButton>
@@ -113,15 +131,15 @@ function GamePage() {
 						</ToggleButtonGroup>
 					</Col>
 					<Col>
-						<div className='page-wrapper' >
-							<AuthUserContext.Consumer>
-								{authUser => <Game gid={selectedGID} uid={authUser.uid} />}
-							</AuthUserContext.Consumer>
-						</div>
+						{!game ? <div align='center'>Loading...</div>
+							: <div className='page-wrapper'>
+								<Game game={game} />
+							</div>}
 					</Col>
 				</Row>
-			</Container >
+			</Container>
 		);
+	}
 }
 
 export default

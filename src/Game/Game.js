@@ -1,75 +1,82 @@
 // TODO: convert to TS
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from 'react-bootstrap/Button';
 import ButtonSpinner from '../ButtonSpinner';
 
-import { useFirebaseListenerContext } from '../FirebaseListener';
 import GameCanvas from './GameCanvas';
 import * as Chess from 'chess.js';
 import { usePlayAPIContext } from '../API';
 
 const CANVAS_SIZE = 360;
 
-function Game({ gid, uid }) {
-	const firebaseListener = useFirebaseListenerContext();
+// Reset game and apply moves
+function applyMoves(chess, moves) {
+	chess.reset();
+	if (moves.length > 0)
+		for (let i = 0; i < moves.length; i++)
+			if (!chess.move(moves[i]))
+				return false;
+	return true;
+}
+
+function Game({ game }) {
 	const playAPI = usePlayAPIContext();
 
 	const [historyPosition, setHistoryPosition] = useState(0);
 	const [selectedSquare, setSelectedSquare] = useState(null);
-	const [game, setGame] = useState(null);
 	const [errorMessage, setErrorMessage] = useState(null);
 
-	const chess = useMemo(() => new Chess(), []);
+	const chess = useRef(new Chess());
+	const [board, setBoard] = useState(chess.current.board());
 
-	// Mount/Unmount
+	const refreshBoard = () => {
+		setBoard([...chess.current.board()]);
+	};
+
+	// Game updated
 	useEffect(() => {
-		const handleGameUpdate = (game) => {
-			if (game) {
-				// Apply previous moves
-				chess.reset();
-				if (game.moves.length > 0)
-					for (let i = 0; i < game.moves.length; i++)
-						if (!chess.move(game.moves[i])) {
-							setErrorMessage('Invalid list of previous moves');
-							return;
-						}
-			}
-			setGame(game);
-			setHistoryPosition(0);
-			setSelectedSquare(null);
-		};
-		return firebaseListener.registerGameListener(handleGameUpdate, gid);
-	}, [firebaseListener, gid, chess]);
+		if (game) {
+			if (applyMoves(chess.current, game.moves))
+				refreshBoard();
+			else
+				setErrorMessage('Invalid list of previous moves');
+		}
+		setHistoryPosition(0);
+		setSelectedSquare(null);
+	}, [game]);
 
+	// Back
 	const canGoBackInHistory = () => {
 		return (game?.moves?.length &&
 			historyPosition < game.moves.length);
 	};
+	const undoMove = () => {
+		return Boolean(chess.current.undo());
+	};
+	const showPrevious = () => {
+		if (canGoBackInHistory())
+			if (undoMove()) {
+				refreshBoard();
+				setHistoryPosition(historyPosition + 1);
+			}
+	};
+
+	// Forward
 	const canGoForwardInHistory = () => {
 		return (game?.moves?.length &&
 			historyPosition > 0);
 	};
-
-	const undoMove = () => {
-		return chess.undo() ? true : false;
-	};
-	const showPrevious = () => {
-		if (canGoBackInHistory()) {
-			if (undoMove())
-				setHistoryPosition(historyPosition + 1);
-			// TODO: Error handling
-		}
-	};
 	const redoMove = (moveIndex) => {
 		const move = game.moves[moveIndex];
-		return chess.move(move) ? true : false;
+		return Boolean(chess.current.move(move));
 	};
 	const showNext = () => {
 		if (canGoForwardInHistory()) {
 			const moveIndex = game.moves.length - historyPosition;
-			if (redoMove(moveIndex))
+			if (redoMove(moveIndex)) {
+				refreshBoard();
 				setHistoryPosition(historyPosition - 1);
-			// TODO: Error handling
+			}
 		}
 	};
 	const showPresent = () => {
@@ -81,34 +88,19 @@ function Game({ gid, uid }) {
 					tempHistoryPosition--;
 				else
 					break;
-				// TODO: Error handling
 			}
+			refreshBoard();
 			setHistoryPosition(tempHistoryPosition);
 		}
 	};
 
-	const getTeam = () => {
-		// Determine user's team
-		if (game.uid_w === uid)
-			return 'w';
-		else if (game.uid_b === uid)
-			return 'b';
-		else if (game.uid_d === uid)
-			return 'd';
-		else
-			return 'o';
-	};
-	const move = (moveString) => {
-		playAPI.move(gid, moveString);
-	};
 	const handleMouseDownCanvas = (square) => {
 		// Is game in progress?
 		if (game.status !== 'play')
 			return;
 
 		// Is it user's turn?
-		const team = getTeam();
-		if (chess.turn() !== team)
+		if (chess.current.turn() !== game.team)
 			return;
 
 		// Do they already have a piece chosen?
@@ -120,9 +112,10 @@ function Game({ gid, uid }) {
 			}
 			else {
 				// Can they move their selected piece here?
-				const nextMove = chess.move({ from: selectedSquare, to: square });
+				const nextMove = chess.current.move({ from: selectedSquare, to: square });
 				if (nextMove) {
-					move(nextMove.san);
+					refreshBoard();
+					playAPI.move(game.gid, nextMove.san);
 					setSelectedSquare(null);
 				}
 				return;
@@ -130,9 +123,9 @@ function Game({ gid, uid }) {
 		}
 
 		// Did they click on one of their pieces?
-		const piece = chess.get(square);
+		const piece = chess.current.get(square);
 		if (piece) {
-			if (piece.color === team) {
+			if (piece.color === game.team) {
 				setSelectedSquare(square);
 			}
 		}
@@ -145,32 +138,23 @@ function Game({ gid, uid }) {
 
 	};
 
-	const leaveGame = () => {
-		playAPI.leaveGame(gid);
-	};
-
 	// Render
-	const { isMovingTable, isQuittingTable } = playAPI;
-	const isMoving = isMovingTable[gid];
-	const isQuitting = isQuittingTable[gid];
-
-	// Error
 	if (errorMessage)
 		return <div align='center'>Something happened: {errorMessage}</div>;
-
-	// Loading
 	if (!game)
 		return <div align='center'>Loading...</div>;
 
-	// Determine user's team
-	const team = getTeam();
+	const { isMovingTable, isQuittingTable } = playAPI;
+	const isMoving = isMovingTable[game.gid];
+	const isQuitting = isQuittingTable[game.gid];
 
-	const blackPossessiveName = (team === 'b') ? 'Your' : game.name_b + '\'s';
-	const whitePossessiveName = (team === 'w') ? 'Your' : game.name_w + '\'s';
+	// Player turn text
+	const blackPossessiveName = (game.team === 'b') ? 'Your' : game.name_b + '\'s';
+	const whitePossessiveName = (game.team === 'w') ? 'Your' : game.name_w + '\'s';
 	const blackMoveText = blackPossessiveName + ' move';
 	const whiteMoveText = whitePossessiveName + ' move';
 
-	const inCheck = chess.in_check();
+	const inCheck = chess.current.in_check();
 	let gameTitleVisibility = 'visible';
 	let gameTitleText;
 	switch (game.status) {
@@ -191,8 +175,8 @@ function Game({ gid, uid }) {
 	const historyControlsVisibility = (game.status === 'wait' || game.status === 'play') ? 'hidden' : 'visible';
 	const timerVisibility = (game.status === 'play') ? 'visible' : 'hidden';
 
-	const blackTurnTextVisibility = (game.status === 'play' && chess.turn() === 'b') ? 'visible' : 'hidden';
-	const whiteTurnTextVisibility = (game.status === 'play' && chess.turn() === 'w') ? 'visible' : 'hidden';
+	const blackTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'b') ? 'visible' : 'hidden';
+	const whiteTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'w') ? 'visible' : 'hidden';
 	const lastMoveVisibility = canGoBackInHistory() ? 'visible' : 'hidden';
 	const nextMoveVisibility = canGoForwardInHistory() ? 'visible' : 'hidden';
 
@@ -210,7 +194,7 @@ function Game({ gid, uid }) {
 
 			<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
 			<GameCanvas size={CANVAS_SIZE}
-				board={chess.board()}
+				board={board}
 				selectedSquare={selectedSquare}
 				onMouseDown={handleMouseDownCanvas}
 				onMouseUp={handleMouseUpCanvas} />
@@ -232,9 +216,7 @@ function Game({ gid, uid }) {
 				</table>
 			</div>
 
-			<p>My team: {team}</p>
-
-			<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
+			<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? () => playAPI.leaveGame(game.gid) : null}>
 				{quitButtonContent}
 			</Button>
 		</div >
