@@ -80,7 +80,7 @@ class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
 			return;
 
 		// Save drawing context
-		const ctx = this.canvas.current?.getContext('2d', { alpha: true });
+		const ctx = this.canvas.current?.getContext('2d', { alpha: false, willReadFrequently: false });
 		if (!ctx)
 			return;
 
