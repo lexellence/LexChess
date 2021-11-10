@@ -84,7 +84,7 @@ function Game({ game }) {
 			let tempHistoryPosition = historyPosition;
 			while (tempHistoryPosition > 0) {
 				const moveIndex = game.moves.length - tempHistoryPosition;
-				if (this.redoMove(moveIndex))
+				if (redoMove(moveIndex))
 					tempHistoryPosition--;
 				else
 					break;
