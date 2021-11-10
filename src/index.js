@@ -8,6 +8,7 @@ import Firebase, { FirebaseContext } from './Firebase';
 import { AuthUserProvider } from './Session';
 import { FirebaseListenerProvider } from './FirebaseListener';
 import { APIProvider } from './API';
+import GameHistoryPageProvider from './GameHistoryPage/GameHistoryPageProvider';
 
 const firebase = new Firebase();
 
@@ -17,7 +18,9 @@ ReactDOM.render(
 			<AuthUserProvider>
 				<FirebaseListenerProvider>
 					<APIProvider>
-						<App />
+						<GameHistoryPageProvider>
+							<App />
+						</GameHistoryPageProvider>
 					</APIProvider>
 				</FirebaseListenerProvider>
 			</AuthUserProvider>

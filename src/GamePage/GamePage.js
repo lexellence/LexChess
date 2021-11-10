@@ -49,7 +49,7 @@ function GamePage() {
 	useEffect(() => {
 		const unregisterUserListener =
 			firebaseListener.registerUserListener((user) => {
-				if (!user || !user.play || Object.keys(user.play).length < 1) {
+				if (Object.keys(user.play).length < 1) {
 					sessionStorage.removeItem('selectedGID');
 					history.push(ROUTES.GAME_LIST);
 				}
@@ -132,7 +132,7 @@ function GamePage() {
 					</Col>
 					<Col>
 						{!game ? <div align='center'>Loading...</div>
-							: <Game game={game} />}
+							: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
 					</Col>
 				</Row>
 			</Container>

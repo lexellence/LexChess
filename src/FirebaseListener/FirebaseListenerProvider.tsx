@@ -2,6 +2,7 @@ import React from 'react';
 import FirebaseListenerContext, { FirebaseListenerContextValue } from './FirebaseListenerContext';
 import Firebase, { withFirebase } from '../Firebase';
 import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';
+import { dbGameToClientGame } from '../Game/dbGameToClientGame';
 
 //+----------------------------------\------------------------
 //|	    FirebaseListenerProvider	 |
@@ -112,10 +113,6 @@ class FirebaseListenerProvider extends React.Component<FirebaseListenerProviderP
 		// Allow non-existant user object
 		if (!user)
 			user = {};
-
-		// Convert to array of gid strings
-		// user.play = user.play ? Object.keys(user.gidsPlay) : [];
-		// user.gidsPast = user.gidsPast ? Object.keys(user.gidsPast) : [];
 		if (!user.play)
 			user.play = {};
 		if (!user.past)
@@ -173,28 +170,12 @@ class FirebaseListenerProvider extends React.Component<FirebaseListenerProviderP
 	//|	  		  Game Update		     |
 	//\----------------------------------/------------------------
 	handleGameUpdate = (gid: string, dbGame: any) => {
-		if (dbGame) {
-			const game: any = {
-				gid: gid,
-				status: dbGame.status,
-				name_w: dbGame.name_w,
-				name_b: dbGame.name_b,
-				name_d: dbGame.name_d,
-				moves: dbGame.moves ? Object.values(dbGame.moves) : [],
-			};
-
-			// Add user's team
-			switch (this.authUser.uid) {
-				case dbGame.uid_w: game.team = 'w'; break;
-				case dbGame.uid_b: game.team = 'b'; break;
-				case dbGame.uid_d: game.team = 'd'; break;
-				default: game.team = 'o';
-			}
-
+		const game = dbGameToClientGame(dbGame, gid, this.authUser.uid);
+		if (game) {
 			// Notify
 			this.gameNotifierMap.get(gid)?.update(game);
 		}
-		else if (!dbGame) {
+		else {
 			// Stop if game doesn't exist
 			this.stopGameListening(gid);
 		}

@@ -19,7 +19,7 @@ function applyMoves(chess, moves) {
 	return true;
 }
 
-function Game({ game }) {
+function Game({ game, leaveGame }) {
 	const playAPI = usePlayAPIContext();
 
 	const [historyPosition, setHistoryPosition] = useState(0);
@@ -29,6 +29,7 @@ function Game({ game }) {
 	const chess = useRef(new Chess());
 	const [board, setBoard] = useState(chess.current.board());
 
+	// Re-render after chess moves
 	const refreshBoard = () => {
 		setBoard([...chess.current.board()]);
 	};
@@ -45,7 +46,9 @@ function Game({ game }) {
 		setSelectedSquare(null);
 	}, [game]);
 
-	// Back
+	//+----------------------------------\------------------------
+	//|	  	 		Back				 |
+	//\----------------------------------/------------------------
 	const canGoBackInHistory = () => {
 		return (game?.moves?.length &&
 			historyPosition < game.moves.length);
@@ -61,7 +64,9 @@ function Game({ game }) {
 			}
 	};
 
-	// Forward
+	//+----------------------------------\------------------------
+	//|	  	 		Forward				 |
+	//\----------------------------------/------------------------
 	const canGoForwardInHistory = () => {
 		return (game?.moves?.length &&
 			historyPosition > 0);
@@ -94,6 +99,9 @@ function Game({ game }) {
 		}
 	};
 
+	//+----------------------------------\------------------------
+	//|	  	 	 Mouse Clicks			 |
+	//\----------------------------------/------------------------
 	const handleMouseDownCanvas = (square) => {
 		// Is game in progress?
 		if (game.status !== 'play')
@@ -138,7 +146,9 @@ function Game({ game }) {
 
 	};
 
-	// Render
+	//+----------------------------------\------------------------
+	//|	  	 		Render				 |
+	//\----------------------------------/------------------------
 	if (errorMessage)
 		return <div align='center'>Something happened: {errorMessage}</div>;
 	if (!game)
@@ -216,7 +226,7 @@ function Game({ game }) {
 				</table>
 			</div>
 
-			<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? () => playAPI.leaveGame(game.gid) : null}>
+			<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
 				{quitButtonContent}
 			</Button>
 		</div >

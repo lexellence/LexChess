@@ -4,11 +4,12 @@ import Table from 'react-bootstrap/Table';
 import ButtonSpinner from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
 import { useFirebaseListenerContext } from '../FirebaseListener';
+import { getStatusText } from '.';
 
 //+--------------------------------\--------------------------
-//|	 	      GameList   	       |
+//|	 	      JoinGameList    	   |
 //\--------------------------------/--------------------------
-function GameList({ isSignedIn, isHistory }) {
+function JoinGameList({ isSignedIn }) {
 	const firebaseListener = useFirebaseListenerContext();
 	const [playingGIDs, setPlayingGIDs] = useState(null);
 	const [gameList, setGameList] = useState(null);
@@ -26,7 +27,7 @@ function GameList({ isSignedIn, isHistory }) {
 			unregisterUserListener();
 			unregisterGameListListener();
 		};
-	}, [firebaseListener, isHistory]);
+	}, [firebaseListener]);
 
 	// Render
 	if (!gameList || (isSignedIn && !playingGIDs))
@@ -38,11 +39,11 @@ function GameList({ isSignedIn, isHistory }) {
 				<thead>
 					<tr>
 						{/* Game list headers */}
-						{isHistory ? null : <th>Players</th>}
-						{isHistory ? <th>Result</th> : <th>Status</th>}
+						<th>Players</th>
+						<th>Status</th>
 						<th>White</th>
 						<th>Black</th>
-						{isHistory ? <th>View</th> : <th>Spectate</th>}
+						<th>Spectate</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -56,7 +57,6 @@ function GameList({ isSignedIn, isHistory }) {
 							name_b={game.name_b}
 							name_d={game.name_d}
 							isSignedIn={isSignedIn}
-							isHistory={isHistory}
 							inGame={playingGIDs?.includes(game.gid)}
 						/>;
 					})}
@@ -74,52 +74,29 @@ const joinGameButtonMap = new Map([
 	['b', { label: 'Play', variant: 'dark', spinnerVariant: 'light' }],
 	['o', { label: 'Spectate', variant: 'secondary', spinnerVariant: 'light' }],
 ]);
-function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, isHistory, inGame }) {
+function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame }) {
 	const { joinGame, joiningGameData } = useJoinAPIContext();
 
 	// Only include joinable games in join-game list
 	const gameCompleted = (status !== 'wait' && status !== 'play');
-	if (!isHistory && (gameCompleted || inGame))
-		return null;
-
-	// Only include finished games in history list
-	if (isHistory && !gameCompleted)
+	if (gameCompleted || inGame)
 		return null;
 
 	// Title
 	let gameTitle = '';
-	if (!isHistory) {
-		if (!name_w && !name_b)
-			gameTitle = name_d;
-		else if (name_w && name_b)
-			gameTitle = name_w + ' vs. ' + name_b;
-		else {
-			if (name_w)
-				gameTitle = name_w;
-			else
-				gameTitle = name_b;
-		}
-	}
-
-	// Status
-	let statusText;
-	switch (status) {
-		case 'wait': statusText = 'Waiting'; break;
-		case 'play': statusText = 'Playing'; break;
-		case 'draw': statusText = 'Draw'; break;
-		case 'stale': statusText = 'Draw (stalemate)'; break;
-		case 'ins': statusText = 'Draw (insufficient material)'; break;
-		case '3fold': statusText = 'Draw (three-fold repetition)'; break;
-		case 'cm_w': statusText = <>Checkmate!<br />{name_w} wins</>; break;
-		case 'cm_b': statusText = <>Checkmate!<br />{name_b} wins</>; break;
-		case 'con_w': statusText = <>Conceded<br />{name_w} wins</>; break;
-		case 'con_b': statusText = <>Conceded<br />{name_b} wins</>; break;
-		default:
-			statusText = '';
+	if (!name_w && !name_b)
+		gameTitle = name_d;
+	else if (name_w && name_b)
+		gameTitle = name_w + ' vs. ' + name_b;
+	else {
+		if (name_w)
+			gameTitle = name_w;
+		else
+			gameTitle = name_b;
 	}
 
 	// Buttons
-	const disableButtons = isHistory ? inGame : (joiningGameData.isJoining || !isSignedIn);
+	const disableButtons = (joiningGameData.isJoining || !isSignedIn);
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
 		['w', name_w],
@@ -130,8 +107,8 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, isHisto
 	// Render
 	return (
 		<tr>
-			{isHistory ? null : <td>{gameTitle}</td>}
-			<td>{statusText}</td>
+			<td>{gameTitle}</td>
+			<td>{getStatusText(status, name_w, name_b)}</td>
 			{Array.from(joinGameButtonMap).map(([team, button]) =>
 				<td key={team}>
 					{teamNames.get(team) ? teamNames.get(team)
@@ -140,14 +117,12 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, isHisto
 							onClick={!disableButtons ? () => joinGame(gid, team) : null}>
 							{/* Button Label */}
 							{(joiningThisGame && joiningGameData.team === team) ?
-								<>{isHistory ? 'Opening...' : 'Joining...'}
-									<ButtonSpinner variant={button.spinnerVariant} />
-								</>
-								: isHistory ? 'View' : button.label}
+								<>Joining...<ButtonSpinner variant={button.spinnerVariant} /></>
+								: button.label}
 						</Button>}
 				</td>)}
 		</tr >
 	);
 }
 
-export default GameList;
+export default JoinGameList;
