@@ -12,5 +12,4 @@ function useAuthUserContext() {
 }
 
 export type { AuthUserContextValue };
-export { useAuthUserContext };
-export default AuthUserContext;
+export { AuthUserContext, useAuthUserContext };

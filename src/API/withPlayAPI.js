@@ -1,5 +1,5 @@
 import React from 'react';
-import PlayAPIContext from './PlayAPIContext';
+import { PlayAPIContext } from './PlayAPIContext';
 
 const withPlayAPI =
 	Component =>
@@ -9,4 +9,4 @@ const withPlayAPI =
 			</PlayAPIContext.Consumer>
 		);
 
-export default withPlayAPI;
+export { withPlayAPI };

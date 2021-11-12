@@ -7,7 +7,7 @@ const INITIAL_STATE = {
 	message: '',
 };
 
-class PasswordForgetForm extends React.Component {
+class PasswordForgetFormBase extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
@@ -52,4 +52,6 @@ class PasswordForgetForm extends React.Component {
 		);
 	}
 }
-export default withFirebase(PasswordForgetForm);
+const PasswordForgetForm = withFirebase(PasswordForgetFormBase);
+
+export { PasswordForgetForm };

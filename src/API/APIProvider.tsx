@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { PlayAPIContext, PlayAPIContextValue, JoinAPIContext, JoinAPIContextValue, JoinGameValue } from '.';
-import Firebase, { useFirebaseContext } from '../Firebase';
+import { Firebase, useFirebaseContext } from '../Firebase';
 import * as api from './api';
 
 //+--------------------------------\--------------------------
@@ -136,4 +136,4 @@ const APIProvider: React.FC = ({ children }) => {
 	);
 }
 
-export default APIProvider;
+export { APIProvider };

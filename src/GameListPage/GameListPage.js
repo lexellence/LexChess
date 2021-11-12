@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import * as ROUTES from "../constants/routes";
-import JoinGameList from './JoinGameList';
+import { JoinGameList } from './JoinGameList';
 import { AuthUserContext } from '../Session';
-import GameCreator from './GameCreator';
+import { GameCreator } from './GameCreator';
 
 function GameListPageNonAuth() {
 	return (
@@ -31,4 +31,4 @@ function GameListPage() {
 	);
 }
 
-export default GameListPage;
+export { GameListPage };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
-import ButtonSpinner from '../ButtonSpinner';
+import { ButtonSpinner } from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import { getStatusText } from '.';
@@ -125,4 +125,4 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame 
 	);
 }
 
-export default JoinGameList;
+export { JoinGameList };

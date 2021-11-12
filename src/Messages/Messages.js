@@ -2,9 +2,9 @@ import React from 'react';
 
 import { AuthUserContext } from '../Session';
 import { withFirebase } from '../Firebase';
-import MessageList from './MessageList';
+import { MessageList } from './MessageList';
 
-class Messages extends React.Component {
+class MessagesBase extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -128,5 +128,6 @@ class Messages extends React.Component {
 		);
 	}
 }
+const Messages = withFirebase(MessagesBase);
 
-export default withFirebase(Messages);
+export { Messages };

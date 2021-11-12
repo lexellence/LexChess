@@ -121,4 +121,4 @@ const SignUpPage = () => (
 	</React.Fragment>
 );
 
-export default SignUpPage;
+export { SignUpPage };

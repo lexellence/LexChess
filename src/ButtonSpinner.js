@@ -10,4 +10,4 @@ const ButtonSpinner = ({ variant }) => (
 		animation="border" />
 );
 
-export default ButtonSpinner;
+export { ButtonSpinner };

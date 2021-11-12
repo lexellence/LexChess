@@ -2,8 +2,8 @@ import "./App.css";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { Container, Row, Col } from "react-bootstrap";
-import Navigation from "./Navigation";
-import RouteList from "./RouteList";
+import { Navigation } from "./Navigation";
+import { RouteList } from "./RouteList";
 
 function App() {
 	return (
@@ -27,4 +27,4 @@ function App() {
 	)
 }
 
-export default App;
+export { App };

@@ -2,12 +2,12 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 
 import { withAuthorization, withEmailVerification } from '../Session';
-import UserList from './UserList';
-import UserItem from './UserItem';
+import { UserList } from './UserList';
+import { UserItem } from './UserItem';
 import * as ROLES from '../constants/roles';
 import * as ROUTES from '../constants/routes';
 
-function AdminPage() {
+function AdminPageBase() {
 	return (
 		<React.Fragment>
 			<h1>Admin</h1>
@@ -20,6 +20,10 @@ function AdminPage() {
 		</React.Fragment>
 	);
 }
+const AdminPage =
+	withEmailVerification(
+		withAuthorization(authUser => (authUser && !!authUser.roles[ROLES.ADMIN]))(
+			AdminPageBase));
 
 // class AdminPage extends React.Component {
 // 	state = { userRoles: {} };
@@ -45,11 +49,4 @@ function AdminPage() {
 // }
 // const AdminPage = withFirebase(AdminPageBase);
 
-const conditionFunc = function (authUser) {
-	return (authUser && !!authUser.roles[ROLES.ADMIN]);
-};
-
-export default
-	withEmailVerification(
-		withAuthorization(conditionFunc)(
-			AdminPage));
+export { AdminPage };

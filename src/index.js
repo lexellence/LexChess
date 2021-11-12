@@ -3,8 +3,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
 
-import App from "./App";
-import Firebase, { FirebaseContext } from './Firebase';
+import { App } from "./App";
+import { Firebase, FirebaseContext } from './Firebase';
 import { AuthUserProvider } from './Session';
 import { FirebaseListenerProvider } from './FirebaseListener';
 import { APIProvider } from './API';

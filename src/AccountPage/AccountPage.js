@@ -6,9 +6,9 @@ import {
 	withEmailVerification,
 } from '../Session';
 import { withFirebase } from '../Firebase';
-import DisplayNameChangeForm from './DisplayNameChangeForm';
-import PasswordForgetForm from './PasswordForgetForm';
-import PasswordChangeForm from './PasswordChangeForm';
+import { DisplayNameChangeForm } from './DisplayNameChangeForm';
+import { PasswordForgetForm } from './PasswordForgetForm';
+import { PasswordChangeForm } from './PasswordChangeForm';
 
 const SIGN_IN_METHODS = [
 	{ id: 'password', provider: null },
@@ -174,7 +174,7 @@ class LoginManagementBase extends React.Component {
 
 const LoginManagement = withFirebase(LoginManagementBase);
 
-const AccountPage = () => (
+const AccountPageBase = () => (
 	<AuthUserContext.Consumer>
 		{authUser => (
 			<div className='selectable'>
@@ -187,9 +187,8 @@ const AccountPage = () => (
 		)}
 	</AuthUserContext.Consumer>
 );
+const AccountPage = withEmailVerification(
+	withAuthorization(authUser => Boolean(authUser))(
+		AccountPageBase));
 
-const conditionFunc = authUser => !!authUser;
-export default
-	withEmailVerification(
-		withAuthorization(conditionFunc)(
-			AccountPage));
+export { AccountPage };

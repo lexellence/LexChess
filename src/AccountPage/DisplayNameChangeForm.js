@@ -8,7 +8,7 @@ const INITIAL_STATE = {
 	message: '',
 };
 
-class DisplayNameChangeForm extends React.Component {
+class DisplayNameChangeFormBase extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
@@ -50,4 +50,6 @@ class DisplayNameChangeForm extends React.Component {
 		);
 	}
 }
-export default withFirebase(DisplayNameChangeForm);
+const DisplayNameChangeForm = withFirebase(DisplayNameChangeFormBase);
+
+export { DisplayNameChangeForm };

@@ -4,7 +4,7 @@ import { Container, Row, Col, ToggleButtonGroup, ToggleButton } from 'react-boot
 import { withAuthorization, withEmailVerification } from '../Session';
 import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
-import Game from '../Game';
+import { Game } from '../Game';
 import { usePlayAPIContext } from '../API';
 
 function getNextGID(selectedGID, gidList) {
@@ -36,7 +36,7 @@ function getNextGID(selectedGID, gidList) {
 	}
 };
 
-function GamePage() {
+function GamePageBase() {
 	const history = useHistory();
 	const firebaseListener = useFirebaseListenerContext();
 	const playAPI = usePlayAPIContext();
@@ -139,8 +139,9 @@ function GamePage() {
 		);
 	}
 }
-
-export default
+const GamePage =
 	withEmailVerification(
 		withAuthorization(authUser => !!authUser)(
-			GamePage));
+			GamePageBase));
+
+export { GamePage };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
-import ButtonSpinner from '../ButtonSpinner';
+import { ButtonSpinner } from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
 
 const createGameRadioMap = new Map([
@@ -38,4 +38,4 @@ const GameCreator = () => {
 	);
 };
 
-export default GameCreator;
+export { GameCreator };

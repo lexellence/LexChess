@@ -1,2 +1,2 @@
-export { default } from './GameListPage';
-export { default as getStatusText } from './getStatusText';
+export { GameListPage } from './GameListPage';
+export { getStatusText } from './getStatusText';

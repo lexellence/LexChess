@@ -1,4 +1,4 @@
-export default function getStatusText(status, name_w, name_b) {
+function getStatusText(status, name_w, name_b) {
 	let statusText;
 	switch (status) {
 		case 'wait': statusText = 'Waiting'; break;
@@ -16,3 +16,5 @@ export default function getStatusText(status, name_w, name_b) {
 	}
 	return statusText;
 }
+
+export { getStatusText };

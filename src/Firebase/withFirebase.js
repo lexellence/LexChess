@@ -1,5 +1,5 @@
 import React from 'react';
-import FirebaseContext from './FirebaseContext';
+import { FirebaseContext } from './FirebaseContext';
 
 const withFirebase =
 	Component =>
@@ -9,4 +9,4 @@ const withFirebase =
 			</FirebaseContext.Consumer>
 		);
 
-export default withFirebase;
+export { withFirebase };

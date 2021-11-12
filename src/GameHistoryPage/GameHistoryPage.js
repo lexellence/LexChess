@@ -1,12 +1,12 @@
-import HistoryGameList from './HistoryGameList';
-import Game from '../Game';
+import { HistoryGameList } from './HistoryGameList';
+import { Game } from '../Game';
 import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
 import { useGameHistoryPageContext } from './GameHistoryPageContext';
 
-function GameHistoryPage() {
+function GameHistoryPageBase() {
 	const { game, leaveGame } = useGameHistoryPageContext();
 
 	if (game)
@@ -23,8 +23,9 @@ function GameHistoryPage() {
 			</div>
 		);
 }
+const GameHistoryPage = withEmailVerification(
+	withAuthorization(authUser => !!authUser)(
+		GameHistoryPageBase));
 
-export default
-	withEmailVerification(
-		withAuthorization(authUser => !!authUser)(
-			GameHistoryPage));
+export { GameHistoryPage };
+

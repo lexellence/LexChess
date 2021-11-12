@@ -16,5 +16,4 @@ function useFirebaseListenerContext() {
 }
 
 export type { FirebaseListenerContextValue };
-export { useFirebaseListenerContext };
-export default FirebaseListenerContext;
+export { FirebaseListenerContext, useFirebaseListenerContext };

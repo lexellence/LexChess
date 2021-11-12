@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { withFirebase } from '../Firebase';
 import * as ROUTES from '../constants/routes';
 
-class UserList extends React.Component {
+class UserListBase extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -69,5 +69,6 @@ class UserList extends React.Component {
 		);
 	}
 }
+const UserList = withFirebase(UserListBase);
 
-export default withFirebase(UserList);
+export { UserList };

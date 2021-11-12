@@ -132,4 +132,4 @@ function GameCanvas({ size, board, selectedSquare, onMouseDown, onMouseUp }: Gam
 	);
 }
 
-export default GameCanvas;
+export { GameCanvas };

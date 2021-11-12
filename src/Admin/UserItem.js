@@ -2,7 +2,7 @@ import React from 'react';
 
 import { withFirebase } from '../Firebase';
 
-class UserItem extends React.Component {
+class UserItemBase extends React.Component {
 	constructor(props) {
 		super(props);
 
@@ -72,5 +72,6 @@ class UserItem extends React.Component {
 		);
 	}
 }
+const UserItem = withFirebase(UserItemBase);
 
-export default withFirebase(UserItem);
+export { UserItem };

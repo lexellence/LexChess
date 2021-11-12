@@ -1,5 +1,5 @@
 import React from 'react';
-import Firebase from '.';
+import { Firebase } from '.';
 
 const FirebaseContext = React.createContext<Firebase | undefined>(undefined);
 
@@ -10,5 +10,4 @@ function useFirebaseContext() {
 	return context;
 }
 
-export { useFirebaseContext };
-export default FirebaseContext;
+export { FirebaseContext, useFirebaseContext };

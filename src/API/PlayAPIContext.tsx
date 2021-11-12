@@ -18,5 +18,4 @@ function usePlayAPIContext() {
 }
 
 export type { PlayAPIContextValue };
-export { usePlayAPIContext };
-export default PlayAPIContext;
+export { PlayAPIContext, usePlayAPIContext };

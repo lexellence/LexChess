@@ -177,5 +177,5 @@ const SignInPage =
 		withFirebase(
 			SignInPageBase));
 
-export default SignInPage;
+export { SignInPage };
 

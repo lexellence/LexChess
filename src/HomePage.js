@@ -25,4 +25,4 @@ const HomePage = () => (
 	</AuthUserContext.Consumer>
 );
 
-export default HomePage;
+export { HomePage };

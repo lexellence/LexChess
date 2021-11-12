@@ -1,5 +1,5 @@
 import React from 'react';
-import PasswordForgetForm from './PasswordForgetForm';
+import { PasswordForgetForm } from './PasswordForgetForm';
 
 function PasswordForgetPage() {
 	return (
@@ -10,4 +10,4 @@ function PasswordForgetPage() {
 	);
 };
 
-export default PasswordForgetPage;
+export { PasswordForgetPage };

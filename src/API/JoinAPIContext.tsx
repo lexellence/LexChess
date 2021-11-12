@@ -22,5 +22,4 @@ function useJoinAPIContext() {
 }
 
 export type { JoinAPIContextValue, JoinGameValue };
-export { useJoinAPIContext };
-export default JoinAPIContext;
+export { JoinAPIContext, useJoinAPIContext };

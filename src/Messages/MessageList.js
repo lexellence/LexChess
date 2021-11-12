@@ -20,4 +20,4 @@ const MessageList = ({
 	</ul>
 );
 
-export default MessageList;
+export { MessageList };

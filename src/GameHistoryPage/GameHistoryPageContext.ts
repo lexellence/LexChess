@@ -17,5 +17,4 @@ function useGameHistoryPageContext() {
 }
 
 export type { GameHistoryPageContextValue };
-export { useGameHistoryPageContext };
-export default GameHistoryPageContext;
+export { GameHistoryPageContext, useGameHistoryPageContext };

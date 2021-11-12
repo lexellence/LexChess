@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import GameImagesContext, { GameImagesContextValue } from './GameImagesContext';
+import { GameImagesContext, GameImagesContextValue } from './GameImagesContext';
 import { boardImageSource, pieceImageSources } from './imageSources';
 
 function handleError(this: HTMLImageElement) {
@@ -52,4 +52,4 @@ const GameImagesProvider: React.FC = ({ children }) => {
 	);
 }
 
-export default GameImagesProvider;
+export { GameImagesProvider };

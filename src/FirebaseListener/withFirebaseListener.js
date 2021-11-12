@@ -1,5 +1,5 @@
 import React from 'react';
-import FirebaseListenerContext from './FirebaseListenerContext';
+import { FirebaseListenerContext } from './FirebaseListenerContext';
 
 const withFirebaseListener =
 	Component =>
@@ -9,4 +9,4 @@ const withFirebaseListener =
 			</FirebaseListenerContext.Consumer>
 		);
 
-export default withFirebaseListener;
+export { withFirebaseListener };

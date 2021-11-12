@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import AuthUserContext, { AuthUserContextValue } from './AuthUserContext';
-import Firebase, { useFirebaseContext } from '../Firebase';
+import { AuthUserContext, AuthUserContextValue } from './AuthUserContext';
+import { Firebase, useFirebaseContext } from '../Firebase';
 
 //+----------------------\------------------------------------
 //|	  AuthUserProvider	 |
@@ -41,4 +41,4 @@ const AuthUserProvider: React.FC = ({ children }) => {
 	);
 };
 
-export default AuthUserProvider;
+export { AuthUserProvider };

@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useAuthUserContext, AuthUserContextValue } from '../Session';
 import { GameHistoryPageContext, GameHistoryPageContextValue } from '.';
-import Firebase, { useFirebaseContext } from '../Firebase';
+import { Firebase, useFirebaseContext } from '../Firebase';
 import { dbGameToClientGame } from '../Game';
 
 //+--------------------------------\--------------------------
@@ -57,4 +57,4 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 	);
 }
 
-export default GameHistoryPageProvider;
+export { GameHistoryPageProvider };

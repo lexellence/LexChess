@@ -1,6 +1,6 @@
 import React from 'react';
-import FirebaseListenerContext, { FirebaseListenerContextValue } from './FirebaseListenerContext';
-import Firebase, { withFirebase } from '../Firebase';
+import { FirebaseListenerContext, FirebaseListenerContextValue } from './FirebaseListenerContext';
+import { Firebase, withFirebase } from '../Firebase';
 import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';
 import { dbGameToClientGame } from '../Game/dbGameToClientGame';
 
@@ -13,7 +13,7 @@ type FirebaseListenerProviderProps = {
 	firebase: Firebase;
 	children: any;
 }
-class FirebaseListenerProvider extends React.Component<FirebaseListenerProviderProps> {
+class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProviderProps> {
 	authUser: any = null;
 	gameNotifierMap: Map<string, ValueNotifier> = new Map<string, ValueNotifier>();	// key = gid, value = ChildAddedNotifier
 	gameListeningGIDs: string[] = [];
@@ -232,5 +232,6 @@ class FirebaseListenerProvider extends React.Component<FirebaseListenerProviderP
 		);
 	}
 }
+const FirebaseListenerProvider = withFirebase(FirebaseListenerProviderBase);
 
-export default withFirebase(FirebaseListenerProvider);
+export { FirebaseListenerProvider };

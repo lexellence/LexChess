@@ -8,7 +8,7 @@ const INITIAL_STATE = {
 	error: null,
 };
 
-class PasswordChangeForm extends React.Component {
+class PasswordChangeFormBase extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = { ...INITIAL_STATE };
@@ -57,4 +57,6 @@ class PasswordChangeForm extends React.Component {
 		);
 	}
 }
-export default withFirebase(PasswordChangeForm);
+const PasswordChangeForm = withFirebase(PasswordChangeFormBase);
+
+export { PasswordChangeForm };

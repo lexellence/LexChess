@@ -100,4 +100,4 @@ class Firebase {
 	messageListRef = () => this.db.ref('messages');
 };
 
-export default Firebase;
+export { Firebase };

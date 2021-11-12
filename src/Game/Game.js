@@ -1,9 +1,9 @@
 // TODO: convert to TS
 import React, { useState, useEffect, useRef } from 'react';
 import Button from 'react-bootstrap/Button';
-import ButtonSpinner from '../ButtonSpinner';
+import { ButtonSpinner } from '../ButtonSpinner';
 
-import GameCanvas from './GameCanvas';
+import { GameCanvas } from './GameCanvas';
 import * as Chess from 'chess.js';
 import { usePlayAPIContext } from '../API';
 
@@ -233,4 +233,4 @@ function Game({ game, leaveGame }) {
 	);
 };
 
-export default Game;
+export { Game };

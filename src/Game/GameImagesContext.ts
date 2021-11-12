@@ -15,5 +15,4 @@ function useGameImagesContext() {
 }
 
 export type { GameImagesContextValue };
-export { useGameImagesContext };
-export default GameImagesContext;
+export { GameImagesContext, useGameImagesContext };

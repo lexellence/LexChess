@@ -1,5 +1,5 @@
 import React from 'react';
-import JoinAPIContext from './JoinAPIContext';
+import { JoinAPIContext } from './JoinAPIContext';
 
 const withJoinAPI =
 	Component =>
@@ -9,4 +9,4 @@ const withJoinAPI =
 			</JoinAPIContext.Consumer>
 		);
 
-export default withJoinAPI;
+export { withJoinAPI };

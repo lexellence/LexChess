@@ -5,8 +5,8 @@ import { Nav, Navbar, Container } from "react-bootstrap";
 
 import { AuthUserContext } from '../Session';
 import { withFirebase } from '../Firebase';
-import SignOutButton from './SignOutButton';
-import * as ROUTES from "../constants/routes";
+import { SignOutButton } from './SignOutButton';
+import * as ROUTES from '../constants/routes';
 import * as ROLES from '../constants/roles';
 import { withFirebaseListener } from '../FirebaseListener';
 
@@ -116,4 +116,4 @@ function Navigation() {
 	);
 }
 
-export default Navigation;;
+export { Navigation };

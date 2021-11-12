@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
-import ButtonSpinner from '../ButtonSpinner';
+import { ButtonSpinner } from '../ButtonSpinner';
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import { getStatusText } from '../GameListPage';
 import { useGameHistoryPageContext } from './GameHistoryPageContext';
@@ -94,4 +94,4 @@ function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 	);
 }
 
-export default HistoryGameList;
+export { HistoryGameList };

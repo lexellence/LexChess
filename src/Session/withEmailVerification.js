@@ -1,6 +1,6 @@
 import React from 'react';
 
-import AuthUserContext from './AuthUserContext';
+import { AuthUserContext } from './AuthUserContext';
 import { withFirebase } from '../Firebase';
 
 const needsEmailVerification = (authUser) =>
@@ -75,4 +75,4 @@ const withEmailVerification =
 		return withFirebase(WithEmailVerification);
 	};
 
-export default withEmailVerification;
+export { withEmailVerification };
