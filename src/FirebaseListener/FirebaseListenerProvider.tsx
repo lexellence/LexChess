@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { FirebaseListenerContext, FirebaseListenerContextValue } from './FirebaseListenerContext';
 import { Firebase, withFirebase } from '../Firebase';
 import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';

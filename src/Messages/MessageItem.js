@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 class MessageItem extends React.Component {
 	constructor(props) {

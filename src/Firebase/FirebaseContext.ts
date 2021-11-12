@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Firebase } from '.';
 
 const FirebaseContext = React.createContext<Firebase | undefined>(undefined);
