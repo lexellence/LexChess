@@ -1,7 +1,7 @@
-import React from 'react';
-
-import GameImages from './GameImages';
+import React, { useRef, useEffect } from 'react';
 import { PieceType } from 'chess.js';
+import { useGameImagesContext } from './GameImagesContext';
+import { getPieceImage } from './getPieceImage';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
@@ -13,121 +13,123 @@ interface GameCanvasProps {
 	onMouseUp: (square: string) => void;
 }
 
-interface GameCanvasState {
-	loading: boolean;
-}
-
 function clamp(num: number, min: number, max: number) {
 	return Math.max(min, Math.min(num, max));
 }
 
-class GameCanvas extends React.Component<GameCanvasProps, GameCanvasState> {
-	canvas = React.createRef<HTMLCanvasElement>();
-	images: any = null;
+function GameCanvas({ size, board, selectedSquare, onMouseDown, onMouseUp }: GameCanvasProps) {
+	const canvas = useRef<HTMLCanvasElement | null>(null);
+	const gameImages = useGameImagesContext();
 
 	// Calculate sizes
-	boardImageStart = 0;
-	boardImageSize = this.props.size;
-	boardMargin = 0.01 * this.boardImageSize;
-	boardStart = this.boardImageStart + this.boardMargin;
-	boardEnd = this.boardImageStart + this.boardImageSize - this.boardMargin;
+	const boardImageStart = 0;
+	const boardImageSize = size;
+	const boardMargin = 0.01 * boardImageSize;
+	const boardStart = boardImageStart + boardMargin;
+	const boardEnd = boardImageStart + boardImageSize - boardMargin;
 
-	boardSize = this.boardEnd - this.boardStart;
-	squareSize = this.boardSize / 8;
-	squareMargin = 0.15 * this.squareSize;
-	pieceImageSize = this.squareSize - 2 * this.squareMargin;
+	const boardSize = boardEnd - boardStart;
+	const squareSize = boardSize / 8;
+	const squareMargin = 0.15 * squareSize;
+	const pieceImageSize = squareSize - 2 * squareMargin;
 
-	componentDidMount() {
-		this.images = new GameImages(() => {
-			this.draw();
-		});
-
-		this.canvas.current?.addEventListener('mousedown', this.handleMouseDown);
-		this.canvas.current?.addEventListener('mouseup', this.handleMouseUp);
-	};
-	componentDidUpdate() {
-		this.draw();
-	};
-	componentWillUnmount() {
-		this.canvas.current?.removeEventListener('mousedown', this.handleMouseDown);
-		this.canvas.current?.removeEventListener('mouseup', this.handleMouseUp);
-	}
-
-	getFileChar = (event: MouseEvent): string => {
-		const boardOffsetX = event.offsetX - this.boardStart;
-		let file = Math.floor(boardOffsetX / this.squareSize);
-		clamp(file, 0, 7);
-		return FILE_CHARS[file];
-	}
-	getRankChar = (event: MouseEvent): string => {
-		const boardOffsetY = event.offsetY - this.boardStart;
-		let rank = 8 - Math.floor(boardOffsetY / this.squareSize);
-		clamp(rank, 1, 8);
-		return rank.toString();
-	}
-
-	handleMouseDown = (event: MouseEvent): void => {
-		const square = this.getFileChar(event) + this.getRankChar(event);
-		this.props.onMouseDown(square);
-	}
-	handleMouseUp = (event: MouseEvent): void => {
-		const square = this.getFileChar(event) + this.getRankChar(event);
-		this.props.onMouseUp(square);
-	}
-
-	private draw = () => {
-		if (!this.images)
+	//+--------------------------------\--------------------------
+	//|	 	   Event Listeners 	   	   |
+	//\--------------------------------/--------------------------
+	useEffect(() => {
+		if (!gameImages.pieces || !gameImages.board)
 			return;
 
+		function getFileChar(event: MouseEvent): string {
+			const boardOffsetX = event.offsetX - boardStart;
+			let file = Math.floor(boardOffsetX / squareSize);
+			clamp(file, 0, 7);
+			return FILE_CHARS[file];
+		}
+		function getRankChar(event: MouseEvent): string {
+			const boardOffsetY = event.offsetY - boardStart;
+			let rank = 8 - Math.floor(boardOffsetY / squareSize);
+			clamp(rank, 1, 8);
+			return rank.toString();
+		}
+		function handleMouseDown(event: MouseEvent): void {
+			const square = getFileChar(event) + getRankChar(event);
+			onMouseDown(square);
+		}
+		function handleMouseUp(event: MouseEvent): void {
+			const square = getFileChar(event) + getRankChar(event);
+			onMouseUp(square);
+		}
+		canvas.current?.addEventListener('mousedown', handleMouseDown);
+		canvas.current?.addEventListener('mouseup', handleMouseUp);
+
+		const currentCanvas = canvas.current;
+
+		return () => {
+			currentCanvas?.removeEventListener('mousedown', handleMouseDown);
+			currentCanvas?.removeEventListener('mouseup', handleMouseUp);
+		};
+	}, [boardStart, onMouseDown, onMouseUp, squareSize, gameImages.pieces, gameImages.board]);
+
+	//+--------------------------------\--------------------------
+	//|	 	    Canvas Drawing	   	   |
+	//\--------------------------------/--------------------------
+	function drawSquare(context: CanvasRenderingContext2D, row: number, col: number) {
+		const squareStartX = boardStart + col * squareSize;
+		const squareStartY = boardStart + row * squareSize;
+
+		// Shade selected square
+		if (selectedSquare)
+			if (FILE_CHARS.indexOf(selectedSquare[0]) === col && selectedSquare[1] === (8 - row).toString()) {
+				context.fillStyle = "#00CC00";
+				context.fillRect(squareStartX, squareStartY, squareSize, squareSize);
+			}
+
+		// Draw piece
+		const piece = board[row][col];
+		if (piece) {
+			const image = getPieceImage(gameImages.pieces, piece.color, piece.type);
+			if (image) {
+				context.drawImage(image,
+					squareStartX + squareMargin,
+					squareStartY + squareMargin,
+					pieceImageSize,
+					pieceImageSize);
+			}
+		}
+	}
+	function draw() {
 		// Save drawing context
-		const ctx = this.canvas.current?.getContext('2d', { alpha: false, willReadFrequently: false });
+		const ctx = canvas.current?.getContext('2d', { alpha: false, willReadFrequently: false });
 		if (!ctx)
 			return;
 
 		// Draw checkerboard
-		const boardImage = this.images.getBoardImage();
-		if (boardImage)
-			ctx.drawImage(boardImage, this.boardImageStart, this.boardImageStart, this.boardImageSize, this.boardImageSize);
+		if (gameImages.board)
+			ctx.drawImage(gameImages.board, boardImageStart, boardImageStart, boardImageSize, boardImageSize);
 
 		// Draw canvas border
 		ctx.strokeStyle = "black";
-		ctx.strokeRect(0, 0, this.props.size, this.props.size);
+		ctx.strokeRect(0, 0, size, size);
 
 		// Draw game pieces
-		for (let row = 0; row < 8; row++) {
-			for (let col = 0; col < 8; col++) {
-				const squareStartX = this.boardStart + col * this.squareSize;
-				const squareStartY = this.boardStart + row * this.squareSize;
-
-				// Shade selected square
-				if (this.props.selectedSquare)
-					if (FILE_CHARS.indexOf(this.props.selectedSquare[0]) === col && this.props.selectedSquare[1] === (8 - row).toString()) {
-						ctx.fillStyle = "#00CC00";
-						ctx.fillRect(squareStartX, squareStartY, this.squareSize, this.squareSize);
-					}
-
-				// Draw piece
-				const piece = this.props.board[row][col];
-				if (piece) {
-					const image = this.images.getPieceImage(piece.color, piece.type);
-					if (image) {
-						ctx.drawImage(image,
-							squareStartX + this.squareMargin,
-							squareStartY + this.squareMargin,
-							this.pieceImageSize,
-							this.pieceImageSize);
-					}
-				}
-			}
-		}
+		if (gameImages.pieces)
+			for (let row = 0; row < 8; row++)
+				for (let col = 0; col < 8; col++)
+					drawSquare(ctx, row, col);
 	}
-	render() {
-		return (
-			<canvas id='gameBoardCanvas' ref={this.canvas} width={this.props.size} height={this.props.size}>
-				Canvas tag not supported. Try a different browser.
-			</canvas>
-		);
-	}
+	useEffect(() => {
+		draw();
+	});
+
+	//+--------------------------------\--------------------------
+	//|	 	        Render   	   	   |
+	//\--------------------------------/--------------------------
+	return (
+		<canvas id='gameBoardCanvas' ref={canvas} width={size} height={size}>
+			Canvas tag not supported. Try a different browser.
+		</canvas>
+	);
 }
 
 export default GameCanvas;

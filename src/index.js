@@ -8,10 +8,10 @@ import Firebase, { FirebaseContext } from './Firebase';
 import { AuthUserProvider } from './Session';
 import { FirebaseListenerProvider } from './FirebaseListener';
 import { APIProvider } from './API';
-import GameHistoryPageProvider from './GameHistoryPage/GameHistoryPageProvider';
+import { GameHistoryPageProvider } from './GameHistoryPage';
+import { GameImagesProvider } from './Game';
 
 const firebase = new Firebase();
-
 ReactDOM.render(
 	<React.StrictMode>
 		<FirebaseContext.Provider value={firebase}>
@@ -19,7 +19,9 @@ ReactDOM.render(
 				<FirebaseListenerProvider>
 					<APIProvider>
 						<GameHistoryPageProvider>
-							<App />
+							<GameImagesProvider>
+								<App />
+							</GameImagesProvider>
 						</GameHistoryPageProvider>
 					</APIProvider>
 				</FirebaseListenerProvider>
