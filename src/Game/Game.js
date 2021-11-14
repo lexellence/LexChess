@@ -182,13 +182,15 @@ function Game({ game, leaveGame }) {
 	}
 	if (gameTitleText === 'invisible')
 		gameTitleVisibility = 'hidden';
-	const historyControlsVisibility = (game.status === 'wait' || game.status === 'play') ? 'hidden' : 'visible';
-	const timerVisibility = (game.status === 'play') ? 'visible' : 'hidden';
 
 	const blackTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'b') ? 'visible' : 'hidden';
 	const whiteTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'w') ? 'visible' : 'hidden';
+
+	const historyControlsDisplay = (game.status === 'wait' || game.status === 'play') ? 'none' : 'block';
 	const lastMoveVisibility = canGoBackInHistory() ? 'visible' : 'hidden';
 	const nextMoveVisibility = canGoForwardInHistory() ? 'visible' : 'hidden';
+
+	const timerDisplay = (game.status === 'play') ? 'block' : 'none';
 
 	const buttonsDisabled = isMoving || isQuitting;
 	let quitButtonContent;
@@ -198,7 +200,6 @@ function Game({ game, leaveGame }) {
 		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
 
 	return (
-
 		<div align='center' style={{ display: 'block' }}>
 			<h4 style={{ visibility: gameTitleVisibility, display: 'block' }}>{gameTitleText}</h4>
 
@@ -210,14 +211,14 @@ function Game({ game, leaveGame }) {
 				onMouseUp={handleMouseUpCanvas} />
 			<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
-			<div style={{ visibility: historyControlsVisibility }}>
+			<div style={{ display: historyControlsDisplay }}>
 				<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? showPrevious : null} style={{ visibility: lastMoveVisibility }}>Back</Button>
 				<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? showNext : null} style={{ visibility: nextMoveVisibility }}>Forward</Button>
 				<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? showPresent : null} style={{ visibility: nextMoveVisibility }}>Last</Button>
 				<br />
 				<p style={{ visibility: nextMoveVisibility }}>Moves back: {historyPosition}</p>
 			</div>
-			<div style={{ visibility: timerVisibility }}>
+			<div style={{ display: timerDisplay }}>
 				<table style={{ width: '300px' }}>
 					<tbody>
 						<tr><th>Your time</th><th>Their time</th></tr>
