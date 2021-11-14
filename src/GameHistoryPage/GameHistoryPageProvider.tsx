@@ -22,20 +22,33 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 
 	const loadGame = useCallback((gid: string): void => {
 		if (authUser) {
-			setState({ loadingGID: gid, game: null });
-			firebase.db.ref(`games/${gid}`).once('value').then(snapshot => {
-				if (snapshot.exists())
-					setState({
-						loadingGID: null,
-						game: dbGameToClientGame(snapshot.val(), gid, authUser.uid),
-					});
-				else {
-					console.log('GameHistoryPage: Error loading game');
-					setState({ ...INITIAL_STATE });
-				}
-			}).catch((error) => {
-				console.error(error);
-			});
+			// Get game from local storage if saved
+			const savedGameString = localStorage.getItem('GameHistoryPageProvider::' + gid);
+			if (savedGameString) {
+				setState({
+					loadingGID: null,
+					game: dbGameToClientGame(JSON.parse(savedGameString), gid, authUser.uid),
+				});
+			}
+			else {
+				// Get game from server
+				setState({ loadingGID: gid, game: null });
+				firebase.db.ref(`games/${gid}`).once('value').then(snapshot => {
+					if (snapshot.exists()) {
+						localStorage.setItem('GameHistoryPageProvider::' + gid, JSON.stringify(snapshot.val()));
+						setState({
+							loadingGID: null,
+							game: dbGameToClientGame(snapshot.val(), gid, authUser.uid),
+						});
+					}
+					else {
+						console.log('GameHistoryPage: Error loading game');
+						setState({ ...INITIAL_STATE });
+					}
+				}).catch((error) => {
+					console.error(error);
+				});
+			}
 		}
 	}, [firebase.db, authUser]);
 
