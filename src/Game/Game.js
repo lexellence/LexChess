@@ -212,9 +212,9 @@ function Game({ game, leaveGame }) {
 			<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 			<div style={{ display: historyControlsDisplay }}>
-				<Button disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>Back</Button>
-				<Button disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>Forward</Button>
-				<Button disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>Last</Button>
+				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>{'<'}</Button>
+				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>{'>'}</Button>
+				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>{'>>'}</Button>
 				<br />
 				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves back: {historyPosition}</p>
 			</div>

@@ -24,6 +24,10 @@ th, td {
 	width: 130px;
 	/* height: 40px; */
 }
+.game-history-button {
+	width: 60px;
+	/* height: 40px; */
+}
 .join-game-button{
 	/* width: 70px; */
 	width: 100%;
