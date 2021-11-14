@@ -63,6 +63,19 @@ function Game({ game, leaveGame }) {
 				setHistoryPosition(historyPosition + 1);
 			}
 	};
+	const showStart = () => {
+		if (canGoBackInHistory()) {
+			let tempHistoryPosition = historyPosition;
+			while (tempHistoryPosition < game.moves.length) {
+				if (undoMove())
+					tempHistoryPosition++;
+				else
+					break;
+			}
+			refreshBoard();
+			setHistoryPosition(tempHistoryPosition);
+		}
+	};
 
 	//+----------------------------------\------------------------
 	//|	  	 		Forward				 |
@@ -212,6 +225,7 @@ function Game({ game, leaveGame }) {
 			<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 			<div style={{ display: historyControlsDisplay }}>
+				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>{'<<'}</Button>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>{'<'}</Button>
 				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>{'>'}</Button>
 				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>{'>>'}</Button>
