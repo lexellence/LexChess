@@ -64,14 +64,14 @@ function HistoryGameList() {
 //|	 	    GameTableRow   	       |
 //\--------------------------------/--------------------------
 function GameTableRow({ gid, status, name_w, name_b, name_d }) {
-	const { isLoadingGame, loadingGID, loadGame } = useGameHistoryPageContext();
+	const { loadingGID, loadGame } = useGameHistoryPageContext();
 
 	// Only include finished games in history list
 	if (status === 'wait' || status === 'play')
 		return null;
 
 	// Buttons
-	const loadingThisGame = isLoadingGame && loadingGID === gid;
+	const loadingThisGame = Boolean(loadingGID) && loadingGID === gid;
 
 	// Render
 	return (
@@ -81,8 +81,8 @@ function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 			<td>{name_b}</td>
 			<td>
 				<Button className='join-game-button' variant='primary' size='sm'
-					disabled={isLoadingGame}
-					onClick={!isLoadingGame ? () => loadGame(gid) : null}>
+					disabled={Boolean(loadingGID)}
+					onClick={!Boolean(loadingGID) ? () => loadGame(gid) : null}>
 					{/* Button Label */}
 					{(loadingThisGame) ?
 						<>Opening...<ButtonSpinner variant='primary' /></>

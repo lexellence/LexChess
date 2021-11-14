@@ -8,12 +8,10 @@ import { dbGameToClientGame } from '../Game';
 //|	 	GameHistoryPageProvider    |
 //\--------------------------------/--------------------------
 type GameHistoryPageState = {
-	isLoadingGame: boolean;
 	loadingGID: string | null;
 	game: Object | null;
 };
 const INITIAL_STATE = {
-	isLoadingGame: false,
 	loadingGID: null,
 	game: null
 };
@@ -24,11 +22,10 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 
 	const loadGame = useCallback((gid: string): void => {
 		if (authUser) {
-			setState({ isLoadingGame: true, loadingGID: gid, game: null });
+			setState({ loadingGID: gid, game: null });
 			firebase.db.ref(`games/${gid}`).once('value').then(snapshot => {
 				if (snapshot.exists())
 					setState({
-						isLoadingGame: false,
 						loadingGID: null,
 						game: dbGameToClientGame(snapshot.val(), gid, authUser.uid),
 					});
@@ -45,7 +42,6 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 	const leaveGame = useCallback((): void => {
 		setState({ ...INITIAL_STATE });
 	}, []);
-
 
 	const contextValue: GameHistoryPageContextValue = {
 		...state, loadGame, leaveGame

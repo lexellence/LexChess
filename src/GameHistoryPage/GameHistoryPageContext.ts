@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 type GameHistoryPageContextValue = {
-	isLoadingGame: boolean;
 	loadingGID: string | null;
 	game: Object | null;
 	loadGame(gid: string): void;
