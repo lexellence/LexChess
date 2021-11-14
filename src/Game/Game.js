@@ -186,13 +186,13 @@ function Game({ game, leaveGame }) {
 	const blackTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'b') ? 'visible' : 'hidden';
 	const whiteTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'w') ? 'visible' : 'hidden';
 
+	const buttonsDisabled = isMoving || isQuitting;
 	const historyControlsDisplay = (game.status === 'wait' || game.status === 'play') ? 'none' : 'block';
-	const lastMoveVisibility = canGoBackInHistory() ? 'visible' : 'hidden';
-	const nextMoveVisibility = canGoForwardInHistory() ? 'visible' : 'hidden';
+	const nextMoveDisabled = buttonsDisabled || !canGoForwardInHistory();
+	const lastMoveDisabled = buttonsDisabled || !canGoBackInHistory();
 
 	const timerDisplay = (game.status === 'play') ? 'block' : 'none';
 
-	const buttonsDisabled = isMoving || isQuitting;
 	let quitButtonContent;
 	if (game.status === 'play')
 		quitButtonContent = isQuitting ? <>Conceding...<ButtonSpinner /></> : 'Concede';
@@ -212,11 +212,11 @@ function Game({ game, leaveGame }) {
 			<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
 
 			<div style={{ display: historyControlsDisplay }}>
-				<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? showPrevious : null} style={{ visibility: lastMoveVisibility }}>Back</Button>
-				<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? showNext : null} style={{ visibility: nextMoveVisibility }}>Forward</Button>
-				<Button disabled={buttonsDisabled} onClick={!buttonsDisabled ? showPresent : null} style={{ visibility: nextMoveVisibility }}>Last</Button>
+				<Button disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>Back</Button>
+				<Button disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>Forward</Button>
+				<Button disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>Last</Button>
 				<br />
-				<p style={{ visibility: nextMoveVisibility }}>Moves back: {historyPosition}</p>
+				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves back: {historyPosition}</p>
 			</div>
 			<div style={{ display: timerDisplay }}>
 				<table style={{ width: '300px' }}>
