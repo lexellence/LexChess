@@ -230,7 +230,7 @@ function Game({ game, leaveGame }) {
 				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>{'>'}</Button>
 				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>{'>>'}</Button>
 				<br />
-				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves back: {historyPosition}</p>
+				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves left: {historyPosition}</p>
 			</div>
 			<div style={{ display: timerDisplay }}>
 				<table style={{ width: '300px' }}>
