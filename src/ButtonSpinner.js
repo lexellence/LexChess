@@ -9,5 +9,8 @@ const ButtonSpinner = ({ variant }) => (
 		aria-hidden="true"
 		animation="border" />
 );
+ButtonSpinner.defaultProps = {
+	variant: 'primary',
+};
 
 export { ButtonSpinner };
