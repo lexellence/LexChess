@@ -7,12 +7,12 @@ import {
 import { useGameHistoryPageContext } from './GameHistoryPageContext';
 
 function GameHistoryPageBase() {
-	const { game, leaveGame } = useGameHistoryPageContext();
+	const { game, historyPosition, setHistoryPosition, leaveGame } = useGameHistoryPageContext();
 
 	if (game)
 		return (
 			<div className='page-wrapper'>
-				<Game game={game} leaveGame={leaveGame} />
+				<Game game={game} historyPosition={historyPosition} setHistoryPosition={setHistoryPosition} leaveGame={leaveGame} />
 			</div>
 		);
 	else

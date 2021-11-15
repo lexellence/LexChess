@@ -5,6 +5,8 @@ type GameHistoryPageContextValue = {
 	game: Object | null;
 	loadGame(gid: string): void;
 	leaveGame(): void;
+	historyPosition: number;
+	setHistoryPosition(newPosition: number): void;
 }
 const GameHistoryPageContext = React.createContext<GameHistoryPageContextValue | undefined>(undefined);
 

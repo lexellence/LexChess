@@ -1,5 +1,4 @@
-// TODO: convert to TS
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Button from 'react-bootstrap/Button';
 import { ButtonSpinner } from '../ButtonSpinner';
 
@@ -10,19 +9,22 @@ import { usePlayAPIContext } from '../API';
 const CANVAS_SIZE = 360;
 
 // Reset game and apply moves
-function applyMoves(chess, moves) {
+function applyMoves(chess, moves, historyPosition) {
+	console.log('applyMoves');
+	if (!historyPosition)
+		historyPosition = 0;
+
 	chess.reset();
 	if (moves.length > 0)
-		for (let i = 0; i < moves.length; i++)
+		for (let i = 0; i < moves.length - historyPosition; i++)
 			if (!chess.move(moves[i]))
 				return false;
 	return true;
 }
 
-function Game({ game, leaveGame }) {
+function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const playAPI = usePlayAPIContext();
 
-	const [historyPosition, setHistoryPosition] = useState(0);
 	const [selectedSquare, setSelectedSquare] = useState(null);
 	const [errorMessage, setErrorMessage] = useState(null);
 
@@ -30,21 +32,26 @@ function Game({ game, leaveGame }) {
 	const [board, setBoard] = useState(chess.current.board());
 
 	// Re-render after chess moves
-	const refreshBoard = () => {
+	const refreshBoard = useCallback(() => {
 		setBoard([...chess.current.board()]);
-	};
+	}, [chess]);
 
-	// Game updated
+	// Re-apply all moves
 	useEffect(() => {
-		if (game) {
-			if (applyMoves(chess.current, game.moves))
+		const chessHistory = chess.current.history();
+		const shouldApplyMoves = () => {
+			const histPos = historyPosition ? historyPosition : 0;
+			if (histPos === 0 && chessHistory.length !== game.moves.length)
+				return true;
+			return !game.moves.every((move, i) => (i >= (game.moves.length - histPos)) || move === chessHistory[i]);
+		};
+
+		if (shouldApplyMoves())
+			if (applyMoves(chess.current, game.moves, historyPosition))
 				refreshBoard();
 			else
 				setErrorMessage('Invalid list of previous moves');
-		}
-		setHistoryPosition(0);
-		setSelectedSquare(null);
-	}, [game]);
+	}, [game.moves, historyPosition, refreshBoard]);
 
 	//+----------------------------------\------------------------
 	//|	  	 		Back				 |

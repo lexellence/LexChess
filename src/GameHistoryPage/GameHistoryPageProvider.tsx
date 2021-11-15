@@ -13,12 +13,13 @@ type GameHistoryPageState = {
 };
 const INITIAL_STATE = {
 	loadingGID: null,
-	game: null
+	game: null,
 };
 const GameHistoryPageProvider: React.FC = ({ children }) => {
 	const firebase: Firebase = useFirebaseContext();
 	const authUser: AuthUserContextValue = useAuthUserContext();
 	const [state, setState] = useState<GameHistoryPageState>({ ...INITIAL_STATE });
+	const [historyPosition, setHistoryPosition] = useState(0);
 
 	const loadGame = useCallback((gid: string): void => {
 		if (authUser) {
@@ -29,10 +30,14 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 					loadingGID: null,
 					game: dbGameToClientGame(JSON.parse(savedGameString), gid, authUser.uid),
 				});
+				setHistoryPosition(0);
 			}
 			else {
 				// Get game from server
-				setState({ loadingGID: gid, game: null });
+				setState({
+					loadingGID: gid,
+					game: null,
+				});
 				firebase.db.ref(`games/${gid}`).once('value').then(snapshot => {
 					if (snapshot.exists()) {
 						localStorage.setItem('GameHistoryPageProvider::' + gid, JSON.stringify(snapshot.val()));
@@ -40,6 +45,7 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 							loadingGID: null,
 							game: dbGameToClientGame(snapshot.val(), gid, authUser.uid),
 						});
+						setHistoryPosition(0);
 					}
 					else {
 						console.log('GameHistoryPage: Error loading game');
@@ -52,12 +58,12 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 		}
 	}, [firebase.db, authUser]);
 
-	const leaveGame = useCallback((): void => {
+	const leaveGame = (): void => {
 		setState({ ...INITIAL_STATE });
-	}, []);
+	};
 
 	const contextValue: GameHistoryPageContextValue = {
-		...state, loadGame, leaveGame
+		...state, loadGame, leaveGame, historyPosition, setHistoryPosition
 	};
 	return (
 		<GameHistoryPageContext.Provider value={contextValue} >
