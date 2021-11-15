@@ -6,6 +6,8 @@ import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import { Game } from '../Game';
 import { usePlayAPIContext } from '../API';
+import { MdFiberNew } from 'react-icons/md';
+import { iconSize } from '../iconSize';
 
 function getNextGID(selectedGID, gidList) {
 	if (!gidList)
@@ -123,9 +125,8 @@ function GamePageBase() {
 						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID}>
 							{Object.entries(userPlay).map(([gid, userGame], i) =>
 								<ToggleButton key={i} value={gid}
-									variant={userGame.visited ? 'primary' : 'warning'}
-									size={selectedGID === gid ? 'lg' : 'sm'}>
-									Play {i}
+									variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
+									Play {i}{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
 								</ToggleButton>
 							)}
 						</ToggleButtonGroup>

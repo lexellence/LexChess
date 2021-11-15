@@ -35,6 +35,9 @@ th, td {
 .page-wrapper {
   padding-top: 30px;
 }
+.attention{
+	color: #FFA900 !important;
+}
 
 /* create-react-app */
 body h3 {

@@ -13,10 +13,6 @@
   border-bottom: 3px solid transparent;
   transition: transform .2s linear, border-bottom .2s linear;
 }
-.nav-menu-link-attention{
-	color: #FFA900 !important;
-}
-
 .nav-menu-link:hover {
   transform: translateY(-2px);
 }

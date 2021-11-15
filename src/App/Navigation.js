@@ -2,6 +2,8 @@ import './Navigation.css';
 import * as React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Nav, Navbar, Container } from "react-bootstrap";
+import { MdFiberNew } from 'react-icons/md';
+import { iconSize } from '../iconSize';
 
 import { AuthUserContext } from '../Session';
 import { withFirebase } from '../Firebase';
@@ -11,7 +13,6 @@ import * as ROLES from '../constants/roles';
 import { withFirebaseListener } from '../FirebaseListener';
 
 const navLinkClass = 'nav-link nav-menu-link';
-const attentionNavLinkClass = 'nav-link nav-menu-link-attention';
 
 function NavigationNonAuth() {
 	return (
@@ -74,9 +75,9 @@ class NavigationAuthBase extends React.Component {
 					<Nav className="justify-content-end nav-menu">
 						{this.state.hasPlay &&
 							<Nav>
-								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link"
-									className={this.state.newPlayGame ? attentionNavLinkClass : navLinkClass}>
+								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className={navLinkClass}>
 									My Games
+									{this.state.newPlayGame && <MdFiberNew className='attention' size={iconSize} />}
 								</NavLink>
 							</Nav>
 						}
