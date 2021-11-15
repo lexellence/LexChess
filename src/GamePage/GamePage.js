@@ -122,7 +122,7 @@ function GamePageBase() {
 			<Container>
 				<Row>
 					<Col xs={2}>
-						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID}>
+						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
 							{Object.entries(userPlay).map(([gid, userGame], i) =>
 								<ToggleButton key={i} value={gid}
 									variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>

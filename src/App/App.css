@@ -6,7 +6,7 @@ table {
     background-color: #cee46d;
 }
 th, td {
-  text-align: center;
+  text-align: center; 
 }
 .unselectable {
   	-webkit-user-select: none;  /* Chrome all / Safari all */
@@ -27,6 +27,9 @@ th, td {
 .game-history-button {
 	width: 60px;
 	/* height: 40px; */
+}
+.game-page-menu {
+	width: 150px;
 }
 .join-game-button{
 	/* width: 70px; */
