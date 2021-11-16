@@ -222,7 +222,8 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 	value: FirebaseListenerContextValue = {
 		registerUserListener: this.registerUserListener,
 		registerGameListListener: this.registerGameListListener,
-		registerGameListener: this.registerGameListener
+		registerGameListener: this.registerGameListener,
+		setLocalUser: this.handleUserUpdate,
 	};
 	render() {
 		return (

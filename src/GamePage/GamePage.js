@@ -43,7 +43,7 @@ function GamePageBase() {
 	const history = useHistory();
 	const firebaseListener = useFirebaseListenerContext();
 	const playAPI = usePlayAPIContext();
-	const [userPlay, setUserPlay] = useState({});
+	const [user, setUser] = useState({ play: {}, past: {} });
 	const [selectedGID, setSelectedGID] = useState(null);
 	const nextGID = useRef(null);
 	const [game, setGame] = useState(null);
@@ -57,7 +57,7 @@ function GamePageBase() {
 					history.push(ROUTES.GAME_LIST);
 				}
 				else
-					setUserPlay(user.play);
+					setUser(user);
 			});
 		return () => {
 			unregisterUserListener();
@@ -70,30 +70,35 @@ function GamePageBase() {
 			sessionStorage.setItem('selectedGID', gid);
 			setSelectedGID(gid);
 
-			const gids = Object.keys(userPlay);
+			const gids = Object.keys(user.play);
 			nextGID.current = getNextGID(gid, gids);
 
-			if (!userPlay[gid].visited)
+			if (!user?.play[gid].visited) {
 				playAPI.visitGame(gid);
+				const newUserPlay = { ...user.play };
+				newUserPlay[gid].visited = true;
+				const newUser = { ...user, play: newUserPlay };
+				firebaseListener.setLocalUser(newUser);
+			}
 		}
-	}, [userPlay, playAPI]);
+	}, [user, playAPI, firebaseListener]);
 
 	// Set selected gid on first load of gid list
 	useEffect(() => {
 		if (!selectedGID) {
 			const previouslySelectedGID = sessionStorage.getItem('selectedGID');
-			const gids = Object.keys(userPlay);
+			const gids = Object.keys(user.play);
 			if (previouslySelectedGID && gids.includes(previouslySelectedGID))
 				selectGID(previouslySelectedGID);
 			else
 				selectGID(gids[0]);
 		}
-	}, [userPlay, selectedGID, selectGID]);
+	}, [user.play, selectedGID, selectGID]);
 
 	// Go to next game when selected game not in user's game list
 	useEffect(() => {
 		if (selectedGID) {
-			const gids = Object.keys(userPlay);
+			const gids = Object.keys(user.play);
 			if (!gids.includes(selectedGID)) {
 				// Go to next game
 				if (gids.includes(nextGID.current))
@@ -102,7 +107,7 @@ function GamePageBase() {
 					selectGID(gids[0]);
 			}
 		}
-	}, [userPlay, selectedGID, selectGID, history]);
+	}, [user.play, selectedGID, selectGID, history]);
 
 	// Subscribe to selected game
 	useEffect(() => {
@@ -116,7 +121,7 @@ function GamePageBase() {
 	}, [firebaseListener, selectedGID]);
 
 	// Render
-	if (!userPlay || !selectedGID)
+	if (!user || !selectedGID)
 		return <div align='center'>Loading...</div>;
 	else {
 		return (
@@ -124,7 +129,7 @@ function GamePageBase() {
 				<Row>
 					<Col xs={2}>
 						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
-							{Object.entries(userPlay).map(([gid, userGame], i) =>
+							{Object.entries(user.play).map(([gid, userGame], i) =>
 								<ToggleButton key={i} value={gid}
 									variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
 									Play {i}
