@@ -8,7 +8,7 @@ import { Game } from '../Game';
 import { usePlayAPIContext } from '../API';
 import { MdFiberNew } from 'react-icons/md';
 import { FaChessPawn } from 'react-icons/fa';
-import { iconSize } from '../iconSize';
+import { iconSize, iconSize2 } from '../iconSizes';
 
 function getNextGID(selectedGID, gidList) {
 	if (!gidList)
@@ -133,8 +133,8 @@ function GamePageBase() {
 								<ToggleButton key={i} value={gid}
 									variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
 									Play {i}
-									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
-									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize} />}
+									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} style={{ transform: 'translateY(-1px)' }} />}
+									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} style={{ transform: 'translateY(-2px)' }} />}
 								</ToggleButton>
 							)}
 						</ToggleButtonGroup>

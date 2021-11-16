@@ -4,7 +4,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { Nav, Navbar, Container } from "react-bootstrap";
 import { MdFiberNew } from 'react-icons/md';
 import { FaChessPawn } from 'react-icons/fa';
-import { iconSize } from '../iconSize';
+import { iconSize, iconSize2 } from '../iconSizes';
 
 import { AuthUserContext } from '../Session';
 import { withFirebase } from '../Firebase';
@@ -80,7 +80,7 @@ class NavigationAuthBase extends React.Component {
 								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className={navLinkClass}>
 									My Games
 									{!this.state.allGamesVisited && <MdFiberNew className='attention' size={iconSize} />}
-									{this.state.myTurn && <FaChessPawn className='myTurn' size={iconSize} />}
+									{this.state.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
 								</NavLink>
 							</Nav>
 						}
