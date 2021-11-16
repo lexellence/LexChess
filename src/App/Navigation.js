@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Nav, Navbar, Container } from "react-bootstrap";
 import { MdFiberNew } from 'react-icons/md';
+import { FaChessPawn } from 'react-icons/fa';
 import { iconSize } from '../iconSize';
 
 import { AuthUserContext } from '../Session';
@@ -38,7 +39,8 @@ class NavigationAuthBase extends React.Component {
 	state = {
 		userRoles: {},
 		hasPlay: false,
-		newPlayGame: false,
+		allGamesVisited: true,
+		myTurn: false,
 	};
 	componentDidMount() {
 		const onSignIn = (authUser) =>
@@ -48,16 +50,16 @@ class NavigationAuthBase extends React.Component {
 		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
 
 		const handleUserUpdate = (user) => {
-			// Is there an unvisited game in the play tab?
 			const playValues = Object.values(user.play);
-			const newPlayGame = playValues.find(userGame => !userGame.visited) ? true : false;
-			if (newPlayGame !== this.state.newPlayGame)
-				this.setState({ newPlayGame });
 
-			// Is the user playing any games?
 			const hasPlay = playValues.length > 0;
-			if (hasPlay !== this.state.hasPlay)
-				this.setState({ hasPlay });
+			const allGamesVisited = playValues.every(userGame => userGame.visited);
+			const myTurn = !playValues.every(userGame => !userGame.myTurn);
+
+			if (hasPlay !== this.state.hasPlay ||
+				allGamesVisited !== this.state.allGamesVisited ||
+				myTurn !== this.state.myTurn)
+				this.setState({ hasPlay, allGamesVisited, myTurn });
 		};
 		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
 	};
@@ -77,7 +79,8 @@ class NavigationAuthBase extends React.Component {
 							<Nav>
 								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className={navLinkClass}>
 									My Games
-									{this.state.newPlayGame && <MdFiberNew className='attention' size={iconSize} />}
+									{!this.state.allGamesVisited && <MdFiberNew className='attention' size={iconSize} />}
+									{this.state.myTurn && <FaChessPawn className='myTurn' size={iconSize} />}
 								</NavLink>
 							</Nav>
 						}

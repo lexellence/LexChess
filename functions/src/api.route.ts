@@ -45,7 +45,7 @@ apiRouter.post("/create-game/:team", async (req: any, res: any) => {
 		const databaseUpdate: any = {};
 		databaseUpdate[`gameList/${gid}`] = gameListing;
 		databaseUpdate[`games/${gid}`] = game;
-		databaseUpdate[`users/${uid}/play/${gid}`] = { visited: false };
+		databaseUpdate[`users/${uid}/play/${gid}`] = { myTurn: false, visited: false };
 		await db.ref().update(databaseUpdate);
 
 		res.status(httpCodes.OK).send();
@@ -83,7 +83,8 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 		const databaseUpdate: any = {};
 		{
 			// Add game to user
-			databaseUpdate[`users/${uid}/play/${gid}`] = { visited: false };
+			databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
+			databaseUpdate[`users/${uid}/play/${gid}/visited`] = false;
 
 			// If game is not in 'wait' mode, or client tries to join unavailable team,
 			//	then user becomes a spectator and not added to game data
@@ -95,22 +96,29 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 
 				// Join team
 				databaseUpdate[`games/${gid}/uid_${team}`] = uid;
-
 				databaseUpdate[`games/${gid}/name_${team}`] = name;
 				databaseUpdate[`gameList/${gid}/name_${team}`] = name;
 
 				// Move defer player to their team
+				let opponentUID: string;
+				const opponentTeam = (team === 'w') ? 'b' : 'w';
 				if (game.uid_d) {
-					const otherTeam = (team === 'w') ? 'b' : 'w';
-					databaseUpdate[`games/${gid}/uid_${otherTeam}`] = game.uid_d;
+					opponentUID = game.uid_d;
+					databaseUpdate[`games/${gid}/uid_${opponentTeam}`] = game.uid_d;
 					databaseUpdate[`games/${gid}/uid_d`] = 0;
 
-					databaseUpdate[`games/${gid}/name_${otherTeam}`] = game.name_d;
-					databaseUpdate[`gameList/${gid}/name_${otherTeam}`] = game.name_d;
+					databaseUpdate[`games/${gid}/name_${opponentTeam}`] = game.name_d;
+					databaseUpdate[`gameList/${gid}/name_${opponentTeam}`] = game.name_d;
 
 					databaseUpdate[`games/${gid}/name_d`] = 0;
 					databaseUpdate[`gameList/${gid}/name_d`] = 0;
 				}
+				else
+					opponentUID = game[`uid_${opponentTeam}`];
+
+				// Update users
+				databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = (team === 'w');
+				databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = (opponentTeam === 'w');
 			}
 		}
 		// Save changes to database
@@ -165,40 +173,39 @@ apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 
 		// Construct database update
 		const databaseUpdate: any = {};
-		{
-			const userIsPlayer = (uid === game.uid_w || uid === game.uid_b || uid === game.uid_d);
-			if (userIsPlayer) {
-				if (game.status === 'wait') {
-					// Delete game not yet started			
-					databaseUpdate[`games/${gid}`] = null;
-					databaseUpdate[`gameList/${gid}`] = null;
+		if (uid === game.uid_d) {
+			// Delete game not yet started			
+			databaseUpdate[`games/${gid}`] = null;
+			databaseUpdate[`gameList/${gid}`] = null;
+		}
+		else if (uid === game.uid_w || uid === game.uid_b)
+			if (game.status === 'play') {
+				// Concede defeat
+				let opponentUID: string;
+				if (uid === game.uid_w) {
+					opponentUID = game.uid_b;
+					databaseUpdate[`games/${gid}/status`] = 'con_b';
+					databaseUpdate[`gameList/${gid}/status`] = 'con_b';
 				}
-				else if (game.status === 'play') {
-					let opponentUID;
-
-					// Concede defeat
-					if (uid === game.uid_w) {
-						opponentUID = game.uid_b;
-						databaseUpdate[`games/${gid}/status`] = 'con_b';
-						databaseUpdate[`gameList/${gid}/status`] = 'con_b';
-					}
-					else if (uid === game.uid_b) {
-						opponentUID = game.uid_w;
-						databaseUpdate[`games/${gid}/status`] = 'con_w';
-						databaseUpdate[`gameList/${gid}/status`] = 'con_w';
-					}
-
-					// Add game to users' histories
-					databaseUpdate[`users/${uid}/past/${gid}`] = true;
-					databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
+				else {
+					opponentUID = game.uid_w;
+					databaseUpdate[`games/${gid}/status`] = 'con_w';
+					databaseUpdate[`gameList/${gid}/status`] = 'con_w';
 				}
+
+				// Add game to users' histories
+				databaseUpdate[`users/${uid}/past/${gid}`] = true;
+				databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
+
+				// Update users
+				databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
+				databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = false;
 			}
-
-			if (game.status !== 'play') {
+			else {
 				// Remove game from user's playing list
 				databaseUpdate[`users/${uid}/play/${gid}`] = null;
 			}
-		}
+
 		// Save changes to database
 		await db.ref().update(databaseUpdate);
 
@@ -220,9 +227,9 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 		const { gid, move } = req.params;
 
 		// User must be in a game
-		const isUserPlaying = (await db.ref(`users/${uid}/play/${gid}`).once('value')).exists();
+		const isUserTurn = (await db.ref(`users/${uid}/play/${gid}/myTurn`).once('value')).val();
 		const game = (await db.ref(`games/${gid}`).once('value')).val();
-		if (!isUserPlaying || !game) {
+		if (isUserTurn === null || !game) {
 			console.log('User ' + uid + ' tried to move in an invalid game');
 			res.status(httpCodes.FORBIDDEN).send('move: You are not in this game');
 			return;
@@ -235,13 +242,12 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 			return;
 		}
 
-		// Redo all chess moves (constructing from fen would not detect three-fold repetition, for example)
-		const chess = new Chess();
-		if (game.moves)
-			Object.values(game.moves).forEach(value => {
-				if (typeof (value) !== 'string' || !chess.move(value))
-					throw new Error('move: Invalid list of previous moves');
-			});
+		// Must be user's turn
+		if (!isUserTurn) {
+			console.log('User ' + uid + ' tried to move out of turn');
+			res.status(httpCodes.FORBIDDEN).send('move: Not user\'s turn');
+			return;
+		}
 
 		// Determine user's team
 		let team: string;
@@ -256,13 +262,15 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 			return;
 		}
 
-		if (team !== chess.turn()) {
-			// Not user's turn
-			console.log('User ' + uid + ' tried to move out of turn');
-			res.status(httpCodes.FORBIDDEN).send('move: Not user\'s turn');
-			return;
-		}
+		// Redo all chess moves (constructing from fen would not detect three-fold repetition, for example)
+		const chess = new Chess();
+		if (game.moves)
+			Object.values(game.moves).forEach(value => {
+				if (typeof (value) !== 'string' || !chess.move(value))
+					throw new Error('move: Invalid list of previous moves');
+			});
 
+		// Try move
 		if (!chess.move(move)) {
 			// Illegal move
 			console.log('User ' + uid + ' tried to move out of turn');
@@ -270,33 +278,39 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 			return;
 		}
 
-		// Construct database update
+		// Update database
+		const opponentUID = team === 'w' ? game.uid_b : game.uid_w;
 		const databaseUpdate: any = {};
-		{
-			const moveKey = (await db.ref('games').child(gid).child('board').child('moves').push()).key;
-			databaseUpdate['games/' + gid + '/moves/' + moveKey] = move;
+		const moveKey = (await db.ref('games').child(gid).child('board').child('moves').push()).key;
+		databaseUpdate['games/' + gid + '/moves/' + moveKey] = move;
+		if (chess.game_over()) {
+			let newStatus: string = '';
+			if (chess.in_checkmate())
+				newStatus = 'cm_' + team;
+			else if (chess.insufficient_material())
+				newStatus = 'ins';
+			else if (chess.in_draw())
+				newStatus = 'draw';
+			else if (chess.in_stalemate())
+				newStatus = 'stale';
+			// TODO: Give player the option to draw on three fold repetition
+			else if (chess.in_threefold_repetition())
+				newStatus = '3fold';
 
-			if (chess.game_over()) {
-				let newStatus: string = '';
-				if (chess.in_checkmate())
-					newStatus = 'cm_' + team;
-				else if (chess.insufficient_material())
-					newStatus = 'ins';
-				else if (chess.in_draw())
-					newStatus = 'draw';
-				else if (chess.in_stalemate())
-					newStatus = 'stale';
-				// TODO: Give player the option to draw on three fold repetition
-				else if (chess.in_threefold_repetition())
-					newStatus = '3fold';
-
-				if (newStatus) {
-					databaseUpdate['games/' + gid + '/status'] = newStatus;
-					databaseUpdate['gameList/' + gid + '/status'] = newStatus;
-				}
+			if (newStatus) {
+				databaseUpdate['games/' + gid + '/status'] = newStatus;
+				databaseUpdate['gameList/' + gid + '/status'] = newStatus;
 			}
+
+			// Update users - game over
+			databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
+			databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = false;
 		}
-		// Save changes to database
+		else {
+			// Update users - next turn
+			databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
+			databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = true;
+		}
 		await db.ref().update(databaseUpdate);
 
 		res.status(httpCodes.OK).send();

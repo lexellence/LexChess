@@ -7,6 +7,7 @@ import { useFirebaseListenerContext } from '../FirebaseListener';
 import { Game } from '../Game';
 import { usePlayAPIContext } from '../API';
 import { MdFiberNew } from 'react-icons/md';
+import { FaChessPawn } from 'react-icons/fa';
 import { iconSize } from '../iconSize';
 
 function getNextGID(selectedGID, gidList) {
@@ -126,7 +127,9 @@ function GamePageBase() {
 							{Object.entries(userPlay).map(([gid, userGame], i) =>
 								<ToggleButton key={i} value={gid}
 									variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
-									Play {i}{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
+									Play {i}
+									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
+									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize} />}
 								</ToggleButton>
 							)}
 						</ToggleButtonGroup>

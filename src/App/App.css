@@ -41,6 +41,9 @@ th, td {
 .attention{
 	color: #FFA900 !important;
 }
+.myTurn{
+  color: #00ff00;
+}
 
 /* create-react-app */
 body h3 {
