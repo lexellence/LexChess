@@ -3,9 +3,8 @@ import * as React from 'react';
 type GameHistoryPageContextValue = {
 	loadingGID: string | null;
 	game: Object | null;
-	loadGame(gid: string): void;
+	loadGame(gid: string, historyPosition?: number): void;
 	leaveGame(): void;
-	historyPosition: number;
 	setHistoryPosition(newPosition: number): void;
 }
 const GameHistoryPageContext = React.createContext<GameHistoryPageContextValue | undefined>(undefined);
