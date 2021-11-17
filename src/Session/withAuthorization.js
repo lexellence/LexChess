@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { withRouter } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 
 import { AuthUserContext } from './AuthUserContext';
 import { withFirebase } from '../Firebase';
@@ -11,34 +11,33 @@ import * as ROUTES from '../constants/routes';
 //	Wrap around other components to protect them from unauthorized users,
 //		who get redirected to sign-in page.
 //\-----------------------------------------------------------
-const withAuthorization = (conditionFunc) => (Component) => {
-	class WithAuthorization extends React.Component {
-		componentDidMount() {
-			const onSignIn = (authUser) => {
-				if (!conditionFunc(authUser))
-					this.props.history.push(ROUTES.SIGN_IN);
-			};
-			const onSignOut = () =>
-				this.props.history.push(ROUTES.SIGN_IN);
-			this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
-		}
+function withAuthorization(conditionFunc) {
+	return function (Component) {
+		function WithAuthorization(props) {
+			// Redirect on non-auth
+			const navigate = useNavigate();
+			useEffect(() => {
+				const onSignIn = (authUser) => {
+					if (!conditionFunc(authUser))
+						navigate(ROUTES.SIGN_IN);
+				};
+				const onSignOut = () => navigate(ROUTES.SIGN_IN);
+				const unregisterAuthListener = props.firebase.onAuthUserListener(onSignIn, onSignOut);
+				return unregisterAuthListener;
+			}, [navigate, props.firebase]);
 
-		componentWillUnmount() {
-			this.unregisterAuthListener();
-		}
-
-		render() {
 			return (
 				<AuthUserContext.Consumer >
 					{authUser =>
-						// conditionFunc(authUser) ? <Component {...this.props} /> : null
-						conditionFunc(authUser) ? <Component {...this.props} /> : <p>Not Authorized</p>
+						conditionFunc(authUser) ? <Component {...props} /> : null
 					}
 				</AuthUserContext.Consumer >
 			);
 		}
-	}
 
-	return withRouter(withFirebase(WithAuthorization));
-};
+		return withFirebase(WithAuthorization);
+	};
+}
+
+
 export { withAuthorization };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
 import { withAuthorization, withEmailVerification } from '../Session';
 import * as ROUTES from "../constants/routes";
@@ -40,7 +40,7 @@ function getNextGID(selectedGID, gidList) {
 };
 
 function GamePageBase() {
-	const history = useHistory();
+	const navigate = useNavigate();
 	const firebaseListener = useFirebaseListenerContext();
 	const playAPI = usePlayAPIContext();
 	const [user, setUser] = useState({ play: {}, past: {} });
@@ -54,7 +54,7 @@ function GamePageBase() {
 			firebaseListener.registerUserListener((user) => {
 				if (Object.keys(user.play).length < 1) {
 					sessionStorage.removeItem('selectedGID');
-					history.push(ROUTES.GAME_LIST);
+					navigate(ROUTES.GAME_LIST);
 				}
 				else
 					setUser(user);
@@ -62,7 +62,7 @@ function GamePageBase() {
 		return () => {
 			unregisterUserListener();
 		};
-	}, [firebaseListener, history]);
+	}, [firebaseListener, navigate]);
 
 	// Select game from menu
 	const selectGID = useCallback(gid => {
@@ -107,7 +107,7 @@ function GamePageBase() {
 					selectGID(gids[0]);
 			}
 		}
-	}, [user.play, selectedGID, selectGID, history]);
+	}, [user.play, selectedGID, selectGID]);
 
 	// Subscribe to selected game
 	useEffect(() => {
