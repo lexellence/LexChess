@@ -173,38 +173,37 @@ apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 
 		// Construct database update
 		const databaseUpdate: any = {};
-		if (uid === game.uid_d) {
-			// Delete game not yet started			
-			databaseUpdate[`games/${gid}`] = null;
-			databaseUpdate[`gameList/${gid}`] = null;
-		}
-		else if (uid === game.uid_w || uid === game.uid_b)
-			if (game.status === 'play') {
-				// Concede defeat
-				let opponentUID: string;
-				if (uid === game.uid_w) {
-					opponentUID = game.uid_b;
-					databaseUpdate[`games/${gid}/status`] = 'con_b';
-					databaseUpdate[`gameList/${gid}/status`] = 'con_b';
-				}
-				else {
-					opponentUID = game.uid_w;
-					databaseUpdate[`games/${gid}/status`] = 'con_w';
-					databaseUpdate[`gameList/${gid}/status`] = 'con_w';
-				}
-
-				// Add game to users' histories
-				databaseUpdate[`users/${uid}/past/${gid}`] = true;
-				databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
-
-				// Update users
-				databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
-				databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = false;
+		if (game.status === 'play' && (uid === game.uid_w || uid === game.uid_b)) {
+			// Concede defeat
+			let opponentUID: string;
+			if (uid === game.uid_w) {
+				opponentUID = game.uid_b;
+				databaseUpdate[`games/${gid}/status`] = 'con_b';
+				databaseUpdate[`gameList/${gid}/status`] = 'con_b';
 			}
 			else {
-				// Remove game from user's playing list
-				databaseUpdate[`users/${uid}/play/${gid}`] = null;
+				opponentUID = game.uid_w;
+				databaseUpdate[`games/${gid}/status`] = 'con_w';
+				databaseUpdate[`gameList/${gid}/status`] = 'con_w';
 			}
+
+			// Add game to users' histories
+			databaseUpdate[`users/${uid}/past/${gid}`] = true;
+			databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
+
+			// Update users
+			databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
+			databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = false;
+		}
+		else {
+			if (game.status === 'wait' && uid === game.uid_d) {
+				// Delete game not yet started			
+				databaseUpdate[`games/${gid}`] = null;
+				databaseUpdate[`gameList/${gid}`] = null;
+			}
+			// Remove game from user's playing list
+			databaseUpdate[`users/${uid}/play/${gid}`] = null;
+		}
 
 		// Save changes to database
 		await db.ref().update(databaseUpdate);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from 'react-bootstrap/Button';
 import { ButtonSpinner } from '../ButtonSpinner';
 
@@ -32,9 +32,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const [board, setBoard] = useState(chess.current.board());
 
 	// Re-render after chess moves
-	const refreshBoard = useCallback(() => {
+	const refreshBoard = useRef(() => {
 		setBoard([...chess.current.board()]);
-	}, [chess]);
+	});
 
 	// Re-apply all moves
 	useEffect(() => {
@@ -48,10 +48,10 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 
 		if (shouldApplyMoves())
 			if (applyMoves(chess.current, game.moves, historyPosition))
-				refreshBoard();
+				refreshBoard.current();
 			else
 				setErrorMessage('Invalid list of previous moves');
-	}, [game.moves, historyPosition, refreshBoard]);
+	}, [game.moves, historyPosition]);
 
 	//+----------------------------------\------------------------
 	//|	  	 		Back				 |
@@ -66,7 +66,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const showPrevious = () => {
 		if (canGoBackInHistory())
 			if (undoMove()) {
-				refreshBoard();
+				refreshBoard.current();
 				setHistoryPosition(historyPosition + 1);
 			}
 	};
@@ -79,7 +79,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				else
 					break;
 			}
-			refreshBoard();
+			refreshBoard.current();
 			setHistoryPosition(tempHistoryPosition);
 		}
 	};
@@ -99,7 +99,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		if (canGoForwardInHistory()) {
 			const moveIndex = game.moves.length - historyPosition;
 			if (redoMove(moveIndex)) {
-				refreshBoard();
+				refreshBoard.current();
 				setHistoryPosition(historyPosition - 1);
 			}
 		}
@@ -114,7 +114,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				else
 					break;
 			}
-			refreshBoard();
+			refreshBoard.current();
 			setHistoryPosition(tempHistoryPosition);
 		}
 	};
@@ -142,7 +142,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				// Can they move their selected piece here?
 				const nextMove = chess.current.move({ from: selectedSquare, to: square });
 				if (nextMove) {
-					refreshBoard();
+					refreshBoard.current();
 					playAPI.move(game.gid, nextMove.san);
 					setSelectedSquare(null);
 				}
