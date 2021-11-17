@@ -207,7 +207,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const whiteTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'w') ? 'visible' : 'hidden';
 
 	const buttonsDisabled = isMoving || isQuitting;
-	const historyControlsDisplay = (game.status === 'wait' || game.status === 'play') ? 'none' : 'block';
+	const historyControlsDisplay = !setHistoryPosition ? 'none' : 'block';
 	const nextMoveDisabled = buttonsDisabled || !canGoForwardInHistory();
 	const lastMoveDisabled = buttonsDisabled || !canGoBackInHistory();
 
