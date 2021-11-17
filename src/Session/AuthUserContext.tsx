@@ -1,5 +1,5 @@
 import * as React from 'react';
-import firebaseApp from 'firebase/app';
+import firebaseApp from 'firebase/compat/app';
 
 type AuthUserContextValue = firebaseApp.User | null;
 const AuthUserContext = React.createContext<AuthUserContextValue | undefined>(undefined);

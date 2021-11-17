@@ -1,6 +1,6 @@
-import firebaseApp from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/database';
+import firebaseApp from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
 // import * as ROLES from '../constants/roles';
 
 const config = {

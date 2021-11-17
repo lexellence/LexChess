@@ -54,7 +54,7 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 	//\----------------------------------/------------------------
 	startUserListening = () => {
 		if (this.authUser?.uid)
-			this.props.firebase?.userRef(this.authUser.uid).on('value', (snapshot) => {
+			this.props.firebase?.userRef(this.authUser.uid).on('value', (snapshot: any) => {
 				const user = snapshot.val();
 				this.handleUserUpdate(user);
 			});
@@ -64,7 +64,7 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 			this.props.firebase.userRef(this.authUser.uid).off();
 	}
 	startGameListListening = () => {
-		this.props.firebase.db.ref('gameList').on('value', (snapshot) => {
+		this.props.firebase.db.ref('gameList').on('value', (snapshot: any) => {
 			const gameList = snapshot.val();
 			this.handleGameListUpdate(gameList);
 		});
@@ -78,11 +78,11 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 
 		if (!this.gameListeningGIDs.includes(gid)) {
 			this.gameListeningGIDs.push(gid);
-			this.props.firebase.db.ref(`games/${gid}/status`).once('value', (snapshot) => {
+			this.props.firebase.db.ref(`games/${gid}/status`).once('value', (snapshot: any) => {
 				if (!snapshot.exists())
 					this.handleGameUpdate(gid, null);
 
-				this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot) => {
+				this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot: any) => {
 					const game = snapshot.val();
 					this.handleGameUpdate(gid, game);
 				});

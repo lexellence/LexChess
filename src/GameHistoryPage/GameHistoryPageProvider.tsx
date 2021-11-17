@@ -38,7 +38,7 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 					loadingGID: gid,
 					game: null,
 				});
-				firebase.db.ref(`games/${gid}`).once('value').then(snapshot => {
+				firebase.db.ref(`games/${gid}`).once('value').then((snapshot: any) => {
 					if (snapshot.exists()) {
 						localStorage.setItem('GameHistoryPageProvider::' + gid, JSON.stringify(snapshot.val()));
 						setState({
@@ -51,8 +51,6 @@ const GameHistoryPageProvider: React.FC = ({ children }) => {
 						console.log('GameHistoryPage: Error loading game');
 						setState({ ...INITIAL_STATE });
 					}
-				}).catch((error) => {
-					console.error(error);
 				});
 			}
 		}
