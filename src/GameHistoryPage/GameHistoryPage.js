@@ -11,13 +11,13 @@ function GameHistoryPageBase() {
 
 	if (game)
 		return (
-			<div className='page-wrapper'>
+			<div style={{ 'text-align': 'center' }}>
 				<Game game={game} historyPosition={historyPosition} setHistoryPosition={setHistoryPosition} leaveGame={leaveGame} />
 			</div>
 		);
 	else
 		return (
-			<div align='center' style={{ display: 'block' }}>
+			<div style={{ 'text-align': 'center' }}>
 				<h1>View my past games</h1>
 				<HistoryGameList />
 			</div>

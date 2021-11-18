@@ -122,10 +122,10 @@ function GamePageBase() {
 
 	// Render
 	if (!user || !selectedGID)
-		return <div align='center'>Loading...</div>;
+		return <div style={{ 'text-align': 'center' }}>Loading...</div>;
 	else {
 		return (
-			<div align='center'>
+			<div style={{ 'text-align': 'center' }}>
 				<Container>
 					<Row>
 						<Col xs={0} md={0} lg={2} xl={2}></Col>

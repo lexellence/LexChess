@@ -170,9 +170,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	//|	  	 		Render				 |
 	//\----------------------------------/------------------------
 	if (errorMessage)
-		return <div align='center'>Something happened: {errorMessage}</div>;
+		return <div style={{ 'text-align': 'center' }}>Something happened: {errorMessage}</div>;
 	if (!game)
-		return <div align='center'>Loading...</div>;
+		return <div style={{ 'text-align': 'center' }}>Loading...</div>;
 
 	const { isMovingTable, isQuittingTable } = playAPI;
 	const isMoving = isMovingTable[game.gid];
@@ -223,7 +223,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
 
 	return (
-		<div style={{ 'min-width': '365px' }}>
+		<div style={{ 'min-width': '365px', 'text-align': 'center' }}>
 			<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
 			<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
@@ -243,7 +243,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves left: {historyPosition}</p>
 			</div>
 			<div style={{ display: timerDisplay }}>
-				<table style={{ width: '300px' }}>
+				<table className='table-wrapper' style={{ width: '300px' }}>
 					<tbody>
 						<tr><th>Your time</th><th>Their time</th></tr>
 						<tr><td id="yourTime">0</td><td id="theirTime">0</td></tr>
