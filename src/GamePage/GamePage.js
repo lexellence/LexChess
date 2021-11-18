@@ -125,26 +125,30 @@ function GamePageBase() {
 		return <div align='center'>Loading...</div>;
 	else {
 		return (
-			<Container>
-				<Row>
-					<Col xs={2}>
-						<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
-							{Object.entries(user.play).map(([gid, userGame], i) =>
-								<ToggleButton key={i} value={gid}
-									variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
-									Play {i}
-									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} style={{ transform: 'translateY(-1px)' }} />}
-									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} style={{ transform: 'translateY(-2px)' }} />}
-								</ToggleButton>
-							)}
-						</ToggleButtonGroup>
-					</Col>
-					<Col>
-						{!game ? <div align='center'>Loading...</div>
-							: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
-					</Col>
-				</Row>
-			</Container>
+			<div align='center'>
+				<Container>
+					<Row>
+						<Col xs={0} md={0} lg={2} xl={2}></Col>
+						<Col xs={3} md={2} lg={2} xl={2}>
+							<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
+								{Object.entries(user.play).map(([gid, userGame], i) =>
+									<ToggleButton key={i} value={gid}
+										variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
+										Play {i}
+										{!userGame.visited && <MdFiberNew className='attention' size={iconSize} style={{ transform: 'translateY(-1px)' }} />}
+										{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} style={{ transform: 'translateY(-2px)' }} />}
+									</ToggleButton>
+								)}
+							</ToggleButtonGroup>
+						</Col>
+						<Col xs={9} md={8} lg={5} xl={4}>
+							{!game ? <span align='center'>Loading...</span>
+								: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
+						</Col>
+						<Col xs={0} md={2} lg={3} xl={4}></Col>
+					</Row>
+				</Container>
+			</div>
 		);
 	}
 }

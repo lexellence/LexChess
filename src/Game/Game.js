@@ -220,8 +220,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
 
 	return (
-		<div align='center' style={{ display: 'block' }}>
-			<h4 style={{ visibility: gameTitleVisibility, display: 'block' }}>{gameTitleText}</h4>
+		<div style={{ 'min-width': '365px' }}>
+			<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
 			<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
 			<GameCanvas size={CANVAS_SIZE}
@@ -251,7 +251,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
 				{quitButtonContent}
 			</Button>
-		</div >
+		</div>
 	);
 };
 
