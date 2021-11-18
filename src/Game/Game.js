@@ -6,7 +6,8 @@ import { GameCanvas } from './GameCanvas';
 import * as Chess from 'chess.js';
 import { usePlayAPIContext } from '../API';
 import { FaChessPawn } from 'react-icons/fa';
-import { iconSize3 } from '../iconSizes';
+import { IoCaretBack, IoCaretForward, IoPlayBack, IoPlayForward, IoArrowBackCircleSharp } from 'react-icons/io5';
+import { historyButtonIconSize, iconSize, iconSize3 } from '../iconSizes';
 
 const CANVAS_SIZE = 360;
 
@@ -228,7 +229,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	if (game.status === 'play')
 		quitButtonContent = isQuitting ? <>Conceding...<ButtonSpinner /></> : 'Concede';
 	else
-		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
+		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
 
 	const whiteTeamLabel = <p><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></p>;
 	const blackTeamLabel = <p><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></p>;
@@ -246,10 +247,20 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}
 
 			<div style={{ display: historyControlsDisplay }}>
-				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>{'<<'}</Button>
-				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>{'<'}</Button>
-				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>{'>'}</Button>
-				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>{'>>'}</Button>
+				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>
+					<IoPlayBack size={historyButtonIconSize} />
+					{/* <IoChevronBack size={historyButtonIconSize} /> */}
+				</Button>
+				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>
+					<IoCaretBack size={historyButtonIconSize} />
+				</Button>
+				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showNext : null}>
+					<IoCaretForward size={historyButtonIconSize} />
+				</Button>
+				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>
+					<IoPlayForward size={historyButtonIconSize} />
+					{/* <IoChevronForward size={historyButtonIconSize} /> */}
+				</Button>
 				<br />
 				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves left: {historyPosition}</p>
 			</div>
