@@ -5,8 +5,20 @@ import { ButtonSpinner } from '../ButtonSpinner';
 import { GameCanvas } from './GameCanvas';
 import * as Chess from 'chess.js';
 import { usePlayAPIContext } from '../API';
+import { FaChessPawn } from 'react-icons/fa';
+import { iconSize3 } from '../iconSizes';
 
 const CANVAS_SIZE = 360;
+
+function TurnIcon({ color, visible }) {
+	return <FaChessPawn
+		size={iconSize3}
+		style={{
+			transform: 'translateY(-2px)',
+			visibility: visible ? 'visible' : 'hidden',
+			color: color
+		}} />;
+}
 
 // Reset game and apply moves
 function applyMoves(chess, moves, historyPosition) {
@@ -178,12 +190,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const isMoving = isMovingTable[game.gid];
 	const isQuitting = isQuittingTable[game.gid];
 
-	const blackPossessiveName = (game.team === 'b') ? 'Your' : game.name_b + '\'s';
-	const whitePossessiveName = (game.team === 'b') ? 'Your' : game.name_b + '\'s';
 	const whiteNoun = (game.team === 'w') ? 'You' : game.name_w;
 	const blackNoun = (game.team === 'b') ? 'You' : game.name_b;
-	const blackMoveText = blackPossessiveName + ' move';
-	const whiteMoveText = whitePossessiveName + ' move';
 
 	const inCheck = chess.current.in_check();
 	let gameTitleText;
@@ -206,8 +214,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	else
 		gameTitleVisibility = 'visible';
 
-	const blackTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'b') ? 'visible' : 'hidden';
-	const whiteTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'w') ? 'visible' : 'hidden';
+	const blackTurnIconVisible = (game.status === 'play' && chess.current.turn() === 'b');
+	const whiteTurnIconVisible = (game.status === 'play' && chess.current.turn() === 'w');
 
 	const buttonsDisabled = isMoving || isQuitting;
 	const historyControlsDisplay = !setHistoryPosition ? 'none' : 'block';
@@ -226,13 +234,13 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		<div style={{ 'min-width': '365px', 'text-align': 'center' }}>
 			<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
-			<p style={{ visibility: blackTurnTextVisibility }}>{blackMoveText}</p>
+			<p><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></p>
 			<GameCanvas size={CANVAS_SIZE}
 				board={board}
 				selectedSquare={selectedSquare}
 				onMouseDown={handleMouseDownCanvas}
 				onMouseUp={handleMouseUpCanvas} />
-			<p style={{ visibility: whiteTurnTextVisibility }}>{whiteMoveText}</p>
+			<p><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></p>
 
 			<div style={{ display: historyControlsDisplay }}>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>{'<<'}</Button>
