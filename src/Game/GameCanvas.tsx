@@ -8,6 +8,7 @@ const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 interface GameCanvasProps {
 	size: number;
 	board: Array<Array<{ type: PieceType; color: "w" | "b" } | null>>;
+	flip: boolean;
 	selectedSquare: string | null;
 	onMouseDown: (square: string) => void;
 	onMouseUp: (square: string) => void;
@@ -17,7 +18,7 @@ function clamp(num: number, min: number, max: number) {
 	return Math.max(min, Math.min(num, max));
 }
 
-function GameCanvas({ size, board, selectedSquare, onMouseDown, onMouseUp }: GameCanvasProps) {
+function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp }: GameCanvasProps) {
 	const canvas = useRef<HTMLCanvasElement | null>(null);
 	const gameImages = useGameImagesContext();
 
@@ -41,13 +42,15 @@ function GameCanvas({ size, board, selectedSquare, onMouseDown, onMouseUp }: Gam
 			return;
 
 		function getFileChar(event: MouseEvent): string {
-			const boardOffsetX = event.offsetX - boardStart;
+			const mouseX = flip ? (size - event.offsetX) : event.offsetX;
+			const boardOffsetX = mouseX - boardStart;
 			let file = Math.floor(boardOffsetX / squareSize);
 			clamp(file, 0, 7);
 			return FILE_CHARS[file];
 		}
 		function getRankChar(event: MouseEvent): string {
-			const boardOffsetY = event.offsetY - boardStart;
+			const mouseY = flip ? (size - event.offsetY) : event.offsetY;
+			const boardOffsetY = mouseY - boardStart;
 			let rank = 8 - Math.floor(boardOffsetY / squareSize);
 			clamp(rank, 1, 8);
 			return rank.toString();
@@ -69,16 +72,18 @@ function GameCanvas({ size, board, selectedSquare, onMouseDown, onMouseUp }: Gam
 			currentCanvas?.removeEventListener('mousedown', handleMouseDown);
 			currentCanvas?.removeEventListener('mouseup', handleMouseUp);
 		};
-	}, [boardStart, onMouseDown, onMouseUp, squareSize, gameImages.pieces, gameImages.board]);
+	}, [boardStart, onMouseDown, onMouseUp, squareSize, gameImages.pieces, gameImages.board, flip, size]);
 
 	//+--------------------------------\--------------------------
 	//|	 	    Canvas Drawing	   	   |
 	//\--------------------------------/--------------------------
 	function drawSquare(context: CanvasRenderingContext2D, row: number, col: number) {
-		const squareStartX = boardStart + col * squareSize;
-		const squareStartY = boardStart + row * squareSize;
+		const drawRow = flip ? 7 - row : row;
+		const drawCol = flip ? 7 - col : col;
+		const squareStartX = boardStart + drawCol * squareSize;
+		const squareStartY = boardStart + drawRow * squareSize;
 
-		// Shade selected square
+		// Shade if it is selected square
 		if (selectedSquare)
 			if (FILE_CHARS.indexOf(selectedSquare[0]) === col && selectedSquare[1] === (8 - row).toString()) {
 				context.fillStyle = "#00CC00";

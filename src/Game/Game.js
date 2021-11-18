@@ -230,17 +230,20 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	else
 		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
 
+	const whiteTeamLabel = <p><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></p>;
+	const blackTeamLabel = <p><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></p>;
 	return (
 		<div style={{ 'min-width': '365px', 'text-align': 'center' }}>
 			<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
-			<p><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></p>
+			{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}
 			<GameCanvas size={CANVAS_SIZE}
 				board={board}
+				flip={game.team === 'b'}
 				selectedSquare={selectedSquare}
 				onMouseDown={handleMouseDownCanvas}
 				onMouseUp={handleMouseUpCanvas} />
-			<p><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></p>
+			{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}
 
 			<div style={{ display: historyControlsDisplay }}>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>{'<<'}</Button>
