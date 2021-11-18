@@ -178,30 +178,33 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const isMoving = isMovingTable[game.gid];
 	const isQuitting = isQuittingTable[game.gid];
 
-	// Player turn text
 	const blackPossessiveName = (game.team === 'b') ? 'Your' : game.name_b + '\'s';
-	const whitePossessiveName = (game.team === 'w') ? 'Your' : game.name_w + '\'s';
+	const whitePossessiveName = (game.team === 'b') ? 'Your' : game.name_b + '\'s';
+	const whiteNoun = (game.team === 'w') ? 'You' : game.name_w;
+	const blackNoun = (game.team === 'b') ? 'You' : game.name_b;
 	const blackMoveText = blackPossessiveName + ' move';
 	const whiteMoveText = whitePossessiveName + ' move';
 
 	const inCheck = chess.current.in_check();
-	let gameTitleVisibility = 'visible';
 	let gameTitleText;
 	switch (game.status) {
-		case 'wait': gameTitleText = 'Waiting for another player to join...'; break;
+		case 'wait': gameTitleText = 'Waiting for another player...'; break;
 		case 'play': gameTitleText = inCheck ? 'Check!' : 'invisible'; break;
-		case 'draw': gameTitleText = 'Game ended in a draw.'; break;
-		case 'stale': gameTitleText = 'Game ended in a draw due to stalemate.'; break;
-		case 'ins': gameTitleText = 'Game ended in a draw due to insufficient material.'; break;
-		case '3fold': gameTitleText = 'Game ended in a draw due to three-fold repetition.'; break;
-		case 'cm_w': gameTitleText = 'Checkmate! ' + game.name_w + ' wins.'; break;
-		case 'cm_b': gameTitleText = 'Checkmate! ' + game.name_b + ' wins.'; break;
-		case 'con_w': gameTitleText = game.name_b + ' conceded. ' + game.name_w + ' wins!'; break;
-		case 'con_b': gameTitleText = game.name_w + ' conceded. ' + game.name_b + ' wins!'; break;
+		case 'draw': gameTitleText = <>Draw</>; break;
+		case 'stale': gameTitleText = <>Draw<br />(stalemate)</>; break;
+		case 'ins': gameTitleText = <>Draw<br />(insufficient material)</>; break;
+		case '3fold': gameTitleText = <>Draw<br />(three-fold repetition)</>; break;
+		case 'cm_w': gameTitleText = <>{whiteNoun + ' won'}<br />Checkmate!</>; break;
+		case 'cm_b': gameTitleText = <>{blackNoun + ' won'}<br />Checkmate!</>; break;
+		case 'con_w': gameTitleText = <>{whiteNoun + ' won'}<br />{blackNoun + ' conceded'}</>; break;
+		case 'con_b': gameTitleText = <>{blackNoun + ' won'}<br />{whiteNoun + ' conceded'}</>; break;
 		default: gameTitleText = 'invisible'; break;
 	}
+	let gameTitleVisibility;
 	if (gameTitleText === 'invisible')
 		gameTitleVisibility = 'hidden';
+	else
+		gameTitleVisibility = 'visible';
 
 	const blackTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'b') ? 'visible' : 'hidden';
 	const whiteTurnTextVisibility = (game.status === 'play' && chess.current.turn() === 'w') ? 'visible' : 'hidden';
