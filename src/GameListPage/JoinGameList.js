@@ -112,7 +112,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame 
 			{Array.from(joinGameButtonMap).map(([team, button]) =>
 				<td key={team}>
 					{teamNames.get(team) ? teamNames.get(team)
-						: <Button className='join-game-button' variant={button.variant} size='sm'
+						: <Button className='game-list-button' variant={button.variant} size='sm'
 							disabled={disableButtons}
 							onClick={!disableButtons ? () => joinGame(gid, team) : null}>
 							{/* Button Label */}

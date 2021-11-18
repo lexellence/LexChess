@@ -4,6 +4,7 @@ type GameHistoryPageContextValue = {
 	loadingGID: string | null;
 	game: Object | null;
 	loadGame(gid: string, historyPosition?: number): void;
+	downloadGame(gid: string): void;
 	leaveGame(): void;
 	setHistoryPosition(newPosition: number): void;
 }

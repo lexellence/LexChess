@@ -40,6 +40,7 @@ function HistoryGameList() {
 							<th>White</th>
 							<th>Black</th>
 							<th>View</th>
+							<th>Text File</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -64,7 +65,7 @@ function HistoryGameList() {
 //|	 	    GameTableRow   	       |
 //\--------------------------------/--------------------------
 function GameTableRow({ gid, status, name_w, name_b, name_d }) {
-	const { loadingGID, loadGame } = useGameHistoryPageContext();
+	const { loadingGID, loadGame, downloadingGID, downloadGame } = useGameHistoryPageContext();
 
 	// Only include finished games in history list
 	if (status === 'wait' || status === 'play')
@@ -72,6 +73,8 @@ function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 
 	// Buttons
 	const loadingThisGame = Boolean(loadingGID) && loadingGID === gid;
+	const downloadingThisGame = Boolean(downloadingGID) && downloadingGID === gid;
+	const disableButtons = Boolean(loadingGID) || Boolean(downloadingGID);
 
 	// Render
 	return (
@@ -80,13 +83,24 @@ function GameTableRow({ gid, status, name_w, name_b, name_d }) {
 			<td>{name_w}</td>
 			<td>{name_b}</td>
 			<td>
-				<Button className='join-game-button' variant='primary' size='sm'
-					disabled={Boolean(loadingGID)}
-					onClick={!Boolean(loadingGID) ? () => loadGame(gid) : null}>
+				<Button className='game-list-button' variant='primary' size='sm'
+					disabled={disableButtons}
+					onClick={!disableButtons ? () => loadGame(gid) : null}>
 					{/* Button Label */}
 					{(loadingThisGame) ?
-						<>Opening...<ButtonSpinner variant='primary' /></>
+						<>Opening...<ButtonSpinner variant='light' /></>
 						: 'View'
+					}
+				</Button>
+			</td>
+			<td>
+				<Button className='game-list-button' variant='primary' size='sm'
+					disabled={disableButtons}
+					onClick={!disableButtons ? () => downloadGame(gid) : null}>
+					{/* Button Label */}
+					{(downloadingThisGame) ?
+						<>Downloading...<ButtonSpinner variant='light' /></>
+						: 'Download'
 					}
 				</Button>
 			</td>
