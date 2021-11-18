@@ -4,7 +4,7 @@ import {
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
-import { useGameHistoryPageContext } from './GameHistoryPageContext';
+import { useGameHistoryPageContext } from './useGameHistoryPageContext';
 
 function GameHistoryPageBase() {
 	const { game, historyPosition, setHistoryPosition, leaveGame } = useGameHistoryPageContext();

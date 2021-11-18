@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { PieceType } from 'chess.js';
-import { useGameImagesContext } from './GameImagesContext';
+import { useGameImagesContext } from './useGameImagesContext';
 import { getPieceImage } from './getPieceImage';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];

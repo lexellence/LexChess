@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { createContext } from 'react';
 
 type JoinGameValue = {
 	isJoining: boolean;
@@ -12,14 +12,7 @@ type JoinAPIContextValue = {
 	joiningGameData: JoinGameValue;
 }
 
-const JoinAPIContext = React.createContext<JoinAPIContextValue | undefined>(undefined);
-
-function useJoinAPIContext() {
-	let context = React.useContext(JoinAPIContext);
-	if (context === undefined)
-		throw Error('useJoinAPIContext must be used in a child component of APIProvider');
-	return context;
-}
+const JoinAPIContext = createContext<JoinAPIContextValue | undefined>(undefined);
 
 export type { JoinAPIContextValue, JoinGameValue };
-export { JoinAPIContext, useJoinAPIContext };
+export { JoinAPIContext };

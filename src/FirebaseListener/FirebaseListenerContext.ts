@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { createContext } from 'react';
 import { OnUpdateFunc, UnregisterFunc } from './Notifier';
 
 type FirebaseListenerContextValue = {
@@ -7,14 +7,7 @@ type FirebaseListenerContextValue = {
 	registerGameListener(onUpdate: OnUpdateFunc, gid: string): UnregisterFunc;
 	setLocalUser(user: any): void;
 };
-const FirebaseListenerContext = React.createContext<FirebaseListenerContextValue | undefined>(undefined);
-
-function useFirebaseListenerContext() {
-	let context = React.useContext(FirebaseListenerContext);
-	if (context === undefined)
-		throw new Error('useFirebaseListenerContext must be used in a child component of FirebaseListener.Provider');
-	return context;
-}
+const FirebaseListenerContext = createContext<FirebaseListenerContextValue | undefined>(undefined);
 
 export type { FirebaseListenerContextValue };
-export { FirebaseListenerContext, useFirebaseListenerContext };
+export { FirebaseListenerContext };

@@ -4,7 +4,7 @@ import Table from 'react-bootstrap/Table';
 import { ButtonSpinner } from '../ButtonSpinner';
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import { getStatusText } from '../GameListPage';
-import { useGameHistoryPageContext } from './GameHistoryPageContext';
+import { useGameHistoryPageContext } from './useGameHistoryPageContext';
 
 //+--------------------------------\--------------------------
 //|	 	      GameList   	       |
