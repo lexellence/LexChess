@@ -24,7 +24,7 @@ function NavigationNonAuth() {
 				</Navbar.Brand>
 				<Nav className="justify-content-end nav-menu">
 					<Nav>
-						<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>Game List</NavLink>
+						<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>Games</NavLink>
 					</Nav>
 					<Nav>
 						<NavLink to={ROUTES.SIGN_IN} activeClassName="active-nav-link" className={navLinkClass}>Sign in</NavLink>
@@ -78,14 +78,14 @@ class NavigationAuthBase extends React.Component {
 						{this.state.hasPlay &&
 							<Nav>
 								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className={navLinkClass}>
-									My Games
+									Play
 									{!this.state.allGamesVisited && <MdFiberNew className='attention' size={iconSize} />}
 									{this.state.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
 								</NavLink>
 							</Nav>
 						}
 						<Nav>
-							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>New Game</NavLink>
+							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>Start</NavLink>
 						</Nav>
 						<Nav>
 							<NavLink to={ROUTES.GAME_HISTORY} activeClassName="active-nav-link" className={navLinkClass}>Records</NavLink>
