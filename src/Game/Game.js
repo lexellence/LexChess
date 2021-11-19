@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import * as ROUTES from '../constants/routes';
 import Button from 'react-bootstrap/Button';
 import { ButtonSpinner } from '../ButtonSpinner';
 
@@ -37,6 +39,7 @@ function applyMoves(chess, moves, historyPosition) {
 
 function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const playAPI = usePlayAPIContext();
+	const location = useLocation();
 
 	const [selectedSquare, setSelectedSquare] = useState(null);
 	const [errorMessage, setErrorMessage] = useState(null);
@@ -228,8 +231,10 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	let quitButtonContent;
 	if (game.status === 'play')
 		quitButtonContent = isQuitting ? <>Conceding...<ButtonSpinner /></> : 'Concede';
+	else if (location.pathname.startsWith(ROUTES.PLAY))
+		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
 	else
-		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
+		quitButtonContent = isQuitting ? <>Loading records...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
 
 	const whiteTeamLabel = <p><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></p>;
 	const blackTeamLabel = <p><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></p>;
@@ -248,8 +253,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 
 			<div style={{ display: historyControlsDisplay }}>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>
+					<span style={{ visibility: game.moves.length - historyPosition > 0 ? 'visible' : 'hidden' }}>{game.moves.length - historyPosition}</span>
 					<IoPlayBack size={historyButtonIconSize} />
-					{/* <IoChevronBack size={historyButtonIconSize} /> */}
+					<span style={{ visibility: 'hidden' }}>{'0'}</span>
 				</Button>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showPrevious : null}>
 					<IoCaretBack size={historyButtonIconSize} />
@@ -258,12 +264,13 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 					<IoCaretForward size={historyButtonIconSize} />
 				</Button>
 				<Button className='game-history-button' disabled={nextMoveDisabled} onClick={!nextMoveDisabled ? showPresent : null}>
+					<span style={{ visibility: 'hidden' }}>{'0'}</span>
 					<IoPlayForward size={historyButtonIconSize} />
-					{/* <IoChevronForward size={historyButtonIconSize} /> */}
+					<span style={{ visibility: historyPosition > 0 ? 'visible' : 'hidden' }}>{historyPosition}</span>
 				</Button>
-				<br />
-				<p style={{ visibility: nextMoveDisabled ? 'hidden' : 'visible' }}>Moves left: {historyPosition}</p>
 			</div>
+			<br style={{ display: historyControlsDisplay }} />
+
 			<div style={{ display: timerDisplay }}>
 				<table className='table-wrapper' style={{ width: '300px' }}>
 					<tbody>
