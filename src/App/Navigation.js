@@ -14,6 +14,9 @@ import * as ROLES from '../constants/roles';
 import { withFirebaseListener } from '../FirebaseListener';
 
 const navLinkClass = 'nav-link nav-menu-link';
+function getNavLinkStyle({ isActive }) {
+	return isActive ? { borderBottom: '3px solid #a2ff9a' } : null;
+}
 
 function NavigationNonAuth() {
 	return (
@@ -24,10 +27,10 @@ function NavigationNonAuth() {
 				</Navbar.Brand>
 				<Nav className="justify-content-end nav-menu">
 					<Nav>
-						<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>Games</NavLink>
+						<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Games</NavLink>
 					</Nav>
 					<Nav>
-						<NavLink to={ROUTES.SIGN_IN} activeClassName="active-nav-link" className={navLinkClass}>Sign in</NavLink>
+						<NavLink to={ROUTES.SIGN_IN} style={getNavLinkStyle} className={navLinkClass}>Sign in</NavLink>
 					</Nav>
 				</Nav>
 			</Container>
@@ -77,7 +80,7 @@ class NavigationAuthBase extends React.Component {
 					<Nav className="justify-content-end nav-menu">
 						{this.state.hasPlay &&
 							<Nav>
-								<NavLink to={ROUTES.PLAY} activeClassName="active-nav-link" className={navLinkClass}>
+								<NavLink to={ROUTES.PLAY} style={getNavLinkStyle} className={navLinkClass}>
 									Play
 									{!this.state.allGamesVisited && <MdFiberNew className='attention' size={iconSize} />}
 									{this.state.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
@@ -85,16 +88,16 @@ class NavigationAuthBase extends React.Component {
 							</Nav>
 						}
 						<Nav>
-							<NavLink to={ROUTES.GAME_LIST} activeClassName="active-nav-link" className={navLinkClass}>Start</NavLink>
+							<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
 						</Nav>
 						<Nav>
-							<NavLink to={ROUTES.GAME_HISTORY} activeClassName="active-nav-link" className={navLinkClass}>Records</NavLink>
+							<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
 						</Nav>
 						<Nav>
-							<NavLink to={ROUTES.ACCOUNT} activeClassName="active-nav-link" className={navLinkClass}>Account</NavLink>
+							<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
 						</Nav>
 						{!!this.state.userRoles[ROLES.ADMIN] && <Nav>
-							<NavLink to={ROUTES.ADMIN} activeClassName="active-nav-link" className={navLinkClass}>Admin</NavLink>
+							<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
 						</Nav>}
 						<Nav>
 							<SignOutButton />
