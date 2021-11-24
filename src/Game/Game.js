@@ -79,8 +79,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			clearTimeout(resizeID);
 			resizeID = setTimeout(resetBoardSize, 20);
 		}
-		setTimeout(resetBoardSize, 1);
 		window.addEventListener('resize', handleResize);
+
+		resetBoardSize();
 		return () => {
 			window.removeEventListener('resize', handleResize);
 		};
