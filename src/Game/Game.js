@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import * as ROUTES from '../constants/routes';
 import Button from 'react-bootstrap/Button';
 import { ButtonSpinner } from '../ButtonSpinner';
-
 import { GameCanvas } from './GameCanvas';
 import * as Chess from 'chess.js';
 import { usePlayAPIContext } from '../API';
@@ -11,7 +10,8 @@ import { FaChessPawn } from 'react-icons/fa';
 import { IoCaretBack, IoCaretForward, IoPlayBack, IoPlayForward, IoArrowBackCircleSharp } from 'react-icons/io5';
 import { historyButtonIconSize, iconSize, iconSize3 } from '../iconSizes';
 
-const CANVAS_SIZE = 360;
+const DEFAULT_BOARD_SIZE = 360;
+const BOARD_SIZE_BUFFER = 20;	// Prevents scrollbar
 
 function TurnIcon({ color, visible }) {
 	return <FaChessPawn
@@ -25,7 +25,6 @@ function TurnIcon({ color, visible }) {
 
 // Reset game and apply moves
 function applyMoves(chess, moves, historyPosition) {
-	console.log('applyMoves');
 	if (!historyPosition)
 		historyPosition = 0;
 
@@ -44,17 +43,66 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const [selectedSquare, setSelectedSquare] = useState(null);
 	const [errorMessage, setErrorMessage] = useState(null);
 
-	const chess = useRef(new Chess());
-	const [board, setBoard] = useState(chess.current.board());
+	const [chess] = useState(new Chess());
+	const [board, setBoard] = useState([...chess.board()]);
+	const [boardSize, setBoardSize] = useState(DEFAULT_BOARD_SIZE);
+
+	const outerDiv = useRef();
+	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+	// Set game content dimensions
+	useEffect(() => {
+		function setResize() {
+			if (outerDiv.current) {
+				setDimensions({
+					width: outerDiv.current.offsetWidth,
+					height: outerDiv.current.offsetHeight
+				});
+			}
+		}
+		let resizeID;
+		function handleResize() {
+			clearTimeout(resizeID);
+			resizeID = setTimeout(setResize, 20);
+		}
+		setTimeout(setResize, 0.5);
+		window.addEventListener('resize', handleResize);
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	}, []);
+
+	// Resize board
+	const title = useRef();
+	const topTeamLabel = useRef();
+	const bottomTeamLabel = useRef();
+	const historyControls = useRef();
+	const timer = useRef();
+	const quitButton = useRef();
+
+	useEffect(() => {
+		const titleHeight = title.current ? title.current.scrollHeight : 0;
+		const topTeamLabelHeight = topTeamLabel.current ? topTeamLabel.current.scrollHeight : 0;
+		const bottomTeamLabelHeight = bottomTeamLabel.current ? bottomTeamLabel.current.scrollHeight : 0;
+		const historyControlsHeight = historyControls.current ? historyControls.current.scrollHeight : 0;
+		const timerHeight = timer.current ? timer.current.scrollHeight : 0;
+		const quitButtonHeight = quitButton.current ? quitButton.current.scrollHeight : 0;
+
+		const totalNonBoardHeight = titleHeight + topTeamLabelHeight + bottomTeamLabelHeight +
+			historyControlsHeight + timerHeight + quitButtonHeight;
+		const boardHeight = dimensions.height - totalNonBoardHeight;
+
+		setBoardSize(Math.min(dimensions.width, boardHeight) - BOARD_SIZE_BUFFER);
+	}, [dimensions]);
 
 	// Re-render after chess moves
-	const refreshBoard = useRef(() => {
-		setBoard([...chess.current.board()]);
-	});
+	const refreshBoard = useCallback(() => {
+		setBoard([...chess.board()]);
+	}, [chess]);
 
 	// Re-apply all moves
 	useEffect(() => {
-		const chessHistory = chess.current.history();
+		const chessHistory = chess.history();
 		const shouldApplyMoves = () => {
 			const histPos = historyPosition ? historyPosition : 0;
 			if (histPos === 0 && chessHistory.length !== game.moves.length)
@@ -63,11 +111,11 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		};
 
 		if (shouldApplyMoves())
-			if (applyMoves(chess.current, game.moves, historyPosition))
-				refreshBoard.current();
+			if (applyMoves(chess, game.moves, historyPosition))
+				refreshBoard();
 			else
 				setErrorMessage('Invalid list of previous moves');
-	}, [game.moves, historyPosition]);
+	}, [game.moves, historyPosition, chess, refreshBoard]);
 
 	//+----------------------------------\------------------------
 	//|	  	 		Back				 |
@@ -77,12 +125,12 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			historyPosition < game.moves.length);
 	};
 	const undoMove = () => {
-		return Boolean(chess.current.undo());
+		return Boolean(chess.undo());
 	};
 	const showPrevious = () => {
 		if (canGoBackInHistory())
 			if (undoMove()) {
-				refreshBoard.current();
+				refreshBoard();
 				setHistoryPosition(historyPosition + 1);
 			}
 	};
@@ -95,7 +143,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				else
 					break;
 			}
-			refreshBoard.current();
+			refreshBoard();
 			setHistoryPosition(tempHistoryPosition);
 		}
 	};
@@ -109,13 +157,13 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	};
 	const redoMove = (moveIndex) => {
 		const move = game.moves[moveIndex];
-		return Boolean(chess.current.move(move));
+		return Boolean(chess.move(move));
 	};
 	const showNext = () => {
 		if (canGoForwardInHistory()) {
 			const moveIndex = game.moves.length - historyPosition;
 			if (redoMove(moveIndex)) {
-				refreshBoard.current();
+				refreshBoard();
 				setHistoryPosition(historyPosition - 1);
 			}
 		}
@@ -130,7 +178,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				else
 					break;
 			}
-			refreshBoard.current();
+			refreshBoard();
 			setHistoryPosition(tempHistoryPosition);
 		}
 	};
@@ -144,7 +192,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			return;
 
 		// Is it user's turn?
-		if (chess.current.turn() !== game.team)
+		if (chess.turn() !== game.team)
 			return;
 
 		// Do they already have a piece chosen?
@@ -156,9 +204,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			}
 			else {
 				// Can they move their selected piece here?
-				const nextMove = chess.current.move({ from: selectedSquare, to: square });
+				const nextMove = chess.move({ from: selectedSquare, to: square });
 				if (nextMove) {
-					refreshBoard.current();
+					refreshBoard();
 					playAPI.move(game.gid, nextMove.san);
 					setSelectedSquare(null);
 				}
@@ -167,7 +215,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		}
 
 		// Did they click on one of their pieces?
-		const piece = chess.current.get(square);
+		const piece = chess.get(square);
 		if (piece) {
 			if (piece.color === game.team) {
 				setSelectedSquare(square);
@@ -181,14 +229,42 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const handleMouseUpCanvas = (square) => {
 
 	};
+	// function handlePieceDrop({ sourceSquare, targetSquare }) {
+	// 	console.log(sourceSquare, targetSquare);
+	// 	// Try move
+	// 	const nextMove = chess.move({ from: sourceSquare, to: targetSquare });
+	// 	if (nextMove) {
+	// 		playAPI.move(game.gid, nextMove.san);
+	// 		refreshBoard();
+	// 	}
+
+	// 	// TODO: handle pawn promotion
+	// }
+	// function allowDrag({ piece, sourceSquare }) {
+	// 	// Is game in progress?
+	// 	if (game.status !== 'play')
+	// 		return false;
+
+	// 	// Is it user's turn?
+	// 	if (chess.turn() !== game.team)
+	// 		return false;
+
+	// 	// Did they drag one of their pieces?
+	// 	const chessPiece = chess.get(sourceSquare);
+	// 	if (chessPiece) {
+	// 		if (chessPiece.color === game.team) {
+	// 			return true;
+	// 		}
+	// 	}
+	// }
 
 	//+----------------------------------\------------------------
 	//|	  	 		Render				 |
 	//\----------------------------------/------------------------
 	if (errorMessage)
-		return <div style={{ 'text-align': 'center' }}>Something happened: {errorMessage}</div>;
+		return <div style={{ textAlign: 'center' }}>Something happened: {errorMessage}</div>;
 	if (!game)
-		return <div style={{ 'text-align': 'center' }}>Loading...</div>;
+		return <div style={{ textAlign: 'center' }}>Loading...</div>;
 
 	const { isMovingTable, isQuittingTable } = playAPI;
 	const isMoving = isMovingTable[game.gid];
@@ -197,7 +273,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const whiteNoun = (game.team === 'w') ? 'You' : game.name_w;
 	const blackNoun = (game.team === 'b') ? 'You' : game.name_b;
 
-	const inCheck = chess.current.in_check();
+	const inCheck = chess.in_check();
 	let gameTitleText;
 	switch (game.status) {
 		case 'wait': gameTitleText = 'Waiting for another player...'; break;
@@ -218,8 +294,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	else
 		gameTitleVisibility = 'visible';
 
-	const blackTurnIconVisible = (game.status === 'play' && chess.current.turn() === 'b');
-	const whiteTurnIconVisible = (game.status === 'play' && chess.current.turn() === 'w');
+	const blackTurnIconVisible = (game.status === 'play' && chess.turn() === 'b');
+	const whiteTurnIconVisible = (game.status === 'play' && chess.turn() === 'w');
 
 	const buttonsDisabled = isMoving || isQuitting;
 	const historyControlsDisplay = !setHistoryPosition ? 'none' : 'block';
@@ -236,22 +312,24 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	else
 		quitButtonContent = isQuitting ? <>Loading records...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
 
-	const whiteTeamLabel = <p><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></p>;
-	const blackTeamLabel = <p><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></p>;
+	const whiteTeamLabel = <><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></>;
+	const blackTeamLabel = <><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></>;
 	return (
-		<div style={{ 'min-width': '365px', 'text-align': 'center' }}>
-			<h4 style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
+		<div id='game' ref={outerDiv}>
+			<h4 ref={title} style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
-			{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}
-			<GameCanvas size={CANVAS_SIZE}
-				board={board}
-				flip={game.team === 'b'}
-				selectedSquare={selectedSquare}
-				onMouseDown={handleMouseDownCanvas}
-				onMouseUp={handleMouseUpCanvas} />
-			{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}
+			<div ref={topTeamLabel}>{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}</div>
+			<div id='game-board'>
+				<GameCanvas size={boardSize}
+					board={board}
+					flip={game.team === 'b'}
+					selectedSquare={selectedSquare}
+					onMouseDown={handleMouseDownCanvas}
+					onMouseUp={handleMouseUpCanvas} />
+			</div>
+			<div ref={bottomTeamLabel}>{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}</div>
 
-			<div style={{ display: historyControlsDisplay }}>
+			<div id='game-history-controls' ref={historyControls} style={{ display: historyControlsDisplay }}>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>
 					<span style={{ visibility: game.moves.length - historyPosition > 0 ? 'visible' : 'hidden' }}>{game.moves.length - historyPosition}</span>
 					<IoPlayBack size={historyButtonIconSize} />
@@ -269,10 +347,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 					<span style={{ visibility: historyPosition > 0 ? 'visible' : 'hidden' }}>{historyPosition}</span>
 				</Button>
 			</div>
-			<br style={{ display: historyControlsDisplay }} />
 
-			<div style={{ display: timerDisplay }}>
-				<table className='table-wrapper' style={{ width: '300px' }}>
+			<div ref={timer} style={{ display: timerDisplay }}>
+				<table id='timer-table'>
 					<tbody>
 						<tr><th>Your time</th><th>Their time</th></tr>
 						<tr><td id="yourTime">0</td><td id="theirTime">0</td></tr>
@@ -280,11 +357,13 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				</table>
 			</div>
 
-			<Button className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
+			<Button ref={quitButton} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
 				{quitButtonContent}
 			</Button>
 		</div>
 	);
 };
-
+Game.defaultProps = {
+	historyPosition: 0,
+};
 export { Game };

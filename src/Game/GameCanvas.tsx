@@ -4,21 +4,24 @@ import { useGameImagesContext } from './useGameImagesContext';
 import { getPieceImage } from './getPieceImage';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const MIN_BOARD_SIZE = 5;
 
+//+--------------------------------\--------------------------
+//|	 	     Game Canvas	   	   |
+//\--------------------------------/--------------------------
+type BoardState = Array<Array<{ type: PieceType; color: 'w' | 'b' } | null>>;
 interface GameCanvasProps {
 	size: number;
-	board: Array<Array<{ type: PieceType; color: "w" | "b" } | null>>;
+	board: BoardState;
 	flip: boolean;
 	selectedSquare: string | null;
 	onMouseDown: (square: string) => void;
 	onMouseUp: (square: string) => void;
 }
-
-function clamp(num: number, min: number, max: number) {
-	return Math.max(min, Math.min(num, max));
-}
-
 function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp }: GameCanvasProps) {
+	if (size < MIN_BOARD_SIZE)
+		size = MIN_BOARD_SIZE;
+
 	const canvas = useRef<HTMLCanvasElement | null>(null);
 	const gameImages = useGameImagesContext();
 
@@ -41,6 +44,7 @@ function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp 
 		if (!gameImages.pieces || !gameImages.board)
 			return;
 
+		const clamp = (num: number, min: number, max: number) => Math.max(min, Math.min(num, max));
 		function getFileChar(event: MouseEvent): string {
 			const mouseX = flip ? (size - event.offsetX) : event.offsetX;
 			const boardOffsetX = mouseX - boardStart;
@@ -75,65 +79,65 @@ function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp 
 	}, [boardStart, onMouseDown, onMouseUp, squareSize, gameImages.pieces, gameImages.board, flip, size]);
 
 	//+--------------------------------\--------------------------
-	//|	 	    Canvas Drawing	   	   |
+	//|	 	      Draw Board	   	   |
 	//\--------------------------------/--------------------------
-	function drawSquare(context: CanvasRenderingContext2D, row: number, col: number) {
-		const drawRow = flip ? 7 - row : row;
-		const drawCol = flip ? 7 - col : col;
-		const squareStartX = boardStart + drawCol * squareSize;
-		const squareStartY = boardStart + drawRow * squareSize;
+	useEffect(() => {
+		function drawSquare(ctx: CanvasRenderingContext2D, row: number, col: number) {
+			const drawRow = flip ? 7 - row : row;
+			const drawCol = flip ? 7 - col : col;
+			const squareStartX = boardStart + drawCol * squareSize;
+			const squareStartY = boardStart + drawRow * squareSize;
 
-		// Shade if it is selected square
-		if (selectedSquare)
-			if (FILE_CHARS.indexOf(selectedSquare[0]) === col && selectedSquare[1] === (8 - row).toString()) {
-				context.fillStyle = "#00CC00";
-				context.fillRect(squareStartX, squareStartY, squareSize, squareSize);
-			}
+			// Shade if it is selected square
+			if (selectedSquare)
+				if (FILE_CHARS.indexOf(selectedSquare[0]) === col && selectedSquare[1] === (8 - row).toString()) {
+					ctx.fillStyle = "#00CC00";
+					ctx.fillRect(squareStartX, squareStartY, squareSize, squareSize);
+				}
 
-		// Draw piece
-		const piece = board[row][col];
-		if (piece) {
-			const image = getPieceImage(gameImages.pieces, piece.color, piece.type);
-			if (image) {
-				context.drawImage(image,
-					squareStartX + squareMargin,
-					squareStartY + squareMargin,
-					pieceImageSize,
-					pieceImageSize);
+			// Draw piece
+			const piece = board[row][col];
+			if (piece) {
+				const image = getPieceImage(gameImages.pieces, piece.color, piece.type);
+				if (image) {
+					ctx.drawImage(image,
+						squareStartX + squareMargin,
+						squareStartY + squareMargin,
+						pieceImageSize,
+						pieceImageSize);
+				}
 			}
 		}
-	}
-	function draw() {
-		// Save drawing context
+		function drawBoard(ctx: CanvasRenderingContext2D, board: BoardState) {
+			console.log('drawboard', 'size', size);
+			// Draw checkerboard
+			if (gameImages.board)
+				ctx.drawImage(gameImages.board, boardImageStart, boardImageStart, boardImageSize, boardImageSize);
+
+			// Draw canvas border
+			ctx.strokeStyle = "black";
+			ctx.strokeRect(0, 0, size, size);
+
+			// Draw game pieces
+			if (gameImages.pieces)
+				for (let row = 0; row < 8; row++)
+					for (let col = 0; col < 8; col++)
+						drawSquare(ctx, row, col);
+		}
 		const ctx = canvas.current?.getContext('2d', { alpha: false, willReadFrequently: false });
-		if (!ctx)
-			return;
-
-		// Draw checkerboard
-		if (gameImages.board)
-			ctx.drawImage(gameImages.board, boardImageStart, boardImageStart, boardImageSize, boardImageSize);
-
-		// Draw canvas border
-		ctx.strokeStyle = "black";
-		ctx.strokeRect(0, 0, size, size);
-
-		// Draw game pieces
-		if (gameImages.pieces)
-			for (let row = 0; row < 8; row++)
-				for (let col = 0; col < 8; col++)
-					drawSquare(ctx, row, col);
-	}
-	useEffect(() => {
-		draw();
-	});
+		if (ctx)
+			drawBoard(ctx, board);
+	}, [size, board, flip, selectedSquare, boardStart, boardImageSize, pieceImageSize, squareMargin, squareSize, gameImages.board, gameImages.pieces]);
 
 	//+--------------------------------\--------------------------
 	//|	 	        Render   	   	   |
 	//\--------------------------------/--------------------------
 	return (
-		<canvas id='gameBoardCanvas' ref={canvas} width={size} height={size}>
-			Canvas tag not supported. Try a different browser.
-		</canvas>
+		<div id='game-board'>
+			<canvas ref={canvas} width={size} height={size}>
+				Canvas tag not supported. Try a different browser.
+			</canvas>
+		</div>
 	);
 }
 

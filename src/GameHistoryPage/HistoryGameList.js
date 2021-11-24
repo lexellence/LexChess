@@ -31,33 +31,31 @@ function HistoryGameList() {
 		return <div align='center'>Loading records...<ButtonSpinner variant={'dark'} /></div>;
 	else
 		return (
-			<div className='table-wrapper'>
-				<Table striped bordered hover>
-					<thead>
-						<tr>
-							{/* Game list headers */}
-							<th>Result</th>
-							<th>White</th>
-							<th>Black</th>
-							<th>View</th>
-							<th>Text File</th>
-						</tr>
-					</thead>
-					<tbody>
-						{/* Game list rows */}
-						{gameList.map((game, i) => {
-							return <GameTableRow
-								key={i}
-								gid={game.gid}
-								status={game.status}
-								name_w={game.name_w}
-								name_b={game.name_b}
-								name_d={game.name_d}
-							/>;
-						})}
-					</tbody>
-				</Table>
-			</div>
+			<Table id='records-table' striped bordered hover>
+				<thead>
+					<tr>
+						{/* Game list headers */}
+						<th>Result</th>
+						<th>White</th>
+						<th>Black</th>
+						<th>View</th>
+						<th>Text File</th>
+					</tr>
+				</thead>
+				<tbody>
+					{/* Game list rows */}
+					{gameList.map((game, i) => {
+						return <GameTableRow
+							key={i}
+							gid={game.gid}
+							status={game.status}
+							name_w={game.name_w}
+							name_b={game.name_b}
+							name_d={game.name_d}
+						/>;
+					})}
+				</tbody>
+			</Table>
 		);
 }
 
