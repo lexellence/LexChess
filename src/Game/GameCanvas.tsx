@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
 import { PieceType } from 'chess.js';
 import { useGameImagesContext } from './useGameImagesContext';
 import { getPieceImage } from './getPieceImage';
@@ -78,7 +78,7 @@ function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp 
 	//+--------------------------------\--------------------------
 	//|	 	      Draw Board	   	   |
 	//\--------------------------------/--------------------------
-	useEffect(() => {
+	useLayoutEffect(() => {
 		function drawSquare(ctx: CanvasRenderingContext2D, row: number, col: number) {
 			const drawRow = flip ? 7 - row : row;
 			const drawCol = flip ? 7 - col : col;
