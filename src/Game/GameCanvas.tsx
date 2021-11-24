@@ -41,9 +41,6 @@ function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp 
 	//|	 	   Event Listeners 	   	   |
 	//\--------------------------------/--------------------------
 	useEffect(() => {
-		if (!gameImages.pieces || !gameImages.board)
-			return;
-
 		const clamp = (num: number, min: number, max: number) => Math.max(min, Math.min(num, max));
 		function getFileChar(event: MouseEvent): string {
 			const mouseX = flip ? (size - event.offsetX) : event.offsetX;
