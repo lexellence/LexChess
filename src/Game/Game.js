@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import * as ROUTES from '../constants/routes';
 import Button from 'react-bootstrap/Button';
@@ -47,53 +47,44 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const [board, setBoard] = useState([...chess.board()]);
 	const [boardSize, setBoardSize] = useState(DEFAULT_BOARD_SIZE);
 
+
+	// Resize board based on game content dimensions
 	const outerDiv = useRef();
-	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-	// Set game content dimensions
-	useEffect(() => {
-		function setResize() {
-			if (outerDiv.current) {
-				setDimensions({
-					width: outerDiv.current.offsetWidth,
-					height: outerDiv.current.offsetHeight
-				});
-			}
-		}
-		let resizeID;
-		function handleResize() {
-			clearTimeout(resizeID);
-			resizeID = setTimeout(setResize, 20);
-		}
-		setTimeout(setResize, 0.5);
-		window.addEventListener('resize', handleResize);
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
-	}, []);
-
-	// Resize board
 	const title = useRef();
 	const topTeamLabel = useRef();
 	const bottomTeamLabel = useRef();
 	const historyControls = useRef();
 	const timer = useRef();
 	const quitButton = useRef();
+	useLayoutEffect(() => {
+		function resetBoardSize() {
+			const gameContentWidth = outerDiv.current?.offsetWidth;
+			const gameContentHeight = outerDiv.current?.offsetHeight;
+			if (gameContentWidth && gameContentHeight) {
+				const titleHeight = title.current?.scrollHeight;
+				const topTeamLabelHeight = topTeamLabel.current?.scrollHeight;
+				const bottomTeamLabelHeight = bottomTeamLabel.current?.scrollHeight;
+				const historyControlsHeight = historyControls.current?.scrollHeight;
+				const timerHeight = timer.current?.scrollHeight;
+				const quitButtonHeight = quitButton.current?.scrollHeight;
+				const totalNonBoardHeight = titleHeight + topTeamLabelHeight + bottomTeamLabelHeight +
+					historyControlsHeight + timerHeight + quitButtonHeight;
 
-	useEffect(() => {
-		const titleHeight = title.current ? title.current.scrollHeight : 0;
-		const topTeamLabelHeight = topTeamLabel.current ? topTeamLabel.current.scrollHeight : 0;
-		const bottomTeamLabelHeight = bottomTeamLabel.current ? bottomTeamLabel.current.scrollHeight : 0;
-		const historyControlsHeight = historyControls.current ? historyControls.current.scrollHeight : 0;
-		const timerHeight = timer.current ? timer.current.scrollHeight : 0;
-		const quitButtonHeight = quitButton.current ? quitButton.current.scrollHeight : 0;
-
-		const totalNonBoardHeight = titleHeight + topTeamLabelHeight + bottomTeamLabelHeight +
-			historyControlsHeight + timerHeight + quitButtonHeight;
-		const boardHeight = dimensions.height - totalNonBoardHeight;
-
-		setBoardSize(Math.min(dimensions.width, boardHeight) - BOARD_SIZE_BUFFER);
-	}, [dimensions]);
+				const boardHeight = gameContentHeight - totalNonBoardHeight;
+				setBoardSize(Math.min(gameContentWidth, boardHeight) - BOARD_SIZE_BUFFER);
+			}
+		}
+		let resizeID;
+		function handleResize() {
+			clearTimeout(resizeID);
+			resizeID = setTimeout(resetBoardSize, 20);
+		}
+		setTimeout(resetBoardSize, 1);
+		window.addEventListener('resize', handleResize);
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	}, []);
 
 	// Re-render after chess moves
 	const refreshBoard = useCallback(() => {
