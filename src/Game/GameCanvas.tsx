@@ -1,10 +1,18 @@
-import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { PieceType } from 'chess.js';
-import { useGameImagesContext } from './useGameImagesContext';
-import { getPieceImage } from './getPieceImage';
+import { SVGRoundedRect } from './SVGRoundedRect';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const MIN_BOARD_SIZE = 5;
+const BOARD_MARGIN_FACTOR = 0;
+const PIECE_MARGIN_FACTOR = 0.0;
+const PIECE_OFFSET_X_FACTOR = 0.0;
+const PIECE_OFFSET_Y_FACTOR = -0.025;
+const COLOR_LIGHT = '#99ff85ff';
+const COLOR_DARK = '#168500ff';
+const COLOR_SELECTED = '#00CC00';
+// const COLOR_MARGIN = 'black';
+const CORNER_ROUNDING_RADIUS = 7;
 
 //+--------------------------------\--------------------------
 //|	 	     Game Canvas	   	   |
@@ -22,20 +30,20 @@ function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp 
 	if (size < MIN_BOARD_SIZE)
 		size = MIN_BOARD_SIZE;
 
-	const canvas = useRef<HTMLCanvasElement | null>(null);
-	const gameImages = useGameImagesContext();
+	const svg = useRef<SVGSVGElement | null>(null);
 
 	// Calculate sizes
-	const boardImageStart = 0;
 	const boardImageSize = size;
-	const boardMargin = 0.01 * boardImageSize;
-	const boardStart = boardImageStart + boardMargin;
-	const boardEnd = boardImageStart + boardImageSize - boardMargin;
+	const boardMargin = BOARD_MARGIN_FACTOR * boardImageSize;
+	const boardStart = boardMargin;
+	const boardEnd = boardImageSize - boardMargin;
 
 	const boardSize = boardEnd - boardStart;
-	const squareSize = boardSize / 8;
-	const squareMargin = 0.15 * squareSize;
-	const pieceImageSize = squareSize - 2 * squareMargin;
+	const squareSize = boardSize / 8.0;
+	const squareMargin = PIECE_MARGIN_FACTOR * squareSize;
+	const pieceImageSize = squareSize - 2.0 * squareMargin;
+	const pieceOffsetX = PIECE_OFFSET_X_FACTOR * squareSize;
+	const pieceOffsetY = PIECE_OFFSET_Y_FACTOR * squareSize;
 
 	//+--------------------------------\--------------------------
 	//|	 	   Event Listeners 	   	   |
@@ -64,76 +72,99 @@ function GameCanvas({ size, board, flip, selectedSquare, onMouseDown, onMouseUp 
 			const square = getFileChar(event) + getRankChar(event);
 			onMouseUp(square);
 		}
-		canvas.current?.addEventListener('mousedown', handleMouseDown);
-		canvas.current?.addEventListener('mouseup', handleMouseUp);
+		svg.current?.addEventListener('mousedown', handleMouseDown);
+		svg.current?.addEventListener('mouseup', handleMouseUp);
 
-		const currentCanvas = canvas.current;
+		const currentSVG = svg.current;
 
 		return () => {
-			currentCanvas?.removeEventListener('mousedown', handleMouseDown);
-			currentCanvas?.removeEventListener('mouseup', handleMouseUp);
+			currentSVG?.removeEventListener('mousedown', handleMouseDown);
+			currentSVG?.removeEventListener('mouseup', handleMouseUp);
 		};
-	}, [boardStart, onMouseDown, onMouseUp, squareSize, gameImages.pieces, gameImages.board, flip, size]);
-
-	//+--------------------------------\--------------------------
-	//|	 	      Draw Board	   	   |
-	//\--------------------------------/--------------------------
-	useLayoutEffect(() => {
-		function drawSquare(ctx: CanvasRenderingContext2D, row: number, col: number) {
-			const drawRow = flip ? 7 - row : row;
-			const drawCol = flip ? 7 - col : col;
-			const squareStartX = boardStart + drawCol * squareSize;
-			const squareStartY = boardStart + drawRow * squareSize;
-
-			// Shade if it is selected square
-			if (selectedSquare)
-				if (FILE_CHARS.indexOf(selectedSquare[0]) === col && selectedSquare[1] === (8 - row).toString()) {
-					ctx.fillStyle = "#00CC00";
-					ctx.fillRect(squareStartX, squareStartY, squareSize, squareSize);
-				}
-
-			// Draw piece
-			const piece = board[row][col];
-			if (piece) {
-				const image = getPieceImage(gameImages.pieces, piece.color, piece.type);
-				if (image) {
-					ctx.drawImage(image,
-						squareStartX + squareMargin,
-						squareStartY + squareMargin,
-						pieceImageSize,
-						pieceImageSize);
-				}
-			}
-		}
-		function drawBoard(ctx: CanvasRenderingContext2D, board: BoardState) {
-			console.log('drawboard', 'size', size);
-			// Draw checkerboard
-			if (gameImages.board)
-				ctx.drawImage(gameImages.board, boardImageStart, boardImageStart, boardImageSize, boardImageSize);
-
-			// Draw canvas border
-			ctx.strokeStyle = "black";
-			ctx.strokeRect(0, 0, size, size);
-
-			// Draw game pieces
-			if (gameImages.pieces)
-				for (let row = 0; row < 8; row++)
-					for (let col = 0; col < 8; col++)
-						drawSquare(ctx, row, col);
-		}
-		const ctx = canvas.current?.getContext('2d', { alpha: false, willReadFrequently: false });
-		if (ctx)
-			drawBoard(ctx, board);
-	}, [size, board, flip, selectedSquare, boardStart, boardImageSize, pieceImageSize, squareMargin, squareSize, gameImages.board, gameImages.pieces]);
+	}, [boardStart, onMouseDown, onMouseUp, squareSize, flip, size]);
 
 	//+--------------------------------\--------------------------
 	//|	 	        Render   	   	   |
 	//\--------------------------------/--------------------------
+	let nextKey = 0;
+	function getDrawRowOrCol(rowOrCol: number) {
+		return flip ? 7 - rowOrCol : rowOrCol;
+	}
+	function getSVGBoardSquares() {
+		let squares = [];
+		for (let row = 0; row < 8; row++)
+			for (let col = 0; col < 8; col++) {
+				const drawRow = getDrawRowOrCol(row);
+				const drawCol = getDrawRowOrCol(col);
+				const squareDrawX = boardStart + drawCol * squareSize;
+				const squareDrawY = boardStart + drawRow * squareSize;
+
+				let fillColor = COLOR_LIGHT;
+				let thisSquareSelected = false;
+				if (selectedSquare &&
+					FILE_CHARS.indexOf(selectedSquare[0]) === col &&
+					selectedSquare[1] === (8 - row).toString()) {
+					fillColor = COLOR_SELECTED;
+					thisSquareSelected = true;
+				}
+
+				if (thisSquareSelected ||
+					(row % 2 === 0 && col % 2 === 0) ||
+					(row % 2 === 1 && col % 2 === 1)) {
+					const roundTL = (drawRow === 0 && drawCol === 0);
+					const roundTR = (drawRow === 0 && drawCol === 7);
+					const roundBR = (drawRow === 7 && drawCol === 7);
+					const roundBL = (drawRow === 7 && drawCol === 0);
+					if (roundTL || roundTR || roundBR || roundBL)
+						squares.push(<SVGRoundedRect key={nextKey++}
+							x={squareDrawX} y={squareDrawY}
+							w={squareSize} h={squareSize}
+							rx={CORNER_ROUNDING_RADIUS} ry={CORNER_ROUNDING_RADIUS} fill={fillColor}
+							roundTL={roundTL} roundTR={roundTR} roundBR={roundBR} roundBL={roundBL} />);
+					else
+						squares.push(
+							<rect key={nextKey++} fill={fillColor}
+								x={squareDrawX} y={squareDrawY}
+								width={squareSize} height={squareSize} />
+						);
+				}
+			}
+		return squares;
+	}
+	function getSVGPieces() {
+		function getSVGPiece(row: number, col: number) {
+			const squareStartX = boardStart + getDrawRowOrCol(col) * squareSize;
+			const squareStartY = boardStart + getDrawRowOrCol(row) * squareSize;
+			const piece = board[row][col];
+			if (!piece)
+				return null;
+			else {
+				const imagePath = '/images/maestro/' + piece.color + piece.type + '.svg';
+				return <image key={nextKey++} href={imagePath}
+					x={squareStartX + squareMargin + pieceOffsetX}
+					y={squareStartY + squareMargin + pieceOffsetY}
+					width={pieceImageSize}
+					height={pieceImageSize} />;
+			}
+		}
+
+		let pieces = [];
+		for (let row = 0; row < 8; row++)
+			for (let col = 0; col < 8; col++) {
+				const piece = getSVGPiece(row, col);
+				if (piece)
+					pieces.push(piece);
+			}
+		return pieces;
+	}
 	return (
 		<div id='game-board'>
-			<canvas ref={canvas} width={size} height={size}>
-				Canvas tag not supported. Try a different browser.
-			</canvas>
+			<svg ref={svg} width={size} height={size} xmlns='http://www.w3.org/2000/svg'>
+				<rect x={boardStart} y={boardStart} width={boardSize} height={boardSize} rx={CORNER_ROUNDING_RADIUS.toString()} fill={COLOR_DARK} />
+				{getSVGBoardSquares()}
+				{/* <rect width={size} height={size} rx={CORNER_ROUNDING_RADIUS.toString()} fillOpacity='0' stroke='black' strokeWidth='2' strokeOpacity='1' /> */}
+				{getSVGPieces()}
+			</svg>
 		</div>
 	);
 }
