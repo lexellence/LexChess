@@ -44,7 +44,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const [errorMessage, setErrorMessage] = useState(null);
 
 	const [chess] = useState(new Chess());
-	const [board, setBoard] = useState([...chess.board()]);
+	const [fen, setFen] = useState(chess.fen());
 	const [boardSize, setBoardSize] = useState(DEFAULT_BOARD_SIZE);
 
 
@@ -89,7 +89,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 
 	// Re-render after chess moves
 	const refreshBoard = useCallback(() => {
-		setBoard([...chess.board()]);
+		setFen(chess.fen());
 	}, [chess]);
 
 	// Re-apply all moves
@@ -313,7 +313,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			<div ref={topTeamLabel}>{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}</div>
 			<div id='game-board'>
 				<GameCanvas size={boardSize}
-					board={board}
+					fen={fen}
 					flip={game.team === 'b'}
 					selectedSquare={selectedSquare}
 					onMouseDown={handleMouseDownCanvas}
