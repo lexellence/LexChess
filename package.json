@@ -16,12 +16,12 @@
 		"react-router-dom": "^6.0.2"
 	},
 	"scripts": {
-		"start": "react-scripts start",
+		"start": "react-scripts --openssl-legacy-provider start",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
 		"deploy": "react-scripts build && firebase deploy",
-		"func": "cross-env GOOGLE_APPLICATION_CREDENTIALS=../../chessfighter-b3ba9-firebase-adminsdk-qxgcq-5e34ce3dbb.json firebase serve --only functions",
+		"func": "cross-env GOOGLE_APPLICATION_CREDENTIALS=../../../projects/LexChess/chessfighter-b3ba9-firebase-adminsdk-qxgcq-5e34ce3dbb.json firebase serve --only functions",
 		"dev": "concurrently --kill-others-on-fail \"npm run func\" \"npm start\"",
 		"grok": "ngrok http 3000"
 	},
