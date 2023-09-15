@@ -1,5 +1,5 @@
 // Emulator or live?
-const API_URL_DEV = 'http://localhost:5000/chessfighter-b3ba9/us-central1/api';
+const API_URL_DEV = 'http://localhost:5001/chessfighter-b3ba9/us-central1/api';
 const API_URL_PROD = 'https://us-central1-chessfighter-b3ba9.cloudfunctions.net/api';
 const API_URL = (process.env.NODE_ENV === 'production') ? API_URL_PROD : API_URL_DEV;
 

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { SVGRoundedRect } from './SVGRoundedRect';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];

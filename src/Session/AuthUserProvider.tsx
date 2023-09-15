@@ -7,7 +7,10 @@ import { Firebase, useFirebaseContext } from '../Firebase';
 //\----------------------/
 //	The single provider of information about the signed-in user.
 //\-----------------------------------------------------------
-const AuthUserProvider: React.FC = ({ children }) => {
+interface Props {
+	children: React.ReactNode;
+}
+const AuthUserProvider: React.FC<Props> = ({ children }) => {
 	const storedAuthUser = localStorage.getItem('authUser');
 	const [authUser, setAuthUser] = useState<AuthUserContextValue>(storedAuthUser ? JSON.parse(storedAuthUser) : null);
 

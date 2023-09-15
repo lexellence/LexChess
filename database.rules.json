@@ -1,6 +1,30 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
+    ".read": false,
+    ".write": false,
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users/'+auth.uid).child('roles').hasChildren(['ADMIN'])",
+        ".write": "root.child('users/'+auth.uid).child('roles').hasChildren(['ADMIN'])"
+      },
+      ".read": "root.child('users/'+auth.uid).child('roles').hasChildren(['ADMIN'])",
+      ".write": "root.child('users/'+auth.uid).child('roles').hasChildren(['ADMIN'])"
+    },
+    "gameList": {
+      ".read": true
+    },
+    "games": {
+      ".read": true
+    },
+    "messages": {
+      ".indexOn": [
+        "createdAt"
+      ],
+      "$uid": {
+        ".write": "data.exists() ? data.child('userId').val() === auth.uid : newData.child('userId').val() === auth.uid"
+      },
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { PlayAPIContext, PlayAPIContextValue, JoinAPIContext, JoinAPIContextValue, JoinGameValue } from '.';
 import { Firebase, useFirebaseContext } from '../Firebase';
 import * as api from './api';
@@ -6,7 +6,10 @@ import * as api from './api';
 //+--------------------------------\--------------------------
 //|	 	     APIProvider   	       |
 //\--------------------------------/--------------------------
-const APIProvider: React.FC = ({ children }) => {
+interface Props {
+	children: React.ReactNode;
+}
+const APIProvider: React.FC<Props> = ({ children }) => {
 	const firebase: Firebase = useFirebaseContext();
 	const [authUser, setAuthUser] = useState<Object | null>(null);
 	const [isCreatingGame, setCreatingGame] = useState<boolean>(false);

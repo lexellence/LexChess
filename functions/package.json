@@ -1,37 +1,42 @@
 {
-	"name": "functions",
-	"description": "Cloud Functions for Firebase",
-	"scripts": {
-		"lint": "eslint \"src/**/*\"",
-		"build": "tsc",
-		"watch": "tsc --watch",
-		"serve": "npm run build && firebase emulators:start --only functions",
-		"shell": "npm run build && firebase functions:shell",
-		"start": "npm run shell",
-		"deploy": "firebase deploy --only functions",
-		"logs": "firebase functions:log"
-	},
-	"engines": {
-		"node": "16"
-	},
-	"main": "lib/index.js",
-	"dependencies": {
-		"body-parser": "^1.19.0",
-		"chess.js": "^0.12.0",
-		"cookie-parser": "^1.4.5",
-		"cors": "^2.8.5",
-		"express": "^4.17.1",
-		"firebase": "^8.2.1",
-		"firebase-admin": "^9.4.2",
-		"http-status-codes": "^2.1.4"
-	},
-	"private": true,
-	"devDependencies": {
-		"@types/body-parser": "^1.19.1",
-		"@types/chess.js": "^0.11.2",
-		"@types/cookie-parser": "^1.4.2",
-		"@types/cors": "^2.8.12",
-		"@types/express": "^4.17.13",
-		"firebase-functions": "^3.14.1"
-	}
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "chess.js": "^1.0.0-beta.6",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1",
+    "http-status-codes": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.2",
+    "@types/chess.js": "^0.13.5",
+    "@types/cookie-parser": "^1.4.4",
+    "@types/cors": "^2.8.14",
+    "@types/express": "^4.17.17",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.1.0",
+    "typescript": "^4.9.0"
+  },
+  "private": true
 }

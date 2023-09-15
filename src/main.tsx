@@ -1,8 +1,8 @@
 import "bootstrap/dist/css/bootstrap.css";
-import React from "react";
-import ReactDOM from "react-dom";
-import * as serviceWorker from "./serviceWorker";
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 
+// import App from './App.tsx'
 import { App } from "./App";
 import { Firebase, FirebaseContext } from './Firebase';
 import { AuthUserProvider } from './Session';
@@ -11,21 +11,18 @@ import { APIProvider } from './API';
 import { GameHistoryPageProvider } from './GameHistoryPage';
 
 const firebase = new Firebase();
-ReactDOM.render(
-	<React.StrictMode>
-		<FirebaseContext.Provider value={firebase}>
-			<AuthUserProvider>
-				<FirebaseListenerProvider>
-					<APIProvider>
-						<GameHistoryPageProvider>
-							<App />
-						</GameHistoryPageProvider>
-					</APIProvider>
-				</FirebaseListenerProvider>
-			</AuthUserProvider>
-		</FirebaseContext.Provider>
-	</React.StrictMode>,
-	document.getElementById("root")
-);
-
-serviceWorker.unregister();
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <FirebaseContext.Provider value={firebase}>
+      <AuthUserProvider>
+        <FirebaseListenerProvider>
+          <APIProvider>
+            <GameHistoryPageProvider>
+              <App />
+            </GameHistoryPageProvider>
+          </APIProvider>
+        </FirebaseListenerProvider>
+      </AuthUserProvider>
+    </FirebaseContext.Provider>
+  </React.StrictMode>,
+)

@@ -282,18 +282,18 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 		const databaseUpdate: any = {};
 		const moveKey = (await db.ref('games').child(gid).child('board').child('moves').push()).key;
 		databaseUpdate['games/' + gid + '/moves/' + moveKey] = move;
-		if (chess.game_over()) {
+		if (chess.isGameOver()) {
 			let newStatus: string = '';
-			if (chess.in_checkmate())
+			if (chess.isCheckmate())
 				newStatus = 'cm_' + team;
-			else if (chess.insufficient_material())
+			else if (chess.isInsufficientMaterial())
 				newStatus = 'ins';
-			else if (chess.in_draw())
+			else if (chess.isDraw())
 				newStatus = 'draw';
-			else if (chess.in_stalemate())
+			else if (chess.isStalemate())
 				newStatus = 'stale';
 			// TODO: Give player the option to draw on three fold repetition
-			else if (chess.in_threefold_repetition())
+			else if (chess.isThreefoldRepetition())
 				newStatus = '3fold';
 
 			if (newStatus) {

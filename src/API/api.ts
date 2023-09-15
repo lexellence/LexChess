@@ -1,4 +1,5 @@
-import axios, { Method, AxiosResponse } from 'axios';
+// import axios, { Method, AxiosResponse } from 'axios';
+import axios, { Method } from 'axios';
 import * as ENDPOINTS from "../constants/endpoints";
 
 //+--------------------------------\-------------------------
@@ -18,7 +19,8 @@ async function callAPI(authUser: any, method: Method, url: string) {
 				headers: {
 					Authorization: 'Bearer ' + idToken
 				}
-			}).then(function (response: AxiosResponse) {
+				// }).then(function (response: AxiosResponse) {
+			}).then(function () {
 				resolve(null);
 			}).catch(function (error) {
 				let rejectMessage: string;

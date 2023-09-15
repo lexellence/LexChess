@@ -4,7 +4,7 @@ import * as ROUTES from '../constants/routes';
 import Button from 'react-bootstrap/Button';
 import { ButtonSpinner } from '../ButtonSpinner';
 import { GameCanvas } from './GameCanvas';
-import * as Chess from 'chess.js';
+import { Chess } from 'chess.js'
 import { usePlayAPIContext } from '../API';
 import { FaChessPawn } from 'react-icons/fa';
 import { IoCaretBack, IoCaretForward, IoPlayBack, IoPlayForward, IoArrowBackCircleSharp } from 'react-icons/io5';
@@ -265,7 +265,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const whiteNoun = (game.team === 'w') ? 'You' : game.name_w;
 	const blackNoun = (game.team === 'b') ? 'You' : game.name_b;
 
-	const inCheck = chess.in_check();
+	const inCheck = chess.isCheck();
 	let gameTitleText;
 	switch (game.status) {
 		case 'wait': gameTitleText = 'Waiting for another player...'; break;

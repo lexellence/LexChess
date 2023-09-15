@@ -71,7 +71,10 @@ const INITIAL_STATE = {
 	game: null,
 	historyPosition: 0,
 };
-const GameHistoryPageProvider: React.FC = ({ children }) => {
+interface Props {
+	children: React.ReactNode;
+}
+const GameHistoryPageProvider: React.FC<Props> = ({ children }) => {
 	const firebase: Firebase = useFirebaseContext();
 	const authUser: AuthUserContextValue = useAuthUserContext();
 	const [state, setState] = useState<GameHistoryPageState>({ ...INITIAL_STATE });
