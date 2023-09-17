@@ -127,9 +127,9 @@ function GamePageBase() {
 		return (
 			<div id='game-page'>
 				<div id='game-page-menu'>
-					<ToggleButtonGroup vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
+					<ToggleButtonGroup type='radio' vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
 						{Object.entries(user.play).map(([gid, userGame], i) =>
-							<ToggleButton key={i} value={gid}
+							<ToggleButton id={`play-game-button-${i}`} key={i} value={gid}
 								variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
 								Play {i}
 								{!userGame.visited && <MdFiberNew className='attention' size={iconSize} style={{ transform: 'translateY(-1px)' }} />}

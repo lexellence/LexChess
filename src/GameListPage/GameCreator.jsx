@@ -19,8 +19,8 @@ const GameCreator = () => {
 			Play as:<br />
 			<ToggleButtonGroup type='radio' name='teamSelection' defaultValue={defaultTeamSelection}
 				onChange={!isCreatingGame ? setTeamSelection : null}>
-				{Array.from(createGameRadioMap).map(([team, radio]) =>
-					<ToggleButton key={team} value={team}
+				{Array.from(createGameRadioMap).map(([team, radio], i) =>
+					<ToggleButton id={`create-game-team-button-${i}`} key={team} value={team}
 						variant={teamSelection === team ? radio.variant : `outline-${radio.variant}`}
 						size='sm' disabled={isCreatingGame}>{radio.label}
 					</ToggleButton>)}
