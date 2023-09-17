@@ -1,61 +1,75 @@
 /* Mine */
-html,body { 
-	height: 100%; 
-}
- #root {
-	height: 100%; 
-}
+html,
 body {
-  	background-color: #66DD66;
+	height: 100%;
+}
+
+#root {
+	height: 100%;
+}
+
+body {
+	background-color: #66DD66;
 	// border: 3px solid rgb(93, 240, 250);
 	height: 100%;
 }
+
 #app {
 	height: 100%;
 	// border: 3px solid rgb(120, 5, 158);
 }
+
 table {
-    background-color: #cee46d;
+	background-color: #cee46d;
 	margin: 0 auto;
 }
-th, td {
-  text-align: center; 
+
+th,
+td {
+	text-align: center;
 }
+
 .unselectable {
-  	-webkit-user-select: none;  /* Chrome all / Safari all */
-  	-moz-user-select: none;     /* Firefox all */
-  	-ms-user-select: none;      /* IE 10+ */
-  	user-select: none;          /* Likely future */  
+	-webkit-user-select: none; // Chrome all / Safari all 
+	-moz-user-select: none; // Firefox all 
+	-ms-user-select: none; // IE 10+ 
+	user-select: none; // Likely future
 }
+
 .selectable {
-  	-webkit-user-select: text;  /* Chrome all / Safari all */
-  	-moz-user-select: text;     /* Firefox all */
-  	-ms-user-select: text;      /* IE 10+ */
-  	user-select: text;          /* Likely future */  
+	-webkit-user-select: text; // Chrome all / Safari all
+	-moz-user-select: text; // Firefox all
+	-ms-user-select: text; // IE 10+
+	user-select: text; // Likely future
 }
 
 $headerHeight: 72px;
+
 header {
 	height: $headerHeight;
 }
+
 .page-wrapper {
-  	height: calc(100% - $headerHeight);
+	height: calc(100% - $headerHeight);
 	// border: 3px solid rgb(158, 110, 5);
 	padding: 0px;
 }
-#game-page {	
+
+#game-page {
 	width: 100%;
 	height: 100%;
 	// border: 3px solid rgb(158, 5, 5);
 }
 
 $gamePageMenuWidth: 200px;
+
 #game-page-menu {
 	width: $gamePageMenuWidth;
 	float: left;
 	// border: 3px solid rgb(255, 255, 255);
 	height: 100%;
 }
+
 #game-page-content {
 	margin-left: 200px;
 	// border: 3px solid #000;
@@ -63,11 +77,13 @@ $gamePageMenuWidth: 200px;
 	width: calc(100% - $gamePageMenuWidth);
 	height: 100%;
 }
+
 #game-history-page {
 	text-align: center;
 	width: 100%;
 	height: 100%;
 }
+
 #game {
 	text-align: center;
 	display: flex;
@@ -79,15 +95,19 @@ $gamePageMenuWidth: 200px;
 	min-height: 400px;
 	min-width: 350px;
 }
+
 .game-button {
 	width: 130px;
 }
+
 #game-history-controls {
 	padding-bottom: 10px;
 }
+
 .game-history-button {
 	width: 80px;
 }
+
 .game-page-menu {
 	width: 180px;
 }
@@ -95,22 +115,27 @@ $gamePageMenuWidth: 200px;
 #game-list-page {
 	text-align: center;
 }
-.game-list-button{
+
+.game-list-button {
 	width: 100%;
 }
 
-.attention{
+.attention {
 	color: #FFA900 !important;
 }
-.myTurn{
-  color: #00ff00;
+
+.myTurn {
+	color: #00ff00;
 }
+
 #timer-table {
 	width: 300px;
 }
+
 #join-game-table {
 	width: 700px;
 }
+
 #records-table {
 	width: 700px;
 }
@@ -122,11 +147,11 @@ $gamePageMenuWidth: 200px;
 // }
 /* .form-wrapper, */
 /* .table-wrapper { */
-  /* max-width: 500px; */
-  /* margin: 0 auto; */
+/* max-width: 500px; */
+/* margin: 0 auto; */
 /* } */
 /* .table-wrapper { */
-  /* max-width: 700px; */
+/* max-width: 700px; */
 /* } */
 // .edit-link {
 //   padding: 7px 10px;
@@ -144,4 +169,3 @@ $gamePageMenuWidth: 200px;
 //   text-decoration: none;
 //   color: #ffffff;
 // }
-
