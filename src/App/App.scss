@@ -49,7 +49,7 @@ header {
 	height: $headerHeight;
 }
 
-.page-wrapper {
+main {
 	height: calc(100% - $headerHeight);
 	// border: 3px solid rgb(158, 110, 5);
 	padding: 0px;

@@ -12,9 +12,9 @@ function App() {
 					<Navigation />
 				</header>
 
-				<div className='page-wrapper'>
+				<main>
 					<RouteList />
-				</div>
+				</main>
 			</div>
 		</BrowserRouter>
 	)
