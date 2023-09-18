@@ -61,20 +61,10 @@ main {
 	// border: 3px solid rgb(158, 5, 5);
 }
 
-$gamePageMenuWidth: 200px;
-
-#game-page-menu {
-	width: $gamePageMenuWidth;
-	float: left;
-	// border: 3px solid rgb(255, 255, 255);
-	height: 100%;
-}
-
 #game-page-content {
-	margin-left: 200px;
 	// border: 3px solid #000;
 	line-height: 2em;
-	width: calc(100% - $gamePageMenuWidth);
+	width: 100%;
 	height: 100%;
 }
 
@@ -108,9 +98,6 @@ $gamePageMenuWidth: 200px;
 	width: 80px;
 }
 
-.game-page-menu {
-	width: 180px;
-}
 
 #game-list-page {
 	text-align: center;

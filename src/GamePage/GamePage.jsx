@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
 import { withAuthorization, withEmailVerification } from '../Session';
 import * as ROUTES from "../constants/routes";
@@ -40,109 +40,68 @@ function getNextGID(selectedGID, gidList) {
 };
 
 function GamePageBase() {
-	const navigate = useNavigate();
+	// Get game index
+	const [searchParams] = useSearchParams();
+	const [gameIndex, setGameIndex] = useState(0);
+	useEffect(() => {
+		const indexStr = searchParams.get("game");
+		setGameIndex(indexStr ? parseInt(indexStr) : 0);
+	}, [searchParams]);
+
+	// Register user listener
 	const firebaseListener = useFirebaseListenerContext();
-	const playAPI = usePlayAPIContext();
-	const [user, setUser] = useState({ play: {}, past: {} });
-	const [selectedGID, setSelectedGID] = useState(null);
-	const nextGID = useRef(null);
-	const [game, setGame] = useState(null);
-
-	// Mount/Unmount
+	const [userPlay, setUserPlay] = useState(null);
 	useEffect(() => {
-		const unregisterUserListener =
-			firebaseListener.registerUserListener((user) => {
-				if (Object.keys(user.play).length < 1) {
-					sessionStorage.removeItem('selectedGID');
-					navigate(ROUTES.GAME_LIST);
-				}
-				else
-					setUser(user);
-			});
-		return () => {
-			unregisterUserListener();
+		const handleUserUpdate = (user) => {
+			setUserPlay(user.play);
 		};
-	}, [firebaseListener, navigate]);
+		const unsubscribe = firebaseListener.registerUserListener(handleUserUpdate);
+		return unsubscribe;
+	}, [firebaseListener]);
 
-	// Select game from menu
-	const selectGID = useCallback(gid => {
-		if (gid) {
-			sessionStorage.setItem('selectedGID', gid);
-			setSelectedGID(gid);
-
-			const gids = Object.keys(user.play);
-			nextGID.current = getNextGID(gid, gids);
-
-			if (!user?.play[gid].visited) {
-				playAPI.visitGame(gid);
-				const newUserPlay = { ...user.play };
-				newUserPlay[gid].visited = true;
-				const newUser = { ...user, play: newUserPlay };
-				firebaseListener.setLocalUser(newUser);
-			}
-		}
-	}, [user, playAPI, firebaseListener]);
-
-	// Set selected gid on first load of gid list
+	// Redirect if user has no games, or game index is invalid
+	const navigate = useNavigate();
 	useEffect(() => {
-		if (!selectedGID) {
-			const previouslySelectedGID = sessionStorage.getItem('selectedGID');
-			const gids = Object.keys(user.play);
-			if (previouslySelectedGID && gids.includes(previouslySelectedGID))
-				selectGID(previouslySelectedGID);
-			else
-				selectGID(gids[0]);
-		}
-	}, [user.play, selectedGID, selectGID]);
-
-	// Go to next game when selected game not in user's game list
-	useEffect(() => {
-		if (selectedGID) {
-			const gids = Object.keys(user.play);
-			if (!gids.includes(selectedGID)) {
-				// Go to next game
-				if (gids.includes(nextGID.current))
-					selectGID(nextGID.current);
-				else
-					selectGID(gids[0]);
+		if (userPlay)
+			if (Object.keys(userPlay).length < 1 ||
+				gameIndex > Object.keys(userPlay).length - 1) {
+				navigate(ROUTES.GAME_LIST);
 			}
-		}
-	}, [user.play, selectedGID, selectGID]);
+	}, [userPlay, navigate]);
+
 
 	// Subscribe to selected game
+	const playAPI = usePlayAPIContext();
+	const [game, setGame] = useState(null);
 	useEffect(() => {
-		if (selectedGID) {
-			function handleGameUpdate(newGame) {
-				setGame({ ...newGame });
+		if (userPlay) {
+			const gids = Object.keys(userPlay);
+			if (gameIndex < gids.length) {
+				function handleGameUpdate(newGame) {
+					setGame({ ...newGame });
+				}
+				const gid = gids[gameIndex];
+				const unsubscribe = firebaseListener.registerGameListener(handleGameUpdate, gid);
+
+				if (!userPlay[gid].visited)
+					playAPI.visitGame(gid);
+
+				return unsubscribe;
 			}
-			const unsubscribe = firebaseListener.registerGameListener(handleGameUpdate, selectedGID);
-			return unsubscribe;
 		}
-	}, [firebaseListener, selectedGID]);
+	}, [firebaseListener, userPlay, gameIndex]);
 
 	// Render
-	if (!user || !selectedGID)
+	if (!game)
 		return <div style={{ textAlign: 'center' }}>Loading...</div>;
 	else {
 		return (
-			<div id='game-page'>
-				<div id='game-page-menu'>
-					<ToggleButtonGroup type='radio' vertical name='gameSelection' onChange={selectGID} defaultValue={selectedGID} className='game-page-menu'>
-						{Object.entries(user.play).map(([gid, userGame], i) =>
-							<ToggleButton id={`play-game-button-${i}`} key={i} value={gid}
-								variant='primary' size={selectedGID === gid ? 'lg' : 'sm'}>
-								Play {i}
-								{!userGame.visited && <MdFiberNew className='attention' size={iconSize} style={{ transform: 'translateY(-1px)' }} />}
-								{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} style={{ transform: 'translateY(-2px)' }} />}
-							</ToggleButton>
-						)}
-					</ToggleButtonGroup>
-				</div>
+			<section id='game-page'>
 				<div id='game-page-content'>
 					{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
 						: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
 				</div>
-			</div>
+			</section>
 		);
 	}
 }

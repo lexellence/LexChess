@@ -1,5 +1,5 @@
 import './Navigation.css';
-import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Nav, Navbar, Container } from "react-bootstrap";
 import { MdFiberNew } from 'react-icons/md';
@@ -7,11 +7,11 @@ import { FaChessPawn } from 'react-icons/fa';
 import { iconSize, iconSize2 } from '../iconSizes';
 
 import { AuthUserContext } from '../Session';
-import { withFirebase } from '../Firebase';
+import { useFirebaseContext } from '../Firebase';
 import { SignOutButton } from './SignOutButton';
 import * as ROUTES from '../constants/routes';
 import * as ROLES from '../constants/roles';
-import { withFirebaseListener } from '../FirebaseListener';
+import { useFirebaseListenerContext } from '../FirebaseListener';
 
 const navLinkClass = 'nav-link nav-menu-link';
 function getNavLinkStyle({ isActive }) {
@@ -38,80 +38,80 @@ function NavigationNonAuth() {
 	);
 }
 
-class NavigationAuthBase extends React.Component {
-	state = {
-		userRoles: {},
-		hasPlay: false,
-		allGamesVisited: true,
-		myTurn: false,
-	};
-	componentDidMount() {
+function NavigationAuth() {
+	// Register auth listener
+	const firebase = useFirebaseContext();
+	const [userRoles, setUserRoles] = useState({});
+	useEffect(() => {
 		const onSignIn = (authUser) =>
-			this.setState({ userRoles: authUser.roles });
+			setUserRoles(authUser.roles);
 		const onSignOut = () =>
-			this.setState({ userRoles: {} });
-		this.unregisterAuthListener = this.props.firebase.onAuthUserListener(onSignIn, onSignOut);
+			setUserRoles({});
+		return firebase.onAuthUserListener(onSignIn, onSignOut);
+	}, [firebase]);
 
+	// Register user listener
+	const firebaseListener = useFirebaseListenerContext();
+	const [userGameList, setUserGameList] = useState([]);
+	const [userHasPast, setUserHasPast] = useState(false);
+	useEffect(() => {
 		const handleUserUpdate = (user) => {
-			const playValues = Object.values(user.play);
+			setUserGameList(
+				Object.entries(user.play).map(
+					([gid, userGame]) => (
+						{
+							gid: gid,
+							myTurn: userGame.myTurn,
+							visited: userGame.visited
+						})
+				)
+			);
+			setUserHasPast(Object.keys(user.past).length > 0);
 
-			const hasPlay = playValues.length > 0;
-			const allGamesVisited = playValues.every(userGame => userGame.visited);
-			const myTurn = !playValues.every(userGame => !userGame.myTurn);
-
-			if (hasPlay !== this.state.hasPlay ||
-				allGamesVisited !== this.state.allGamesVisited ||
-				myTurn !== this.state.myTurn)
-				this.setState({ hasPlay, allGamesVisited, myTurn });
 		};
-		this.unregisterUserListener = this.props.firebaseListener.registerUserListener(handleUserUpdate);
-	};
-	componentWillUnmount = () => {
-		this.unregisterUserListener();
-		this.unregisterAuthListener();
-	};
-	render() {
-		return (
-			<Navbar bg="dark" variant="dark" className="unselectable" >
-				<Container>
-					<Navbar.Brand>
-						<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
-					</Navbar.Brand>
-					<Nav className="justify-content-end nav-menu">
-						{this.state.hasPlay &&
-							<Nav>
-								<NavLink to={ROUTES.PLAY} style={getNavLinkStyle} className={navLinkClass}>
-									Play
-									{!this.state.allGamesVisited && <MdFiberNew className='attention' size={iconSize} />}
-									{this.state.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
+		return firebaseListener.registerUserListener(handleUserUpdate);
+	}, [firebaseListener]);
+
+	return (
+		<Navbar bg="dark" variant="dark" className="unselectable" >
+			<Container>
+				<Navbar.Brand>
+					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
+				</Navbar.Brand>
+				<Nav className="justify-content-end nav-menu">
+					{userGameList.length > 0 &&
+						userGameList.map((userGame, i) =>
+							<Nav key={i}>
+								<NavLink to={ROUTES.PLAY + `?game=${i}`} style={getNavLinkStyle} className={navLinkClass}>
+									Play {i}
+									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
+									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
 								</NavLink>
 							</Nav>
-						}
-						<Nav>
-							<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
-						</Nav>
+						)
+					}
+					<Nav>
+						<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
+					</Nav>
+					{userHasPast &&
 						<Nav>
 							<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
 						</Nav>
-						<Nav>
-							<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
-						</Nav>
-						{!!this.state.userRoles[ROLES.ADMIN] && <Nav>
-							<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
-						</Nav>}
-						<Nav>
-							<SignOutButton />
-						</Nav>
+					}
+					<Nav>
+						<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
 					</Nav>
-				</Container >
-			</Navbar >
-		);
-	}
+					{!!userRoles[ROLES.ADMIN] && <Nav>
+						<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
+					</Nav>}
+					<Nav>
+						<SignOutButton />
+					</Nav>
+				</Nav>
+			</Container >
+		</Navbar >
+	);
 }
-const NavigationAuth =
-	withFirebaseListener(
-		withFirebase(
-			NavigationAuthBase));
 
 function Navigation() {
 	return (
