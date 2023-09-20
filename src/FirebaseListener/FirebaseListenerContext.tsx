@@ -9,12 +9,5 @@ type FirebaseListenerContextValue = {
 };
 const FirebaseListenerContext = React.createContext<FirebaseListenerContextValue | undefined>(undefined);
 
-function useFirebaseListenerContext() {
-	let context = React.useContext(FirebaseListenerContext);
-	if (context === undefined)
-		throw new Error('useFirebaseListenerContext must be used in a child component of FirebaseListener.Provider');
-	return context;
-}
-
 export type { FirebaseListenerContextValue };
-export { FirebaseListenerContext, useFirebaseListenerContext };
+export { FirebaseListenerContext };
