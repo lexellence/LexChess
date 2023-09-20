@@ -3,6 +3,7 @@ import { FirebaseListenerContext, FirebaseListenerContextValue } from './Firebas
 import { Firebase, withFirebase } from '../Firebase';
 import { ValueNotifier, OnUpdateFunc, UnregisterFunc } from './Notifier';
 import { dbGameToClientGame } from '../Game/dbGameToClientGame';
+import { ref, onValue, get, child } from "firebase/database";
 
 //+----------------------------------\------------------------
 //|	    FirebaseListenerProvider	 |
@@ -20,6 +21,9 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 	userNotifier: ValueNotifier = new ValueNotifier();
 	gameListNotifier: ValueNotifier = new ValueNotifier();
 	unregisterAuthListener = () => { };
+	unsubscribeGameListValue = () => { };
+	unsubscribeUserValue = () => { };
+	gameUnsubscriptionMap = new Map();
 
 	//+----------------------------------\------------------------
 	//|	  		 Mount/Unmount			 |
@@ -53,24 +57,23 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 	//|	  Start/Stop Firebase Listeners	 |
 	//\----------------------------------/------------------------
 	startUserListening = () => {
-		if (this.authUser?.uid)
-			this.props.firebase?.userRef(this.authUser.uid).on('value', (snapshot: any) => {
-				const user = snapshot.val();
-				this.handleUserUpdate(user);
-			});
+		this.unsubscribeUserValue = onValue(this.props.firebase.userRef(this.authUser.uid), (snapshot: any) => {
+			const user = snapshot.val();
+			this.handleUserUpdate(user);
+		});
 	}
 	stopUserListening = () => {
-		if (this.authUser?.uid)
-			this.props.firebase.userRef(this.authUser.uid).off();
+		this.unsubscribeUserValue();
 	}
 	startGameListListening = () => {
-		this.props.firebase.db.ref('gameList').on('value', (snapshot: any) => {
+		const gameListRef = ref(this.props.firebase.db, 'gameList');
+		this.unsubscribeGameListValue = onValue(gameListRef, (snapshot: any) => {
 			const gameList = snapshot.val();
 			this.handleGameListUpdate(gameList);
 		});
 	}
 	stopGameListListening = () => {
-		this.props.firebase.db.ref('gameList').off();
+		this.unsubscribeGameListValue();
 	}
 	startGameListening = (gid: string) => {
 		if (!gid)
@@ -78,20 +81,22 @@ class FirebaseListenerProviderBase extends React.Component<FirebaseListenerProvi
 
 		if (!this.gameListeningGIDs.includes(gid)) {
 			this.gameListeningGIDs.push(gid);
-			this.props.firebase.db.ref(`games/${gid}/status`).once('value', (snapshot: any) => {
+			const gameRef = ref(this.props.firebase.db, `games/${gid}`);
+			get(child(gameRef, 'status')).then((snapshot: any) => {
 				if (!snapshot.exists())
 					this.handleGameUpdate(gid, null);
 
-				this.props.firebase.db.ref(`games/${gid}`).on('value', (snapshot: any) => {
+				const unsubscribe = onValue(gameRef, (snapshot: any) => {
 					const game = snapshot.val();
 					this.handleGameUpdate(gid, game);
 				});
+				this.gameUnsubscriptionMap.set(gid, unsubscribe);
 			});
 		}
 	}
 	stopGameListening = (gid: string) => {
 		if (this.gameListeningGIDs.includes(gid)) {
-			this.props.firebase.db.ref(`games/${gid}`).off();
+			this.gameUnsubscriptionMap.get(gid)();
 			this.gameListeningGIDs = this.gameListeningGIDs.filter(element => element !== gid);
 		}
 	}

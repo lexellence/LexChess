@@ -4,17 +4,8 @@ import { useNavigate } from "react-router-dom";
 // import { Form, Button, Card, Alert } from "react-bootstrap";
 // import { useAuth } from "../contexts/AuthContext";
 
-import { withFirebase } from './Firebase';
+import { useFirebaseContext } from './Firebase';
 import * as ROUTES from './constants/routes';
-
-const INITIAL_STATE = {
-	email: '',
-	passwordOne: '',
-	passwordTwo: '',
-	displayName: '',
-	// isAdmin: false,
-	error: null
-};
 
 const ERROR_CODE_ACCOUNT_EXISTS = 'auth/email-already-in-use';
 const ERROR_MSG_ACCOUNT_EXISTS = `
@@ -23,23 +14,28 @@ const ERROR_MSG_ACCOUNT_EXISTS = `
 	If you think the account is already used from one of the social logins, try to sign in with one of them.
 	Afterward, associate your accounts on your personal account page.`;
 
-function SignUpFormBase({ firebase }) {
-	const [state, setState] = useState({ ...INITIAL_STATE });
+function SignUpForm() {
 	const navigate = useNavigate();
+	const firebase = useFirebaseContext();
 
-	function onSubmit(event) {
-		// const { email, passwordOne, displayName, isAdmin } = state;
-		const { email, passwordOne, displayName } = state;
+	const [email, setEmail] = useState('');
+	const [passwordOne, setPasswordOne] = useState('');
+	const [passwordTwo, setPasswordTwo] = useState('');
+	const [displayName, setDisplayName] = useState('');
+	const [errorMessage, setErrorMessage] = useState(null);
+
+	function onSubmit(e) {
 		// const roles = {};
-
 		// TODO: Where would isAdmin be set to true???
 		// if (isAdmin) {
 		// 	roles[ROLES.ADMIN] = ROLES.ADMIN;
-		// }d
+		// }
 
-		this.props.firebase
-			.doCreateUserWithEmailAndPassword(email, passwordOne)
-			.then(credential => credential.user.updateProfile({ displayName }))
+		// Prevent the browser from reloading the page
+		e.preventDefault();
+
+		firebase.doCreateUserWithEmailAndPassword(email, passwordOne)
+			// .then(credential => credential.user.updateProfile({ displayName }))
 			.then(() => firebase.doSendEmailVerification())
 			.then(() => {
 				navigate(ROUTES.GAME_LIST);
@@ -47,17 +43,9 @@ function SignUpFormBase({ firebase }) {
 			.catch(error => {
 				if (error.code === ERROR_CODE_ACCOUNT_EXISTS)
 					error.message = ERROR_MSG_ACCOUNT_EXISTS;
-				setState({ ...state, error });
+				setErrorMessage(error.message);
 			});
-
-		event.preventDefault();
 	}
-
-	function onChange(event) {
-		setState({ [event.target.name]: event.target.value });
-	}
-
-	const { email, passwordOne, passwordTwo, displayName, error } = state;
 
 	const isInvalid =
 		passwordOne !== passwordTwo ||
@@ -70,39 +58,36 @@ function SignUpFormBase({ firebase }) {
 			<input
 				name="email"
 				value={email}
-				onChange={onChange}
+				onChange={e => setEmail(e.target.value)}
 				type="text"
-				placeholder="Email Address"
+				placeholder="email"
 			/>
 			<input
 				name="passwordOne"
 				value={passwordOne}
-				onChange={onChange}
+				onChange={e => setPasswordOne(e.target.value)}
 				type="password"
-				placeholder="Password"
+				placeholder="password"
 			/>
 			<input
 				name="passwordTwo"
 				value={passwordTwo}
-				onChange={onChange}
+				onChange={e => setPasswordTwo(e.target.value)}
 				type="password"
-				placeholder="Confirm Password"
+				placeholder="confirm password"
 			/>
 			<input
 				name="displayName"
 				value={displayName}
-				onChange={onChange}
+				onChange={e => setDisplayName(e.target.value)}
 				type="text"
-				placeholder="Display Name"
+				placeholder="display name"
 			/>
 			<button disabled={isInvalid} type="submit">Sign Up</button>
-
-			{error && <p>{error.message}</p>}
+			{errorMessage && <p>{errorMessage}</p>}
 		</form>
 	);
 }
-
-const SignUpForm = withFirebase(SignUpFormBase);
 
 const SignUpPage = () => (
 	<>

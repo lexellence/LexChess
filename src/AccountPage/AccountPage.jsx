@@ -1,5 +1,5 @@
 import * as React from 'react';
-
+import { fetchSignInMethodsForEmail, linkWithPopup, linkWithCredential, unlink } from "firebase/auth";
 import {
 	AuthUserContext,
 	withAuthorization,
@@ -102,8 +102,7 @@ class LoginManagementBase extends React.Component {
 	}
 
 	fetchSignInMethods = () => {
-		this.props.firebase.auth
-			.fetchSignInMethodsForEmail(this.props.authUser.email)
+		fetchSignInMethodsForEmail(this.props.firebase.auth, this.props.authUser.email)
 			.then(activeSignInMethods =>
 				this.setState({ activeSignInMethods, error: null }),
 			)
@@ -111,8 +110,7 @@ class LoginManagementBase extends React.Component {
 	};
 
 	onSocialLoginLink = provider => {
-		this.props.firebase.auth.currentUser
-			.linkWithPopup(this.props.firebase[provider])
+		linkWithPopup(this.props.firebase.auth.currentUser, this.props.firebase[provider])
 			.then(this.fetchSignInMethods)
 			.catch(error => this.setState({ error }));
 	};
@@ -123,15 +121,13 @@ class LoginManagementBase extends React.Component {
 			password,
 		);
 
-		this.props.firebase.auth.currentUser
-			.linkAndRetrieveDataWithCredential(credential)
+		linkWithCredential(this.props.firebase.auth.currentUser, credential)
 			.then(this.fetchSignInMethods)
 			.catch(error => this.setState({ error }));
 	};
 
 	onUnlink = providerId => {
-		this.props.firebase.auth.currentUser
-			.unlink(providerId)
+		unlink(this.props.firebase.auth.currentUser, providerId)
 			.then(this.fetchSignInMethods)
 			.catch(error => this.setState({ error }));
 	};

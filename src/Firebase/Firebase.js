@@ -1,6 +1,17 @@
-import firebaseApp from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/database';
+// import firebaseApp from 'firebase/compat/app';
+// import 'firebase/compat/auth';
+// import 'firebase/compat/database';
+
+
+import { initializeApp } from 'firebase/app';
+import {
+	getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+	signInWithRedirect, EmailAuthProvider, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider,
+	sendPasswordResetEmail, sendEmailVerification, updatePassword, updateProfile, onAuthStateChanged
+} from "firebase/auth";
+import { getDatabase, ref, get, child } from "firebase/database";
+import * as ROUTES from '../constants/routes';
+
 // import * as ROLES from '../constants/roles';
 
 const config = {
@@ -15,66 +26,53 @@ const config = {
 
 class Firebase {
 	constructor() {
-		firebaseApp.initializeApp(config);
-
-		// Helper for Messages
-		this.serverValue = firebaseApp.database.ServerValue;
+		this.app = initializeApp(config);
 
 		// Firebase
-		this.auth = firebaseApp.auth();
-		this.db = firebaseApp.database();
+		this.auth = getAuth(this.app);
+		this.db = getDatabase(this.app);
 
 		// Sign In Method Providers
-		this.emailAuthProvider = firebaseApp.auth.EmailAuthProvider;
-		this.googleProvider = new firebaseApp.auth.GoogleAuthProvider();
-		this.facebookProvider = new firebaseApp.auth.FacebookAuthProvider();
-		this.twitterProvider = new firebaseApp.auth.TwitterAuthProvider();
+		this.emailAuthProvider = new EmailAuthProvider;
+		this.googleProvider = new GoogleAuthProvider();
+		this.facebookProvider = new FacebookAuthProvider();
+		this.twitterProvider = new TwitterAuthProvider();
 
 	}
 
 	// *** Auth API ***
 
-	doCreateUserWithEmailAndPassword = (email, password) =>
-		this.auth.createUserWithEmailAndPassword(email, password);
+	doCreateUserWithEmailAndPassword = (email, password) => createUserWithEmailAndPassword(this.auth, email, password);
 
-	doSignInWithEmailAndPassword = (email, password) =>
-		this.auth.signInWithEmailAndPassword(email, password);
+	doSignInWithEmailAndPassword = (email, password) => signInWithEmailAndPassword(this.auth, email, password);
 
-	doSignInWithGoogle = () =>
-		// this.auth.signInWithPopup(this.googleProvider);
-		this.auth.signInWithRedirect(this.googleProvider);
+	doSignInWithGoogle = () => signInWithRedirect(this.auth, this.googleProvider);
+	doSignInWithFacebook = () => signInWithRedirect(this.auth, this.facebookProvider);
+	doSignInWithTwitter = () => signInWithRedirect(this.auth, this.twitterProvider);
 
-	doSignInWithFacebook = () =>
-		// this.auth.signInWithPopup(this.facebookProvider);
-		this.auth.signInWithRedirect(this.facebookProvider);
+	doSignOut = () => signOut(this.auth);
 
-	doSignInWithTwitter = () =>
-		// this.auth.signInWithPopup(this.twitterProvider);
-		this.auth.signInWithRedirect(this.twitterProvider);
-
-	doSignOut = () => this.auth.signOut();
-
-	doPasswordReset = (email) => this.auth.sendPasswordResetEmail(email);
+	doPasswordReset = (email) => sendPasswordResetEmail(this.auth, email);
 
 	doSendEmailVerification = () => {
-		if (this.auth.currentUser)
-			return this.auth.currentUser.sendEmailVerification({
-				url: `https://${window.location.host}/game`
-			});
+		return sendEmailVerification(this.auth.currentUser,
+			{ url: `https://${window.location.host}${ROUTES.ACCOUNT}` });
 	};
 
 	doPasswordUpdate = (password) => {
-		if (this.auth.currentUser)
-			return this.auth.currentUser.updatePassword(password);
+		return updatePassword(this.auth.currentUser, password);
 	};
 	doDisplayNameUpdate = (displayName) => {
-		if (this.auth.currentUser)
-			return this.auth.currentUser.updateProfile({ displayName });
+		return updateProfile(this.auth.currentUser, { displayName });
 	};
+
+	// *** User API ***
+	userRef = uid => ref(this.db, `users/${uid}`);
+	userListRef = () => ref(this.db, 'users');
 
 	// *** Merge Auth and DB User API *** //
 	onAuthUserListener = (onSignIn, onSignOut) =>
-		this.auth.onAuthStateChanged(authUser => {
+		onAuthStateChanged(this.auth, authUser => {
 			if (!authUser) {
 				onSignOut();
 				return;
@@ -82,22 +80,18 @@ class Firebase {
 
 			// get roles from db; 
 			authUser.roles = {};
-			this.userRef(authUser.uid).child('roles').once('value')
-				.then(snapshot => {
-					if (snapshot.exists())
-						authUser.roles = snapshot.val();
-					onSignIn(authUser);
-					return;
-				});
+			get(child(this.userRef(authUser.uid), 'roles')).then(snapshot => {
+				if (snapshot.exists())
+					authUser.roles = snapshot.val();
+				onSignIn(authUser);
+				return;
+			});
 		});
 
-	// *** User API ***
-	userRef = uid => this.db.ref(`users/${uid}`);
-	userListRef = () => this.db.ref('users');
 
 	// *** Message API ***
-	messageRef = uid => this.db.ref(`messages/${uid}`);
-	messageListRef = () => this.db.ref('messages');
+	// messageRef = uid => this.db.ref(`messages/${uid}`);
+	// messageListRef = () => this.db.ref('messages');
 };
 
 export { Firebase };
