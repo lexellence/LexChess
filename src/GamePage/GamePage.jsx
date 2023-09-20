@@ -97,10 +97,8 @@ function GamePageBase() {
 	else {
 		return (
 			<section id='game-page'>
-				<div id='game-page-content'>
-					{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
-						: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
-				</div>
+				{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
+					: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
 			</section>
 		);
 	}

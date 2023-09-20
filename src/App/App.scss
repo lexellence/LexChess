@@ -50,6 +50,8 @@ header {
 }
 
 main {
+	text-align: center;
+	width: 100%;
 	height: calc(100% - $headerHeight);
 	// border: 3px solid rgb(158, 110, 5);
 	padding: 0px;
@@ -58,29 +60,22 @@ main {
 #game-page {
 	width: 100%;
 	height: 100%;
+	line-height: 2em;
 	// border: 3px solid rgb(158, 5, 5);
 }
 
-#game-page-content {
-	// border: 3px solid #000;
-	line-height: 2em;
-	width: 100%;
-	width: 100%;
-	height: 100%;
-}
-
-#game-history-page {
-	text-align: center;
-	width: 100%;
-	height: 100%;
-}
+// #game-history-page {
+// 	text-align: center;
+// 	width: 100%;
+// 	height: 100%;
+// }
 
 #game {
-	text-align: center;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
+	// text-align: center;
+	// display: flex;
+	// flex-direction: column;
+	// justify-content: start;
+	// align-items: center;
 	width: 100%;
 	height: 100%;
 	min-height: 400px;
@@ -100,9 +95,9 @@ main {
 }
 
 
-#game-list-page {
-	text-align: center;
-}
+// #game-list-page {
+// 	text-align: center;
+// }
 
 .game-list-button {
 	width: 100%;
