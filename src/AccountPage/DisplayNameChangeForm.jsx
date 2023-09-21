@@ -14,7 +14,10 @@ function DisplayNameChangeForm({ afterUpdate }) {
 		firebase.doDisplayNameUpdate(newDisplayName)
 			.then(() => setMessage("Display name has been updated."))
 			.then(() => afterUpdate())
-			.catch(error => setError(error));
+			.catch(error => {
+				setError(error);
+				setMessage(null);
+			});
 	}, [newDisplayName, firebase]);
 
 	const onChange = useCallback(event => setNewDisplayName(event.target.value), []);
