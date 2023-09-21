@@ -1,55 +1,42 @@
-import * as React from 'react';
+import { useState, useCallback } from 'react';
+import { useFirebaseContext } from '../Firebase';
+import { set } from 'firebase/database';
 
-import { withFirebase } from '../Firebase';
+function DisplayNameChangeForm({ afterUpdate }) {
+	const [newDisplayName, setNewDisplayName] = useState('');
+	const [error, setError] = useState(null);
+	const [message, setMessage] = useState('');
+	const firebase = useFirebaseContext();
 
-const INITIAL_STATE = {
-	displayName: '',
-	error: null,
-	message: '',
-};
-
-class DisplayNameChangeFormBase extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = { ...INITIAL_STATE };
-	}
-
-	onSubmit = event => {
-		const { displayName } = this.state;
-		this.props.firebase.doDisplayNameUpdate(displayName)
-			.then(() => {
-				this.setState({ ...INITIAL_STATE, message: "Updated." });
-			})
-			.catch(error => {
-				this.setState({ error });
-			});
+	const onSubmit = useCallback(event => {
 		event.preventDefault();
-	};
+		setMessage("Updating display name...");
+		setError(null);
+		firebase.doDisplayNameUpdate(newDisplayName)
+			.then(() => setMessage("Display name has been updated."))
+			.then(() => afterUpdate())
+			.catch(error => setError(error));
+	}, [newDisplayName, firebase]);
 
-	onChange = event => {
-		this.setState({ [event.target.name]: event.target.value });
-	};
-
-	render() {
-		const isInvalid = (this.state.displayName === '');
-
-		return (
-			<form onSubmit={this.onSubmit}>
+	const onChange = useCallback(event => setNewDisplayName(event.target.value), []);
+	const isInvalid = (newDisplayName === '');
+	return (
+		<>
+			<form onSubmit={onSubmit}>
 				<input
-					name="displayName"
-					value={this.state.displayName}
-					onChange={this.onChange}
+					name="newDisplayName"
+					value={newDisplayName}
+					onChange={onChange}
 					type="text"
 					placeholder="New Display Name" />
 				<button disabled={isInvalid} type="submit">
-					Change My Display Name
+					Update
 				</button>
-				{this.state.error && <span>{this.state.error.message}</span>}
-				{this.state.message && <span>{this.state.message}</span>}
+				{error && <section>{error.message}</section>}
+				{message && <section>{message}</section>}
 			</form>
-		);
-	}
+		</>
+	);
 }
-const DisplayNameChangeForm = withFirebase(DisplayNameChangeFormBase);
 
 export { DisplayNameChangeForm };

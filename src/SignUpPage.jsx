@@ -35,7 +35,8 @@ function SignUpForm() {
 		e.preventDefault();
 
 		firebase.doCreateUserWithEmailAndPassword(email, passwordOne)
-			// .then(credential => credential.user.updateProfile({ displayName }))
+			.then(credential => { })
+			.then(() => firebase.doDisplayNameUpdate(displayName))
 			.then(() => firebase.doSendEmailVerification())
 			.then(() => {
 				navigate(ROUTES.GAME_LIST);

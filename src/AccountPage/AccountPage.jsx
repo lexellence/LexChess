@@ -1,14 +1,17 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchSignInMethodsForEmail, linkWithPopup, linkWithCredential, unlink } from "firebase/auth";
+import Card from 'react-bootstrap/Card';
+import Stack from 'react-bootstrap/Stack';
 import {
-	AuthUserContext,
+	useAuthUserContext,
 	withAuthorization,
 	withEmailVerification,
 } from '../Session';
 import { withFirebase } from '../Firebase';
 import { DisplayNameChangeForm } from './DisplayNameChangeForm';
-import { PasswordForgetForm } from './PasswordForgetForm';
 import { PasswordChangeForm } from './PasswordChangeForm';
+import * as ROUTES from "../constants/routes";
 
 const SIGN_IN_METHODS = [
 	{ id: 'password', provider: null },
@@ -102,7 +105,7 @@ class LoginManagementBase extends React.Component {
 	}
 
 	fetchSignInMethods = () => {
-		fetchSignInMethodsForEmail(this.props.firebase.auth, this.props.authUser.email)
+		fetchSignInMethodsForEmail(this.props.firebase.auth, this.props.email)
 			.then(activeSignInMethods =>
 				this.setState({ activeSignInMethods, error: null }),
 			)
@@ -117,7 +120,7 @@ class LoginManagementBase extends React.Component {
 
 	onDefaultLoginLink = password => {
 		const credential = this.props.firebase.emailAuthProvider.credential(
-			this.props.authUser.email,
+			this.props.email,
 			password,
 		);
 
@@ -170,19 +173,33 @@ class LoginManagementBase extends React.Component {
 
 const LoginManagement = withFirebase(LoginManagementBase);
 
-const AccountPageBase = () => (
-	<AuthUserContext.Consumer>
-		{authUser => (
-			<div className='selectable'>
-				<h1>Account: {authUser.email}</h1>
-				<DisplayNameChangeForm />
-				<PasswordForgetForm />
+function AccountPageBase() {
+	const authUser = useAuthUserContext();
+	const navigate = useNavigate();
+	return (
+		<div className='selectable'>
+			<Stack gap={3} className="mx-auto">
+				<h1>My Account Info</h1>
+				<Card style={{ width: '24rem' }} className="mx-auto">
+					<Card.Header>Email</Card.Header>
+					<Card.Body>
+						<Card.Text>{authUser.email}</Card.Text>
+					</Card.Body>
+				</Card>
+				<Card style={{ width: '24rem' }} className="mx-auto">
+					<Card.Header>Display Name</Card.Header>
+					<Card.Body>
+						{authUser.displayName}
+						<DisplayNameChangeForm afterUpdate={() => navigate(ROUTES.ACCOUNT)} />
+					</Card.Body>
+				</Card>
 				<PasswordChangeForm />
-				<LoginManagement authUser={authUser} />
-			</div>
-		)}
-	</AuthUserContext.Consumer>
-);
+				<LoginManagement email={authUser.email} />
+			</Stack>
+		</div>
+	);
+}
+
 const AccountPage = withEmailVerification(
 	withAuthorization(authUser => Boolean(authUser))(
 		AccountPageBase));
