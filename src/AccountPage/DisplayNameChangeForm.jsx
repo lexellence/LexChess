@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useFirebaseContext } from '../Firebase';
-import { set } from 'firebase/database';
 
 function DisplayNameChangeForm({ afterUpdate }) {
 	const [newDisplayName, setNewDisplayName] = useState('');

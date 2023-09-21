@@ -189,8 +189,10 @@ function AccountPageBase() {
 				<Card style={{ width: '24rem' }} className="mx-auto">
 					<Card.Header>Display Name</Card.Header>
 					<Card.Body>
-						{authUser.displayName}
-						<DisplayNameChangeForm afterUpdate={() => navigate(ROUTES.ACCOUNT)} />
+						<Card.Text>{authUser.displayName}</Card.Text>
+						<Card.Text>
+							<DisplayNameChangeForm afterUpdate={() => navigate(ROUTES.ACCOUNT)} />
+						</Card.Text>
 					</Card.Body>
 				</Card>
 				<PasswordChangeForm />
