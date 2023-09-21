@@ -10,6 +10,7 @@ import {
 } from '../Session';
 import { withFirebase } from '../Firebase';
 import { DisplayNameChangeForm } from './DisplayNameChangeForm';
+import { EmailChangeForm } from './EmailChangeForm';
 import { PasswordChangeForm } from './PasswordChangeForm';
 import * as ROUTES from "../constants/routes";
 
@@ -184,6 +185,9 @@ function AccountPageBase() {
 					<Card.Header>Email</Card.Header>
 					<Card.Body>
 						<Card.Text>{authUser.email}</Card.Text>
+						<Card.Text>
+							<EmailChangeForm afterUpdate={() => navigate(ROUTES.ACCOUNT)} />
+						</Card.Text>
 					</Card.Body>
 				</Card>
 				<Card style={{ width: '24rem' }} className="mx-auto">

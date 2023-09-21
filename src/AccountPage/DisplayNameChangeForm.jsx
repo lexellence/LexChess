@@ -3,20 +3,20 @@ import { useFirebaseContext } from '../Firebase';
 
 function DisplayNameChangeForm({ afterUpdate }) {
 	const [newDisplayName, setNewDisplayName] = useState('');
-	const [error, setError] = useState(null);
-	const [message, setMessage] = useState('');
+	const [status, setStatus] = useState({ message: '', style: {} });
 	const firebase = useFirebaseContext();
 
 	const onSubmit = useCallback(event => {
 		event.preventDefault();
-		setMessage("Updating display name...");
-		setError(null);
+		setStatus({ message: "Updating display name...", class: "text-primary" });
 		firebase.doDisplayNameUpdate(newDisplayName)
-			.then(() => setMessage("Display name has been updated."))
+			.then(() => {
+				setNewDisplayName('');
+				setStatus({ message: "Display name has been updated.", class: "text-success" });
+			})
 			.then(() => afterUpdate())
 			.catch(error => {
-				setError(error);
-				setMessage(null);
+				setStatus({ message: error.message, class: "text-danger" });
 			});
 	}, [newDisplayName, firebase]);
 
@@ -34,9 +34,8 @@ function DisplayNameChangeForm({ afterUpdate }) {
 				<button disabled={isInvalid} type="submit">
 					Update
 				</button>
-				{error && <section>{error.message}</section>}
-				{message && <section>{message}</section>}
 			</form>
+			{status.message && <section className={status.class}>{status.message}</section>}
 		</>
 	);
 }

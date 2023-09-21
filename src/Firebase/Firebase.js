@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app';
 import {
 	getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
 	signInWithRedirect, EmailAuthProvider, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider,
-	sendPasswordResetEmail, sendEmailVerification, updatePassword, updateProfile, onAuthStateChanged
+	sendPasswordResetEmail, sendEmailVerification, updatePassword, updateProfile, updateEmail, onAuthStateChanged
 } from "firebase/auth";
 import { getDatabase, ref, get, child } from "firebase/database";
 import * as ROUTES from '../constants/routes';
@@ -56,7 +56,7 @@ class Firebase {
 
 	doSendEmailVerification = () => {
 		return sendEmailVerification(this.auth.currentUser,
-			{ url: `https://${window.location.host}${ROUTES.ACCOUNT}` });
+			{ url: `https://${window.location.host}${ROUTES.GAME_LIST}` });
 	};
 
 	doPasswordUpdate = (password) => {
@@ -64,6 +64,9 @@ class Firebase {
 	};
 	doDisplayNameUpdate = (displayName) => {
 		return updateProfile(this.auth.currentUser, { displayName });
+	};
+	doEmailUpdate = (email) => {
+		return updateEmail(this.auth.currentUser, email);
 	};
 
 	// *** User API ***
