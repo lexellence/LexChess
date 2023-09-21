@@ -36,7 +36,8 @@ function EmailChangeForm({ afterUpdate }) {
 					value={newEmail}
 					onChange={onChange}
 					type="text"
-					placeholder="New Email" />
+					placeholder="New Email"
+					maxlength="254" />
 				<button disabled={isInvalid} type="submit">
 					Update
 				</button>

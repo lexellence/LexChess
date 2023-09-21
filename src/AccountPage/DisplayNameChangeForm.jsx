@@ -30,7 +30,8 @@ function DisplayNameChangeForm({ afterUpdate }) {
 					value={newDisplayName}
 					onChange={onChange}
 					type="text"
-					placeholder="New Display Name" />
+					placeholder="New Display Name"
+					maxlength="36" />
 				<button disabled={isInvalid} type="submit">
 					Update
 				</button>
