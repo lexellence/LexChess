@@ -4,6 +4,10 @@ import * as ROUTES from "../constants/routes";
 import { JoinGameList } from './JoinGameList';
 import { AuthUserContext } from '../Session';
 import { GameCreator } from './GameCreator';
+import {
+	withAuthorization,
+	withEmailVerification,
+} from '../Session';
 
 function GameListPageNonAuth() {
 	return (
@@ -23,7 +27,7 @@ function GameListPageAuth() {
 		</>
 	);
 };
-function GameListPage() {
+function GameListPageBase() {
 	return (
 		<div id='game-list-page'>
 			<AuthUserContext.Consumer>
@@ -32,5 +36,9 @@ function GameListPage() {
 		</div>
 	);
 }
+
+const GameListPage = withEmailVerification(
+	withAuthorization(authUser => Boolean(authUser))(
+		GameListPageBase));
 
 export { GameListPage };
