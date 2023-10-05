@@ -6,7 +6,7 @@
 import { initializeApp } from 'firebase/app';
 import {
 	getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
-	signInWithRedirect, EmailAuthProvider, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider,
+	signInWithPopup, EmailAuthProvider, GoogleAuthProvider, FacebookAuthProvider, TwitterAuthProvider,
 	sendPasswordResetEmail, sendEmailVerification, updatePassword, updateProfile, updateEmail, onAuthStateChanged
 } from "firebase/auth";
 import { getDatabase, ref, get, child } from "firebase/database";
@@ -46,9 +46,9 @@ class Firebase {
 
 	doSignInWithEmailAndPassword = (email, password) => signInWithEmailAndPassword(this.auth, email, password);
 
-	doSignInWithGoogle = () => signInWithRedirect(this.auth, this.googleProvider);
-	doSignInWithFacebook = () => signInWithRedirect(this.auth, this.facebookProvider);
-	doSignInWithTwitter = () => signInWithRedirect(this.auth, this.twitterProvider);
+	doSignInWithGoogle = () => signInWithPopup(this.auth, this.googleProvider);
+	doSignInWithFacebook = () => signInWithPopup(this.auth, this.facebookProvider);
+	doSignInWithTwitter = () => signInWithPopup(this.auth, this.twitterProvider);
 
 	doSignOut = () => signOut(this.auth);
 
