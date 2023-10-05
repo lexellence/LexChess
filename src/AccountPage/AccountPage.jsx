@@ -184,18 +184,24 @@ function AccountPageBase() {
 	const [showEmailChangeForm, setShowEmailChangeForm] = useState(false);
 	const toggleShowEmailChangeForm = useCallback(() => {
 		setShowEmailChangeForm(show => !show);
-	}, [showEmailChangeForm]);
+	}, [setShowEmailChangeForm]);
 
 	// Toggle showing display name change form
 	const [showDisplayNameChangeForm, setShowDisplayNameChangeForm] = useState(false);
 	const toggleShowDisplayNameForm = useCallback(() => {
 		setShowDisplayNameChangeForm(show => !show);
-	}, [showDisplayNameChangeForm]);
+	}, [setShowDisplayNameChangeForm]);
+
+	// Toggle showing password change form
+	const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
+	const toggleShowPasswordForm = useCallback(() => {
+		setShowPasswordChangeForm(show => !show);
+	}, [setShowPasswordChangeForm]);
 
 	// Render
 	return (
 		<div className='selectable'>
-			<h1>My Account Info</h1>
+			<h1>My Account</h1>
 			<Stack gap={3} className="mx-auto text-start">
 				<Card style={{ width: '20rem' }} className="mx-auto">
 					<Card.Header>Email</Card.Header>
@@ -227,10 +233,23 @@ function AccountPageBase() {
 								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
 								onCancel={toggleShowDisplayNameForm} />
 						}
-
 					</Card.Body>
 				</Card>
-				<PasswordChangeForm />
+				<Card style={{ width: '20rem' }} className="mx-auto">
+					<Card.Header>Password</Card.Header>
+					<Card.Body>
+						{!showPasswordChangeForm &&
+							<Button variant="primary" onClick={toggleShowPasswordForm}>
+								Change
+							</Button>
+						}
+						{showPasswordChangeForm &&
+							<PasswordChangeForm
+								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
+								onCancel={toggleShowPasswordForm} />
+						}
+					</Card.Body>
+				</Card>
 				<LoginManagement email={authUser.email} />
 			</Stack>
 		</div>
