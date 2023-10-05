@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 
+import { Stack } from 'react-bootstrap';
 // import { Form, Button, Card, Alert } from "react-bootstrap";
 // import { useAuth } from "../contexts/AuthContext";
 
 import { useFirebaseContext } from './Firebase';
 import * as ROUTES from './constants/routes';
+import * as LIMITS from './constants/charlimits';
 
 const ERROR_CODE_ACCOUNT_EXISTS = 'auth/email-already-in-use';
 const ERROR_MSG_ACCOUNT_EXISTS = `
@@ -56,36 +58,41 @@ function SignUpForm() {
 
 	return (
 		<form onSubmit={onSubmit}>
-			<input
-				name="email"
-				value={email}
-				onChange={e => setEmail(e.target.value)}
-				type="text"
-				placeholder="email"
-			/>
-			<input
-				name="passwordOne"
-				value={passwordOne}
-				onChange={e => setPasswordOne(e.target.value)}
-				type="password"
-				placeholder="password"
-			/>
-			<input
-				name="passwordTwo"
-				value={passwordTwo}
-				onChange={e => setPasswordTwo(e.target.value)}
-				type="password"
-				placeholder="confirm password"
-			/>
-			<input
-				name="displayName"
-				value={displayName}
-				onChange={e => setDisplayName(e.target.value)}
-				type="text"
-				placeholder="display name"
-			/>
-			<button disabled={isInvalid} type="submit">Sign Up</button>
-			{errorMessage && <p>{errorMessage}</p>}
+			<Stack gap={3} className="mx-auto">
+
+				<input
+					name="email"
+					value={email}
+					onChange={e => setEmail(e.target.value)}
+					type="text"
+					placeholder="email"
+					maxlength={LIMITS.MAX_CHARS_EMAIL}
+				/>
+				<input
+					name="passwordOne"
+					value={passwordOne}
+					onChange={e => setPasswordOne(e.target.value)}
+					type="password"
+					placeholder="password"
+				/>
+				<input
+					name="passwordTwo"
+					value={passwordTwo}
+					onChange={e => setPasswordTwo(e.target.value)}
+					type="password"
+					placeholder="confirm password"
+				/>
+				<input
+					name="displayName"
+					value={displayName}
+					onChange={e => setDisplayName(e.target.value)}
+					type="text"
+					placeholder="display name"
+					maxlength={LIMITS.MAX_CHARS_DISPLAY_NAME}
+				/>
+				<button disabled={isInvalid} type="submit">Sign Up</button>
+				{errorMessage && <p>{errorMessage}</p>}
+			</Stack>
 		</form>
 	);
 }

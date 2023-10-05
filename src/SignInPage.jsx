@@ -48,7 +48,7 @@ function SignInFormBase({ firebase }) {
 				placeholder="Password" />
 			<button disabled={isInvalid} type="submit">Sign-in</button>
 
-			{state.error && <p>{state.error.message}</p>}
+			{state.error && <p className="text-danger">{state.error.message}</p>}
 		</form>
 	);
 }
@@ -74,7 +74,7 @@ function SignInSocialMedia({ name, doSignIn, disabled }) {
 	return (
 		<form onSubmit={onSubmit}>
 			<button type='submit' disabled={disabled}>Sign In with {name}</button> {disabled && '(coming soon)'}
-			{error && <p>{error.message}</p>}
+			{error && <p className="text-danger">{error.message}</p>}
 		</form>
 	);
 }
