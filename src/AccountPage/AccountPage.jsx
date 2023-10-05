@@ -4,6 +4,9 @@ import { fetchSignInMethodsForEmail, linkWithPopup, linkWithCredential, unlink }
 import Card from 'react-bootstrap/Card';
 import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import {
 	useAuthUserContext,
 	withAuthorization,
@@ -15,83 +18,84 @@ import { EmailChangeForm } from './EmailChangeForm';
 import { PasswordChangeForm } from './PasswordChangeForm';
 
 const SIGN_IN_METHODS = [
-	{ id: 'password', provider: null },
-	{ id: 'google.com', provider: 'googleProvider' },
-	{ id: 'facebook.com', provider: 'facebookProvider' },
-	{ id: 'twitter.com', provider: 'twitterProvider' }];
+	{ id: 'password', provider: null, comingSoon: false },
+	{ id: 'google.com', provider: 'googleProvider', comingSoon: false },
+	{ id: 'facebook.com', provider: 'facebookProvider', comingSoon: true },
+	{ id: 'twitter.com', provider: 'twitterProvider', comingSoon: true }];
 
 const SocialLoginToggle = ({
 	onlyOneLeft,
 	isEnabled,
 	signInMethod,
 	onLink,
-	onUnlink,
+	onUnlink
 }) =>
 	isEnabled ?
-		<button
+		<Button className="mb-1"
 			type="button"
 			onClick={() => onUnlink(signInMethod.id)}
 			disabled={onlyOneLeft}>
 			Deactivate {signInMethod.id}
-		</button>
+		</Button>
 		:
-		<button
+		<Button className="mb-1"
 			type="button"
-			onClick={() => onLink(signInMethod.provider)}>
+			onClick={() => onLink(signInMethod.provider)}
+			disabled={signInMethod.comingSoon}>
 			Link {signInMethod.id}
-		</button>;
+		</Button>;
 
-class DefaultLoginToggle extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = { passwordOne: '', passwordTwo: '' };
-	}
+// class DefaultLoginToggle extends React.Component {
+// 	constructor(props) {
+// 		super(props);
+// 		this.state = { passwordOne: '', passwordTwo: '' };
+// 	}
 
-	onSubmit = event => {
-		event.preventDefault();
+// 	onSubmit = event => {
+// 		event.preventDefault();
 
-		this.props.onLink(this.state.passwordOne);
-		this.setState({ passwordOne: '', passwordTwo: '' });
-	};
+// 		this.props.onLink(this.state.passwordOne);
+// 		this.setState({ passwordOne: '', passwordTwo: '' });
+// 	};
 
-	onChange = event => {
-		this.setState({ [event.target.name]: event.target.value });
-	};
+// 	onChange = event => {
+// 		this.setState({ [event.target.name]: event.target.value });
+// 	};
 
-	render() {
-		const { onlyOneLeft, isEnabled, signInMethod, onUnlink } = this.props;
-		const { passwordOne, passwordTwo } = this.state;
-		const isInvalid =
-			passwordOne !== passwordTwo ||
-			passwordOne === '';
+// 	render() {
+// 		const { onlyOneLeft, isEnabled, signInMethod, onUnlink } = this.props;
+// 		const { passwordOne, passwordTwo } = this.state;
+// 		const isInvalid =
+// 			passwordOne !== passwordTwo ||
+// 			passwordOne === '';
 
-		return isEnabled ?
-			<button
-				type="button"
-				onClick={() => onUnlink(signInMethod.id)}
-				disabled={onlyOneLeft}>
-				Deactivate {signInMethod.id}
-			</button>
-			:
-			<form onSubmit={this.onSubmit}>
-				<input
-					name="passwordOne"
-					value={passwordOne}
-					onChange={this.onChange}
-					type="password"
-					placeholder="New Password" />
-				<input
-					name="passwordTwo"
-					value={passwordTwo}
-					onChange={this.onChange}
-					type="password"
-					placeholder="Confirm New Password" />
-				<button disabled={isInvalid} type="submit">
-					Link {signInMethod.id}
-				</button>
-			</form>;
-	}
-}
+// 		return isEnabled ?
+// 			<button className="mb-1"
+// 				type="button"
+// 				onClick={() => onUnlink(signInMethod.id)}
+// 				disabled={onlyOneLeft}>
+// 				Deactivate {signInMethod.id}
+// 			</button>
+// 			:
+// 			<form className="mb-1" onSubmit={this.onSubmit}>
+// 				<input className="mb-1"
+// 					name="passwordOne"
+// 					value={passwordOne}
+// 					onChange={this.onChange}
+// 					type="password"
+// 					placeholder="New Password" />
+// 				<input className="mb-1"
+// 					name="passwordTwo"
+// 					value={passwordTwo}
+// 					onChange={this.onChange}
+// 					type="password"
+// 					placeholder="Confirm New Password" />
+// 				<button className="mb-1" disabled={isInvalid} type="submit">
+// 					Link {signInMethod.id}
+// 				</button>
+// 			</form>;
+// 	}
+// }
 
 class LoginManagementBase extends React.Component {
 	constructor(props) {
@@ -99,6 +103,7 @@ class LoginManagementBase extends React.Component {
 		this.state = {
 			activeSignInMethods: [],
 			error: null,
+			hideAll: false
 		};
 	}
 	componentDidMount() {
@@ -107,10 +112,10 @@ class LoginManagementBase extends React.Component {
 
 	fetchSignInMethods = () => {
 		fetchSignInMethodsForEmail(this.props.firebase.auth, this.props.email)
-			.then(activeSignInMethods =>
-				this.setState({ activeSignInMethods, error: null }),
-			)
-			.catch(error => this.setState({ error }));
+			.then(activeSignInMethods => this.setState({ activeSignInMethods, error: null, hideAll: false }))
+			.catch(error => {
+				this.setState({ error, hideAll: true });
+			});
 	};
 
 	onSocialLoginLink = provider => {
@@ -138,37 +143,46 @@ class LoginManagementBase extends React.Component {
 
 	render() {
 		const { activeSignInMethods, error } = this.state;
-		return (
-			<React.Fragment>
-				Sign In Methods:
-				<ul>
+		if (this.state.hideAll)
+			return <>{error && error.message}</>;
+		else
+			return (
+				<>
 					{SIGN_IN_METHODS.map(signInMethod => {
 						const onlyOneLeft = activeSignInMethods.length === 1;
 						const isEnabled = activeSignInMethods.includes(signInMethod.id);
 						return (
-							<li key={signInMethod.id}>
+							<div key={signInMethod.id}>
 								{signInMethod.id === 'password' ?
-									<DefaultLoginToggle
-										onlyOneLeft={onlyOneLeft}
-										isEnabled={isEnabled}
-										signInMethod={signInMethod}
-										onLink={this.onDefaultLoginLink}
-										onUnlink={this.onUnlink} />
+									// <DefaultLoginToggle
+									// 	onlyOneLeft={onlyOneLeft}
+									// 	isEnabled={isEnabled}
+									// 	signInMethod={signInMethod}
+									// 	onLink={this.onDefaultLoginLink}
+									// 	onUnlink={this.onUnlink} />
+									null
 									:
-									<SocialLoginToggle
-										onlyOneLeft={onlyOneLeft}
-										isEnabled={isEnabled}
-										signInMethod={signInMethod}
-										onLink={this.onSocialLoginLink}
-										onUnlink={this.onUnlink} />
+									<div style={{ display: "block" }} >
+										<SocialLoginToggle
+											onlyOneLeft={onlyOneLeft}
+											isEnabled={isEnabled}
+											signInMethod={signInMethod}
+											onLink={this.onSocialLoginLink}
+											onUnlink={this.onUnlink} />
+										{signInMethod.comingSoon &&
+											"(coming soon)"
+										}
+										{(!signInMethod.comingSoon && onlyOneLeft) &&
+											"(no other method available)"
+										}
+									</div >
 								}
-							</li>
+							</div>
 						);
 					})}
-				</ul>
-				{error && error.message}
-			</React.Fragment>
-		);
+					{error && error.message}
+				</>
+			);
 	}
 }
 
@@ -178,32 +192,57 @@ function AccountPageBase() {
 	const authUser = useAuthUserContext();
 
 	return (
-		<div className='selectable'>
+		// <span style={{ maxWidth: "500px" }} className='selectable mx-auto'>
+		<div className="selectable">
 			<h1>My Account</h1>
-			<Stack gap={3} className="mx-auto text-start">
-				<Card style={{ width: '20rem' }} className="mx-auto">
-					<Card.Header>Email</Card.Header>
-					<Card.Body>
-						<Card.Text>{authUser.email}</Card.Text>
-						<EmailChangeForm />
-					</Card.Body>
-				</Card>
-				<Card style={{ width: '20rem' }} className="mx-auto">
-					<Card.Header>Display Name</Card.Header>
-					<Card.Body>
-						<Card.Text>{authUser.displayName}</Card.Text>
-						<DisplayNameChangeForm />
-					</Card.Body>
-				</Card>
-				<Card style={{ width: '20rem' }} className="mx-auto">
-					<Card.Header>Password</Card.Header>
-					<Card.Body>
-						<PasswordChangeForm />
-					</Card.Body>
-				</Card>
-				<LoginManagement email={authUser.email} />
-			</Stack>
+			{/* <Stack gap={3} className="mx-auto text-start"> */}
+			<Container style={{ maxWidth: "800px" }} className="text-start">
+				<Row>
+					<Col className="mx-auto">
+						{/* <Card style={{ width: '20rem' }} className="mx-auto"> */}
+						<Card style={{ width: '20rem' }} className="mb-4" border="primary">
+							<Card.Header>Email</Card.Header>
+							<Card.Body>
+								<Card.Text>{authUser.email}</Card.Text>
+								<EmailChangeForm />
+							</Card.Body>
+						</Card>
+					</Col>
+					<Col>
+						{/* <Card style={{ width: '20rem' }} className="mx-auto"> */}
+						<Card style={{ width: '20rem' }} className="mb-4" border="primary">
+							<Card.Header>Display Name</Card.Header>
+							<Card.Body>
+								<Card.Text>{authUser.displayName}</Card.Text>
+								<DisplayNameChangeForm />
+							</Card.Body>
+						</Card>
+					</Col>
+				</Row>
+				<Row>
+					<Col>
+						{/* <Card style={{ width: '20rem' }} className="mx-auto"> */}
+						<Card style={{ width: '20rem' }} className="mb-4" border="primary">
+							<Card.Header>Password</Card.Header>
+							<Card.Body>
+								<PasswordChangeForm />
+							</Card.Body>
+						</Card>
+					</Col>
+					<Col>
+						{/* <Card style={{ width: '20rem' }} className="mx-auto"> */}
+						<Card style={{ width: '26rem' }} className="mb-4" border="primary">
+							<Card.Header>Social Sign In Methods</Card.Header>
+							<Card.Body>
+								<LoginManagement email={authUser.email} />
+							</Card.Body>
+						</Card>
+					</Col>
+				</Row>
+				{/* </Stack> */}
+			</Container>
 		</div>
+		//  </span>
 	);
 }
 
