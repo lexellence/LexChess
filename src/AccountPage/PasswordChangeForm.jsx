@@ -7,10 +7,13 @@ import * as ROUTES from "../constants/routes";
 
 const requiresRecentLoginErrorCode = "auth/requires-recent-login";
 const requiresRecentLoginErrorMessage = <>Recent authentication required.<br />Sign out and sign back in, then try again.</>;
+// const passwordTooShortErrorCode = "auth/weak-password";
+// const passwordTooShortErrorMessage = <>Password must be at least 6 characters.</>;
 
 function PasswordChangeForm() {
 	const [password1, setPassword1] = useState('');
 	const [password2, setPassword2] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
 	const [status, setStatus] = useState({ message: '', style: {} });
 	const [showForm, setShowForm] = useState(false);
 	const firebase = useFirebaseContext();
@@ -28,6 +31,8 @@ function PasswordChangeForm() {
 			.catch(error => {
 				if (error.code === requiresRecentLoginErrorCode)
 					setStatus({ message: requiresRecentLoginErrorMessage, class: "text-danger" });
+				// else if (error.code === passwordTooShortErrorCode)
+				// 	setStatus({ message: passwordTooShortErrorMessage, class: "text-danger" });
 				else
 					setStatus({ message: error.message, class: "text-danger" });
 			});
@@ -35,7 +40,13 @@ function PasswordChangeForm() {
 
 	const handleChange1 = useCallback(event => setPassword1(event.target.value), []);
 	const handleChange2 = useCallback(event => setPassword2(event.target.value), []);
-	const isValid = (password1 === password2) && password1 != '';
+	const handleSwitch = useCallback(event => {
+		setShowPassword(event.target.checked);
+	}, []);
+
+	let isValid = password1 != '';
+	if (!showPassword && isValid)
+		isValid = password1 === password2;
 
 	return (
 		<>
@@ -46,21 +57,27 @@ function PasswordChangeForm() {
 			}
 			{showForm &&
 				<Form className="mx-auto" onSubmit={handleSubmit}>
-					<Form.Group className="mb-3" controlId="accountPassword1">
-						<Form.Control type="password" placeholder="new password" name="password1"
+					<Form.Check className="mb-1" type="switch" id="showPasswordSwitch"
+						label="Show Password" onChange={handleSwitch} />
+					<Form.Group className="mb-1" controlId="accountPassword1">
+						<Form.Control type={showPassword ? "text" : "password"} placeholder="new password" name="password1"
 							onChange={handleChange1} />
 					</Form.Group>
-					<Form.Group className="mb-3" controlId="accountPassword2">
-						<Form.Control type="password" placeholder="confirm new password" name="password2"
-							onChange={handleChange2} />
-					</Form.Group>
-					<Button variant="primary" type="button" onClick={() => setShowForm(false)}>
-						Cancel
-					</Button>
-					<Button variant="primary" type="submit" disabled={!isValid}>
-						Update
-					</Button>
-				</Form >
+					{!showPassword &&
+						<Form.Group className="mb-1" controlId="accountPassword2">
+							<Form.Control type="password" placeholder="confirm new password" name="password2"
+								onChange={handleChange2} defaultValue={password2} />
+						</Form.Group>
+					}
+					<div className="mt-3">
+						<Button variant="primary" type="button" onClick={() => setShowForm(false)}>
+							Cancel
+						</Button>
+						<Button variant="primary" type="submit" disabled={!isValid}>
+							Update
+						</Button>
+					</div>
+				</Form>
 			}
 			{status.message && <section className={status.class}>{status.message}</section>}
 		</>
