@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { fetchSignInMethodsForEmail, linkWithPopup, linkWithCredential, unlink } from "firebase/auth";
 import Card from 'react-bootstrap/Card';
 import Stack from 'react-bootstrap/Stack';
@@ -14,7 +13,6 @@ import { withFirebase } from '../Firebase';
 import { DisplayNameChangeForm } from './DisplayNameChangeForm';
 import { EmailChangeForm } from './EmailChangeForm';
 import { PasswordChangeForm } from './PasswordChangeForm';
-import * as ROUTES from "../constants/routes";
 
 const SIGN_IN_METHODS = [
 	{ id: 'password', provider: null },
@@ -178,27 +176,7 @@ const LoginManagement = withFirebase(LoginManagementBase);
 
 function AccountPageBase() {
 	const authUser = useAuthUserContext();
-	const navigate = useNavigate();
 
-	// Toggle showing email change form
-	const [showEmailChangeForm, setShowEmailChangeForm] = useState(false);
-	const toggleShowEmailChangeForm = useCallback(() => {
-		setShowEmailChangeForm(show => !show);
-	}, [setShowEmailChangeForm]);
-
-	// Toggle showing display name change form
-	const [showDisplayNameChangeForm, setShowDisplayNameChangeForm] = useState(false);
-	const toggleShowDisplayNameForm = useCallback(() => {
-		setShowDisplayNameChangeForm(show => !show);
-	}, [setShowDisplayNameChangeForm]);
-
-	// Toggle showing password change form
-	const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
-	const toggleShowPasswordForm = useCallback(() => {
-		setShowPasswordChangeForm(show => !show);
-	}, [setShowPasswordChangeForm]);
-
-	// Render
 	return (
 		<div className='selectable'>
 			<h1>My Account</h1>
@@ -207,47 +185,20 @@ function AccountPageBase() {
 					<Card.Header>Email</Card.Header>
 					<Card.Body>
 						<Card.Text>{authUser.email}</Card.Text>
-						{!showEmailChangeForm &&
-							<Button variant="primary" onClick={toggleShowEmailChangeForm}>
-								Change
-							</Button>
-						}
-						{showEmailChangeForm &&
-							<EmailChangeForm
-								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
-								onCancel={toggleShowEmailChangeForm} />
-						}
+						<EmailChangeForm />
 					</Card.Body>
 				</Card>
 				<Card style={{ width: '20rem' }} className="mx-auto">
 					<Card.Header>Display Name</Card.Header>
 					<Card.Body>
 						<Card.Text>{authUser.displayName}</Card.Text>
-						{!showDisplayNameChangeForm &&
-							<Button variant="primary" onClick={toggleShowDisplayNameForm}>
-								Change
-							</Button>
-						}
-						{showDisplayNameChangeForm &&
-							<DisplayNameChangeForm
-								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
-								onCancel={toggleShowDisplayNameForm} />
-						}
+						<DisplayNameChangeForm />
 					</Card.Body>
 				</Card>
 				<Card style={{ width: '20rem' }} className="mx-auto">
 					<Card.Header>Password</Card.Header>
 					<Card.Body>
-						{!showPasswordChangeForm &&
-							<Button variant="primary" onClick={toggleShowPasswordForm}>
-								Change
-							</Button>
-						}
-						{showPasswordChangeForm &&
-							<PasswordChangeForm
-								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
-								onCancel={toggleShowPasswordForm} />
-						}
+						<PasswordChangeForm />
 					</Card.Body>
 				</Card>
 				<LoginManagement email={authUser.email} />
