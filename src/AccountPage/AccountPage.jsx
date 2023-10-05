@@ -1,8 +1,10 @@
 import * as React from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchSignInMethodsForEmail, linkWithPopup, linkWithCredential, unlink } from "firebase/auth";
 import Card from 'react-bootstrap/Card';
 import Stack from 'react-bootstrap/Stack';
+import Button from 'react-bootstrap/Button';
 import {
 	useAuthUserContext,
 	withAuthorization,
@@ -177,26 +179,55 @@ const LoginManagement = withFirebase(LoginManagementBase);
 function AccountPageBase() {
 	const authUser = useAuthUserContext();
 	const navigate = useNavigate();
+
+	// Toggle showing email change form
+	const [showEmailChangeForm, setShowEmailChangeForm] = useState(false);
+	const toggleShowEmailChangeForm = useCallback(() => {
+		setShowEmailChangeForm(show => !show);
+	}, [showEmailChangeForm]);
+
+	// Toggle showing display name change form
+	const [showDisplayNameChangeForm, setShowDisplayNameChangeForm] = useState(false);
+	const toggleShowDisplayNameForm = useCallback(() => {
+		setShowDisplayNameChangeForm(show => !show);
+	}, [showDisplayNameChangeForm]);
+
+	// Render
 	return (
 		<div className='selectable'>
-			<Stack gap={3} className="mx-auto">
-				<h1>My Account Info</h1>
-				<Card style={{ width: '24rem' }} className="mx-auto">
+			<h1>My Account Info</h1>
+			<Stack gap={3} className="mx-auto text-start">
+				<Card style={{ width: '20rem' }} className="mx-auto">
 					<Card.Header>Email</Card.Header>
 					<Card.Body>
 						<Card.Text>{authUser.email}</Card.Text>
-						<Card.Text>
-							<EmailChangeForm afterUpdate={() => navigate(ROUTES.ACCOUNT)} />
-						</Card.Text>
+						{!showEmailChangeForm &&
+							<Button variant="primary" onClick={toggleShowEmailChangeForm}>
+								Change
+							</Button>
+						}
+						{showEmailChangeForm &&
+							<EmailChangeForm
+								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
+								onCancel={toggleShowEmailChangeForm} />
+						}
 					</Card.Body>
 				</Card>
-				<Card style={{ width: '24rem' }} className="mx-auto">
+				<Card style={{ width: '20rem' }} className="mx-auto">
 					<Card.Header>Display Name</Card.Header>
 					<Card.Body>
 						<Card.Text>{authUser.displayName}</Card.Text>
-						<Card.Text>
-							<DisplayNameChangeForm afterUpdate={() => navigate(ROUTES.ACCOUNT)} />
-						</Card.Text>
+						{!showDisplayNameChangeForm &&
+							<Button variant="primary" onClick={toggleShowDisplayNameForm}>
+								Change
+							</Button>
+						}
+						{showDisplayNameChangeForm &&
+							<DisplayNameChangeForm
+								afterUpdate={() => navigate(ROUTES.ACCOUNT)}
+								onCancel={toggleShowDisplayNameForm} />
+						}
+
 					</Card.Body>
 				</Card>
 				<PasswordChangeForm />

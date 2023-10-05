@@ -1,19 +1,23 @@
 import { useState, useCallback } from 'react';
 import { useFirebaseContext } from '../Firebase';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import { MAX_CHARS_EMAIL } from '../constants/charlimits';
 
 const requiresRecentLoginErrorCode = "auth/requires-recent-login";
 const requiresRecentLoginErrorMessage = <>Recent authentication required.<br />Sign out and sign back in, then try again.</>;
-function EmailChangeForm({ afterUpdate }) {
-	const [newEmail, setNewEmail] = useState('');
+function EmailChangeForm({ afterUpdate, onCancel }) {
+	const [isEmpty, setIsEmpty] = useState(true);
 	const [status, setStatus] = useState({ message: '', style: {} });
 	const firebase = useFirebaseContext();
 
-	const onSubmit = useCallback(event => {
+	const handleSubmit = useCallback(event => {
 		event.preventDefault();
+		const email = event.target.elements.email.value;
+
 		setStatus({ message: "Updating email...", class: "text-primary" });
-		firebase.doEmailUpdate(newEmail)
+		firebase.doEmailUpdate(email)
 			.then(() => {
-				setNewDisplayName('');
 				setStatus({ message: "Email has been updated.", class: "text-success" })
 			})
 			.then(() => afterUpdate())
@@ -24,24 +28,27 @@ function EmailChangeForm({ afterUpdate }) {
 				else
 					setStatus({ message: error.message, class: "text-danger" });
 			});
-	}, [newEmail, firebase]);
+	}, [firebase]);
 
-	const onChange = useCallback(event => setNewEmail(event.target.value), []);
-	const isInvalid = (newEmail === '');
+	const handleChange = useCallback(event => setIsEmpty(event.target.value == ''), []);
+	// const isInvalid = (newEmail === '');
 	return (
 		<>
-			<form onSubmit={onSubmit}>
-				<input
-					name="newEmail"
-					value={newEmail}
-					onChange={onChange}
-					type="text"
-					placeholder="New Email"
-					maxlength="254" />
-				<button disabled={isInvalid} type="submit">
+			<Form className="mx-auto" onSubmit={handleSubmit}>
+				<Form.Group className="mb-3" controlId="accountEmail">
+					<Form.Control type="email" placeholder="name@example.com" name="email"
+						maxLength={MAX_CHARS_EMAIL} onChange={handleChange} />
+					<Form.Text className="text-muted">
+						We'll never share your email with anyone else.
+					</Form.Text>
+				</Form.Group>
+				<Button variant="primary" type="button" onClick={onCancel}>
+					Cancel
+				</Button>
+				<Button variant="primary" type="submit" disabled={isEmpty}>
 					Update
-				</button>
-			</form>
+				</Button>
+			</Form >
 			{status.message && <section className={status.class}>{status.message}</section>}
 		</>
 	);
