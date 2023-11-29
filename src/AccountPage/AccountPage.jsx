@@ -172,7 +172,7 @@ class LoginManagementBase extends React.Component {
 										{signInMethod.comingSoon &&
 											"(coming soon)"
 										}
-										{(!signInMethod.comingSoon && onlyOneLeft) &&
+										{(!signInMethod.comingSoon && isEnabled && onlyOneLeft) &&
 											"(no other method available)"
 										}
 									</div >

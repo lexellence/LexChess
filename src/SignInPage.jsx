@@ -73,11 +73,15 @@ function SignInSocialMedia({ name, doSignIn, disabled }) {
 		event.preventDefault();
 	}
 
+	const buttonText = disabled ? <s>Sign in with {name}</s> : <>Sign in with {name}</>;
 	return (
 		<form onSubmit={onSubmit}>
-			<button type='submit' disabled={disabled}>Sign In with {name}</button> {disabled && '(coming soon)'}
+			<button type='submit' disabled={disabled}>
+				{buttonText}
+			</button>
+			{/* {disabled && '(coming soon)'} */}
 			{error && <p className="text-danger">{error.message}</p>}
-		</form>
+		</form >
 	);
 }
 
@@ -98,10 +102,15 @@ function SignInPageBase({ firebase }) {
 				<SignInForm />
 				<pre className="mt-2"><p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p></pre>
 			</div>
-			<h1 className="mt-3">Other Ways to Sign In</h1>
-			<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />
-			{/* <SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled /> */}
-			{/* <SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled /> */}
+			<h1 className="mt-3">Other Sign In Methods</h1>
+			<div className='social-sign-in'>
+				<p><SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} /></p>
+				<p>
+					<SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled />
+					<SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled />
+					(Coming soon)
+				</p>
+			</div>
 			<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Create one</Link></p></pre>
 		</div>
 	);
