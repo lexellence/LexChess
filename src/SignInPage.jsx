@@ -98,7 +98,7 @@ function SignInPageBase({ firebase }) {
 			<h1>Sign In</h1>
 			<div style={{ width: "250px", margin: "auto" }}>
 				<SignInForm />
-				<p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p>
+				<pre className="mt-2"><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></pre>
 			</div>
 			<h1 className="mt-3">Other Ways to Sign In</h1>
 			<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />

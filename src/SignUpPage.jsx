@@ -58,47 +58,47 @@ function SignUpForm() {
 
 	return (
 		<form onSubmit={onSubmit}>
-			<Stack gap={3} className="mx-auto">
+			{/* <Stack gap={3} className="mx-auto"> */}
 
-				<input
-					name="email"
-					value={email}
-					onChange={e => setEmail(e.target.value)}
-					type="text"
-					placeholder="email"
-					maxlength={LIMITS.MAX_CHARS_EMAIL}
-				/>
-				<input
-					name="passwordOne"
-					value={passwordOne}
-					onChange={e => setPasswordOne(e.target.value)}
-					type="password"
-					placeholder="password"
-				/>
-				<input
-					name="passwordTwo"
-					value={passwordTwo}
-					onChange={e => setPasswordTwo(e.target.value)}
-					type="password"
-					placeholder="confirm password"
-				/>
-				<input
-					name="displayName"
-					value={displayName}
-					onChange={e => setDisplayName(e.target.value)}
-					type="text"
-					placeholder="display name"
-					maxlength={LIMITS.MAX_CHARS_DISPLAY_NAME}
-				/>
-				<button disabled={isInvalid} type="submit">Sign Up</button>
-				{errorMessage && <p>{errorMessage}</p>}
-			</Stack>
+			<input
+				name="email"
+				value={email}
+				onChange={e => setEmail(e.target.value)}
+				type="text"
+				placeholder="Email Address"
+				maxlength={LIMITS.MAX_CHARS_EMAIL}
+			/>
+			<input
+				name="passwordOne"
+				value={passwordOne}
+				onChange={e => setPasswordOne(e.target.value)}
+				type="password"
+				placeholder="Password"
+			/>
+			<input
+				name="passwordTwo"
+				value={passwordTwo}
+				onChange={e => setPasswordTwo(e.target.value)}
+				type="password"
+				placeholder="Confirm Password"
+			/>
+			<input
+				name="displayName"
+				value={displayName}
+				onChange={e => setDisplayName(e.target.value)}
+				type="text"
+				placeholder="Display Name"
+				maxlength={LIMITS.MAX_CHARS_DISPLAY_NAME}
+			/>
+			<button className="mt-3" disabled={isInvalid} type="submit">Sign Up</button>
+			{errorMessage && <p>{errorMessage}</p>}
+			{/* </Stack> */}
 		</form>
 	);
 }
 
 const SignUpPage = () => (
-	<div style={{ width: "500px", margin: "auto" }}>
+	<div style={{ width: "250px", margin: "auto" }}>
 		<h1>Sign Up</h1>
 		<SignUpForm />
 	</div>
