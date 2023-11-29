@@ -40,7 +40,6 @@ function SignInFormBase({ firebase }) {
 				onChange={onChange}
 				type="text"
 				placeholder="Email Address"
-				style={{ width: "100%" }}
 			/>
 			<input
 				name="password"
@@ -48,7 +47,6 @@ function SignInFormBase({ firebase }) {
 				onChange={onChange}
 				type="password"
 				placeholder="Password"
-				style={{ width: "100%" }}
 			/>
 			<button disabled={isInvalid} type="submit">Sign-in</button>
 
@@ -94,9 +92,9 @@ function SignInPageBase({ firebase }) {
 	});
 
 	return (
-		<div style={{ width: "400px", margin: "auto" }}>
+		<div className='authPage'>
 			<h1>Sign In</h1>
-			<div style={{ width: "250px", margin: "auto" }}>
+			<div className='authForm'>
 				<SignInForm />
 				<pre className="mt-2"><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></pre>
 			</div>
@@ -104,7 +102,7 @@ function SignInPageBase({ firebase }) {
 			<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />
 			{/* <SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled /> */}
 			{/* <SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled /> */}
-			<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Sign-up</Link></p></pre>
+			<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Create one</Link></p></pre>
 		</div>
 	);
 }

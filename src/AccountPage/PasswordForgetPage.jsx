@@ -3,10 +3,12 @@ import { PasswordForgetForm } from './PasswordForgetForm';
 
 function PasswordForgetPage() {
 	return (
-		<React.Fragment>
+		<div className='authPage'>
 			<h1>Password Forget</h1>
-			<PasswordForgetForm />
-		</React.Fragment>
+			<div className='authForm'>
+				<PasswordForgetForm />
+			</div>
+		</div>
 	);
 };
 

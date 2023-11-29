@@ -90,7 +90,7 @@ function SignUpForm() {
 				placeholder="Display Name"
 				maxlength={LIMITS.MAX_CHARS_DISPLAY_NAME}
 			/>
-			<button className="mt-3" disabled={isInvalid} type="submit">Sign Up</button>
+			<button disabled={isInvalid} type="submit">Sign Up</button>
 			{errorMessage && <p>{errorMessage}</p>}
 			{/* </Stack> */}
 		</form>
@@ -98,9 +98,11 @@ function SignUpForm() {
 }
 
 const SignUpPage = () => (
-	<div style={{ width: "250px", margin: "auto" }}>
-		<h1>Sign Up</h1>
-		<SignUpForm />
+	<div className='authPage'>
+		<h1>Create a New Account</h1>
+		<div className='authForm'>
+			<SignUpForm />
+		</div>
 	</div>
 );
 

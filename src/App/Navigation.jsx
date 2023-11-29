@@ -27,6 +27,9 @@ function NavigationNonAuth() {
 				</Navbar.Brand>
 				<Nav className="justify-content-end nav-menu">
 					<Nav>
+						<NavLink to={ROUTES.SIGN_UP} style={getNavLinkStyle} className={navLinkClass}>Create Account</NavLink>
+					</Nav>
+					<Nav>
 						<NavLink to={ROUTES.SIGN_IN} style={getNavLinkStyle} className={navLinkClass}>Sign in</NavLink>
 					</Nav>
 				</Nav>

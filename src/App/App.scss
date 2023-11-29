@@ -28,8 +28,19 @@ table {
 	margin: 0 auto;
 }
 
-input {
-	margin: 3px;
+.authPage {
+	width: 400px;
+	margin: auto;
+
+	.authForm {
+		width: 250px;
+		margin: auto;
+
+		input {
+			margin: 3px;
+			width: 100%;
+		}
+	}
 }
 
 th,

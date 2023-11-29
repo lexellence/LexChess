@@ -6,7 +6,7 @@ import { AuthUserContext } from './Session';
 const HomePageNonAuth = () => (
 	<div align='center'>
 		<h1>Welcome to Lex Chess!</h1>
-		<h5>Please <Link to={ROUTES.SIGN_IN}>sign in</Link>.</h5>
+		<h5>Please <Link to={ROUTES.SIGN_IN}>sign in</Link>, or <Link to={ROUTES.SIGN_UP}>create an account</Link>.</h5>
 	</div>
 );
 
