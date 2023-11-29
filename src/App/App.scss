@@ -30,12 +30,35 @@ table {
 	margin: 0 auto;
 }
 
+.block-section {
+	background-color: #8dfd8d;
+	@extend .p-3;
+}
+
+.auth-page {
+	width: 400px;
+	margin: auto;
+
+	.auth-form {
+		width: 280px;
+		margin: auto;
+		@extend .block-section;
+
+		input {
+			@extend .my-1;
+		}
+	}
+}
+
 .home-page {
 	min-width: 200px;
 	max-width: 700px;
 	margin: auto;
 
 	.home-desc {
+		@extend .block-section;
+		@extend .ps-4;
+
 		max-width: 500px;
 		margin: auto;
 		@extend .my-3;
@@ -46,24 +69,8 @@ table {
 	}
 }
 
-.auth-page {
-	width: 400px;
-	margin: auto;
-
-	.auth-form {
-		width: 250px;
-		margin: auto;
-
-		input {
-			margin: 3px;
-			width: 100%;
-		}
-	}
-
-	.social-sign-in {
-		width: 200px;
-		margin: auto;
-	}
+hr {
+	border: 1px solid #001f03;
 }
 
 th,

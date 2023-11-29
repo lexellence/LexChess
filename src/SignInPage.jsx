@@ -100,16 +100,15 @@ function SignInPageBase({ firebase }) {
 			<h1>Sign In</h1>
 			<div className='auth-form'>
 				<SignInForm />
-				<pre className="mt-2"><p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p></pre>
 			</div>
+			<pre className="mt-2"><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></pre>
 			<h1 className="mt-3">Other Sign In Methods</h1>
-			<div className='social-sign-in'>
+			<div className='auth-form'>
 				<p><SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} /></p>
-				<p>
-					<SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled />
-					<SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled />
-					(Coming soon)
-				</p>
+				<hr />
+				<h6>Coming soon</h6>
+				<SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled />
+				<SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled />
 			</div>
 			<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Create one</Link></p></pre>
 		</div>
