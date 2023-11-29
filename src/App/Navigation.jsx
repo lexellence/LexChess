@@ -23,7 +23,7 @@ function NavigationNonAuth() {
 		<Navbar bg="dark" variant="dark" className="unselectable">
 			<Container>
 				<Navbar.Brand>
-					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
+					<Link to={ROUTES.LANDING} className="nav-link">LexChess</Link>
 				</Navbar.Brand>
 				<Nav className="justify-content-end nav-menu">
 					<Nav>

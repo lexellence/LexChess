@@ -28,11 +28,26 @@ table {
 	margin: 0 auto;
 }
 
-.authPage {
+.home-page {
+	min-width: 200px;
+	max-width: 550px;
+	margin: auto;
+
+	.home-desc {
+		max-width: 500px;
+		margin: auto;
+	}
+
+	ul {
+		text-align: left;
+	}
+}
+
+.auth-page {
 	width: 400px;
 	margin: auto;
 
-	.authForm {
+	.auth-form {
 		width: 250px;
 		margin: auto;
 

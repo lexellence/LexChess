@@ -92,11 +92,11 @@ function SignInPageBase({ firebase }) {
 	});
 
 	return (
-		<div className='authPage'>
+		<div className='auth-page'>
 			<h1>Sign In</h1>
-			<div className='authForm'>
+			<div className='auth-form'>
 				<SignInForm />
-				<pre className="mt-2"><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></pre>
+				<pre className="mt-2"><p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p></pre>
 			</div>
 			<h1 className="mt-3">Other Ways to Sign In</h1>
 			<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />

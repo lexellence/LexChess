@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
-import { Stack } from 'react-bootstrap';
 // import { Form, Button, Card, Alert } from "react-bootstrap";
 // import { useAuth } from "../contexts/AuthContext";
 
@@ -58,8 +58,6 @@ function SignUpForm() {
 
 	return (
 		<form onSubmit={onSubmit}>
-			{/* <Stack gap={3} className="mx-auto"> */}
-
 			<input
 				name="email"
 				value={email}
@@ -92,17 +90,17 @@ function SignUpForm() {
 			/>
 			<button disabled={isInvalid} type="submit">Sign Up</button>
 			{errorMessage && <p>{errorMessage}</p>}
-			{/* </Stack> */}
 		</form>
 	);
 }
 
 const SignUpPage = () => (
-	<div className='authPage'>
+	<div className='auth-page'>
 		<h1>Create a New Account</h1>
-		<div className='authForm'>
+		<div className='auth-form'>
 			<SignUpForm />
 		</div>
+		<pre className="mt-3"><p>Already have an account? <Link to={ROUTES.SIGN_IN}>Sign in</Link></p></pre>
 	</div>
 );
 
