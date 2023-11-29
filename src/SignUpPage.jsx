@@ -98,10 +98,10 @@ function SignUpForm() {
 }
 
 const SignUpPage = () => (
-	<>
+	<div style={{ width: "500px", margin: "auto" }}>
 		<h1>Sign Up</h1>
 		<SignUpForm />
-	</>
+	</div>
 );
 
 export { SignUpPage };

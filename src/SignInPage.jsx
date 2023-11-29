@@ -33,19 +33,23 @@ function SignInFormBase({ firebase }) {
 
 	const isInvalid = (state.password === '' || state.email === '');
 	return (
-		<form onSubmit={onSubmit}>
+		<form onSubmit={onSubmit} >
 			<input
 				name="email"
 				value={state.email}
 				onChange={onChange}
 				type="text"
-				placeholder="Email Address" />
+				placeholder="Email Address"
+				style={{ width: "100%" }}
+			/>
 			<input
 				name="password"
 				value={state.password}
 				onChange={onChange}
 				type="password"
-				placeholder="Password" />
+				placeholder="Password"
+				style={{ width: "100%" }}
+			/>
 			<button disabled={isInvalid} type="submit">Sign-in</button>
 
 			{state.error && <p className="text-danger">{state.error.message}</p>}
@@ -90,15 +94,18 @@ function SignInPageBase({ firebase }) {
 	});
 
 	return (
-		<>
+		<div style={{ width: "400px", margin: "auto" }}>
 			<h1>Sign In</h1>
-			<SignInForm />
+			<div style={{ width: "250px", margin: "auto" }}>
+				<SignInForm />
+				<p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p>
+			</div>
+			<h1 className="mt-3">Other Ways to Sign In</h1>
 			<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />
-			<SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled />
-			<SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled />
-			<p><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></p>
-			<pre><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Sign-up</Link></p></pre>
-		</>
+			{/* <SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled /> */}
+			{/* <SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled /> */}
+			<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Sign-up</Link></p></pre>
+		</div>
 	);
 }
 
