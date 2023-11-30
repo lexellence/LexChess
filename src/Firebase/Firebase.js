@@ -56,9 +56,8 @@ class Firebase {
 
 	doSendEmailVerification = () => {
 		return sendEmailVerification(this.auth.currentUser,
-			{ url: `https://${window.location.host}${ROUTES.GAME_LIST}` });
+			{ url: `https://${window.location.host}${ROUTES.LANDING}` });
 	};
-
 	doPasswordUpdate = (password) => {
 		return updatePassword(this.auth.currentUser, password);
 	};

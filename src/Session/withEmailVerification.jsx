@@ -37,28 +37,28 @@ const withEmailVerification =
 							needsEmailVerification(authUser) ?
 								(
 									<React.Fragment>
+										<h1>Verify Your Email</h1>
 										{this.state.isSent ?
 											(
 												<p>
 													Email confirmation sent: Check your email (Spam
 													folder included) for a confirmation email.
-													Refresh this page once you confirmed your email.
 												</p>
 											)
 											:
 											(
 												<p>
-													Verify your email: Check your email (Spam folder
+													Check your email (Spam folder
 													included) for a confirmation email or send
 													another confirmation email.
 												</p>
 											)}
-
+										<p><b>Refresh this page once you confirmed your email.</b></p>
 										<button
 											type="button"
 											onClick={this.onSendEmailVerification}
 											disabled={this.state.isSent}>
-											Send confirmation email
+											Send another confirmation email
 										</button>
 									</React.Fragment>
 								)

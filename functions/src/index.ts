@@ -71,6 +71,15 @@ const validateFirebaseIdToken = async (req: any, res: any, next: NextFunction) =
     try {
         const decodedIdToken = await admin.auth().verifyIdToken(idToken);
         console.log('ID Token correctly decoded', decodedIdToken);
+
+        // If email not yet verified, don't process API call
+        if (!decodedIdToken.email_verified) {
+            console.error('User tried to make API call before email was verified.');
+            res.status(httpCodes.FORBIDDEN).send('PLEASE SIGN OUT AND BACK IN, THEN TRY AGAIN.');
+            return;
+        }
+
+        // Send user info to API
         req.decodedClaims = decodedIdToken;
         next();
         return;
@@ -121,7 +130,7 @@ exports.initDatabaseUser = functions.auth.user().onCreate(async (user: any) => {
 //+------------------------\----------------------------------
 //|	  GET /session-login   | Generate session cookie
 //\------------------------/
-//	
+//
 //------------------------------------------------------------
 // const SESSION_COOKIE_NAME = '__session';
 // app.get('/session-sign-in', (req, res) => {

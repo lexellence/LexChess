@@ -51,6 +51,14 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 	}, [firebase]);
 
 	//+--------------------------------\--------------------------
+	//|	 	 	handleAPIError 	   	   |
+	//\--------------------------------/--------------------------
+	function handleAPIError(errorMessage: string) {
+		console.log(errorMessage);
+		alert(errorMessage);
+	}
+
+	//+--------------------------------\--------------------------
 	//|	 	 	   joinGame 	   	   |
 	//\--------------------------------/--------------------------
 	function joinGame(gid: string, team: string) {
@@ -59,8 +67,7 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 
 		setJoiningGameData({ isJoining: true, gid, team });
 		api.joinGame(authUser, gid, team).catch(errorMessage => {
-			console.log(errorMessage);
-			alert(errorMessage);
+			handleAPIError(errorMessage);
 		}).finally(() => {
 			setJoiningGameData({ isJoining: false });
 		});
@@ -74,8 +81,7 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 
 		setCreatingGame(true);
 		api.createGame(authUser, team).catch(errorMessage => {
-			console.log(errorMessage);
-			alert(errorMessage);
+			handleAPIError(errorMessage);
 		}).finally(() => {
 			setCreatingGame(false);
 		});
@@ -85,8 +91,7 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 	//\--------------------------------/--------------------------
 	function visitGame(gid: string) {
 		api.visitGame(authUser, gid).catch(errorMessage => {
-			console.log(errorMessage);
-			alert(errorMessage);
+			handleAPIError(errorMessage);
 		})
 	};
 	//+--------------------------------\--------------------------
@@ -98,8 +103,7 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 
 		setMoving(gid, true);
 		api.move(authUser, gid, moveString).catch(errorMessage => {
-			console.log(errorMessage);
-			alert(errorMessage);
+			handleAPIError(errorMessage);
 		}).finally(() => {
 			setMoving(gid, false);
 		});
@@ -113,8 +117,7 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 
 		setQuitting(gid, true);
 		api.leaveGame(authUser, gid).catch(errorMessage => {
-			console.log(errorMessage);
-			alert(errorMessage);
+			handleAPIError(errorMessage);
 		}).finally(() => {
 			setQuitting(gid, false);
 		});

@@ -37,9 +37,14 @@ function SignUpForm() {
 		e.preventDefault();
 
 		firebase.doCreateUserWithEmailAndPassword(email, passwordOne)
-			.then(credential => { })
+			.then(userCredential => {
+				// console.log('userCredential.user=', userCredential.user);
+			})
 			.then(() => firebase.doDisplayNameUpdate(displayName))
-			.then(() => firebase.doSendEmailVerification())
+			.then(() => {
+				localStorage.setItem('refreshTokenOnNextAPICall', '1');
+				return firebase.doSendEmailVerification();
+			})
 			.then(() => {
 				navigate(ROUTES.GAME_LIST);
 			})

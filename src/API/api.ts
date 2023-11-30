@@ -12,7 +12,9 @@ async function callAPI(authUser: any, method: Method, url: string) {
 		if (!authUser?.getIdToken)
 			reject('Failed to get auth token: User not signed in');
 
-		authUser.getIdToken().then((idToken: string) => {
+		const refreshTokenOnNextAPICall: boolean = localStorage.getItem('refreshTokenOnNextAPICall') === '1' ? true : false;
+		authUser.getIdToken(refreshTokenOnNextAPICall).then((idToken: string) => {
+			localStorage.setItem('refreshTokenOnNextAPICall', '0');
 			axios({
 				method: method,
 				url: url,
@@ -29,17 +31,17 @@ async function callAPI(authUser: any, method: Method, url: string) {
 					// that falls out of the range of 2xx
 					rejectMessage = 'Server responded with ' + error.response.status + ' ' + error.response.statusText + '.\n'
 						+ (typeof error.response.data === 'string' ? error.response.data : JSON.stringify(error.response.data));
-					console.log(error.response);
+					console.log(rejectMessage);
 				} else if (error.request) {
 					// The request was made but no response was received
 					// `error.request` is an instance of XMLHttpRequest in the browser and an instance of
 					// http.ClientRequest in node.js
 					rejectMessage = 'Server did not respond.';
-					console.log(error.request);
+					console.log(rejectMessage);
 				} else {
 					// Something happened in setting up the request that triggered an Error
 					rejectMessage = 'Something happened: ' + error.message;
-					console.log(error.message);
+					console.log(rejectMessage);
 				}
 				console.log(error.config);
 				reject(rejectMessage);
