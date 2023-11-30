@@ -9,6 +9,12 @@ const Chess = typeof ChessJS === "function" ? ChessJS : ChessJS.Chess;
 const apiRouter = express.Router();
 const db = admin.database();
 
+const MAX_CONCURRENT_GAMES = 5;
+async function HasRoomForAnotherGame(uid: string): Promise<boolean> {
+	const hasRoom: boolean = (await db.ref(`users/${uid}/play`).once('value')).numChildren() >= MAX_CONCURRENT_GAMES;
+	return hasRoom;
+}
+
 //+------------------------------\----------------------------
 //|	  POST /create-game/:team    | 
 //\------------------------------/
@@ -19,6 +25,12 @@ apiRouter.post("/create-game/:team", async (req: any, res: any) => {
 	try {
 		const { uid, name } = req.decodedClaims;
 		const { team } = req.params;
+
+		if (await HasRoomForAnotherGame(uid)) {
+			console.log('User ' + uid + ' tried to create a new game but already has the maximum number of games.');
+			res.status(httpCodes.FORBIDDEN).send('User already in the maximum number of concurrent games');
+			return;
+		}
 
 		// New game
 		const isWhite = (team === 'w');
@@ -64,6 +76,12 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 	try {
 		const { uid, name } = req.decodedClaims;
 		const { gid, team } = req.params;
+
+		if (await HasRoomForAnotherGame(uid)) {
+			console.log('User ' + uid + ' tried to join game ' + gid + ' but already has the maximum number of games.');
+			res.status(httpCodes.FORBIDDEN).send('User already in the maximum number of concurrent games');
+			return;
+		}
 
 		// Can't join game you're already in
 		if ((await db.ref(`users/${uid}/play/${gid}`).once('value')).exists()) {

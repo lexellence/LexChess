@@ -2,18 +2,33 @@ import { useState } from 'react';
 import { Button, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 import { ButtonSpinner } from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
-
+const defaultTeamSelection = 'd';
 const createGameRadioMap = new Map([
 	['d', { label: 'Defer', variant: 'primary', spinnerVariant: 'light' }],
 	['w', { label: 'White', variant: 'light', spinnerVariant: 'dark' }],
 	['b', { label: 'Black', variant: 'dark', spinnerVariant: 'light' }],
 ]);
-const defaultTeamSelection = 'd';
 
-const GameCreator = () => {
+function GameCreator({ isUserMaxedOut }) {
 	const [teamSelection, setTeamSelection] = useState(defaultTeamSelection);
 	const { createGame, isCreatingGame } = useJoinAPIContext();
 
+	let createButtonContent;
+	if (isCreatingGame) {
+		createButtonContent =
+			<>
+				Creating...
+				<ButtonSpinner variant={createGameRadioMap.get(teamSelection).spinnerVariant} />
+			</>
+	}
+	else if (isUserMaxedOut) {
+		createButtonContent = "You're maxed out!";
+	}
+	else {
+		createButtonContent = 'Create game';
+	}
+
+	const canCreateGame = !isCreatingGame && !isUserMaxedOut;
 	return (
 		<>
 			Play as:<br />
@@ -26,13 +41,10 @@ const GameCreator = () => {
 					</ToggleButton>)}
 			</ToggleButtonGroup>
 			<br />
-			<Button className='game-button' disabled={isCreatingGame}
-				onClick={!isCreatingGame ? () => createGame(teamSelection) : null}
+			<Button className='game-button' disabled={!canCreateGame}
+				onClick={canCreateGame ? () => createGame(teamSelection) : null}
 				variant={createGameRadioMap.get(teamSelection).variant}>
-				{isCreatingGame ?
-					<>Creating...
-						<ButtonSpinner variant={createGameRadioMap.get(teamSelection).spinnerVariant} /></>
-					: 'Create game'}
+				{createButtonContent}
 			</Button>
 		</>
 	);

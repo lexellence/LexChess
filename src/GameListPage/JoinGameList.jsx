@@ -9,7 +9,7 @@ import { getStatusText } from '.';
 //+--------------------------------\--------------------------
 //|	 	      JoinGameList    	   |
 //\--------------------------------/--------------------------
-function JoinGameList({ isSignedIn }) {
+function JoinGameList({ isSignedIn, isUserMaxedOut }) {
 	const firebaseListener = useFirebaseListenerContext();
 	const [playingGIDs, setPlayingGIDs] = useState(null);
 	const [gameList, setGameList] = useState(null);
@@ -57,6 +57,7 @@ function JoinGameList({ isSignedIn }) {
 						name_d={game.name_d}
 						isSignedIn={isSignedIn}
 						inGame={playingGIDs?.includes(game.gid)}
+						isUserMaxedOut={isUserMaxedOut}
 					/>;
 				})}
 			</tbody>
@@ -72,7 +73,7 @@ const joinGameButtonMap = new Map([
 	['b', { label: 'Play', variant: 'dark', spinnerVariant: 'light' }],
 	['o', { label: 'Spectate', variant: 'secondary', spinnerVariant: 'light' }],
 ]);
-function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame }) {
+function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame, isUserMaxedOut }) {
 	const { joinGame, joiningGameData } = useJoinAPIContext();
 
 	// Only include joinable games in join-game list
@@ -94,7 +95,7 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame 
 	}
 
 	// Buttons
-	const disableButtons = (joiningGameData.isJoining || !isSignedIn);
+	const disableButtons = (joiningGameData.isJoining || !isSignedIn || isUserMaxedOut);
 	const joiningThisGame = joiningGameData.isJoining && joiningGameData.gid === gid;
 	const teamNames = new Map([
 		['w', name_w],
@@ -102,23 +103,43 @@ function GameTableRow({ gid, status, name_w, name_b, name_d, isSignedIn, inGame 
 		['o', null],
 	]);
 
+	// Build table data list
+	const tableDataList = Array.from(joinGameButtonMap).map(([team, button]) => {
+		let cellContent;
+		if (teamNames.get(team))
+			cellContent = teamNames.get(team);
+		else {
+			let buttonContent;
+			if (joiningThisGame && joiningGameData.team === team)
+				buttonContent = <>Joining...<ButtonSpinner variant={button.spinnerVariant} /></>;
+			else if (!joiningThisGame && isUserMaxedOut)
+				buttonContent = "You're maxed out!";
+			else
+				buttonContent = button.label;
+
+			cellContent =
+				<Button className='game-list-button'
+					variant={button.variant}
+					size='sm'
+					disabled={disableButtons}
+					onClick={!disableButtons ? () => joinGame(gid, team) : null}>
+					{buttonContent}
+				</Button>;
+		}
+
+		return (
+			<td key={team}>
+				{cellContent}
+			</td>);
+	});
+
+
 	// Render
 	return (
 		<tr>
 			<td>{gameTitle}</td>
 			<td>{getStatusText(status, name_w, name_b)}</td>
-			{Array.from(joinGameButtonMap).map(([team, button]) =>
-				<td key={team}>
-					{teamNames.get(team) ? teamNames.get(team)
-						: <Button className='game-list-button' variant={button.variant} size='sm'
-							disabled={disableButtons}
-							onClick={!disableButtons ? () => joinGame(gid, team) : null}>
-							{/* Button Label */}
-							{(joiningThisGame && joiningGameData.team === team) ?
-								<>Joining...<ButtonSpinner variant={button.spinnerVariant} /></>
-								: button.label}
-						</Button>}
-				</td>)}
+			{tableDataList}
 		</tr >
 	);
 }
