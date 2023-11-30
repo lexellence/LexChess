@@ -1,14 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ToggleButtonGroup, ToggleButton } from 'react-bootstrap';
 import { withAuthorization, withEmailVerification } from '../Session';
 import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import { Game } from '../Game';
 import { usePlayAPIContext } from '../API';
-import { MdFiberNew } from 'react-icons/md';
-import { FaChessPawn } from 'react-icons/fa';
-import { iconSize, iconSize2 } from '../iconSizes';
 
 function getNextGID(selectedGID, gidList) {
 	if (!gidList)

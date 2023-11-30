@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button, ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
 import { ButtonSpinner } from '../ButtonSpinner';
 import { useJoinAPIContext } from '../API';
