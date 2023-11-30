@@ -57,15 +57,14 @@ table {
 
 	.home-desc {
 		@extend .block-section;
-		@extend .ps-4;
 
 		max-width: 500px;
 		margin: auto;
 		@extend .my-3;
-	}
 
-	ul {
-		text-align: left;
+		p {
+			text-align: left;
+		}
 	}
 }
 

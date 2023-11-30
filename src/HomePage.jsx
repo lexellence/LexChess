@@ -3,13 +3,18 @@ import * as ROUTES from "./constants/routes";
 import { AuthUserContext } from './Session';
 
 const HomePageDescription = () => (
-	<ul className='home-desc'>
-		<li>LexChess is a fully functioning, realtime, multiplayer chess app.</li>
-		<li>You can play up to 5 games at a time.</li>
-		<li>Switching between games (or any other page) is immediately responsive, without the need to reconnect to the server. This is the magic of building web apps with React.</li>
-		<li>By subscribing to game updates using Firebase Realtime Database and keeping track of them with React Context, you receive updates for all your games automatically in the background, no matter what part of the site you are looking at.</li>
-		<li>You can also graphically replay all the moves from your previous games, or download your game histories in PGN (Portable Game Notation) format.</li>
-	</ul>
+	<div className='home-desc'>
+		<p>LexChess is a fully functioning, realtime, multiplayer chess app.</p>
+		<p>You can play up to 5 games at a time.</p>
+		<p>Switching between games (or any other page) is immediately responsive,
+			without the need to reconnect to the server.
+			This is the magic of building web apps with React.</p>
+		<p>By subscribing to game updates using Firebase Realtime Database and keeping track of them with React Context,
+			you receive updates for all your games automatically in the background,
+			no matter what part of the site you are looking at.</p>
+		<p>You can also graphically replay all the moves from your previous games,
+			or download your game histories in PGN (Portable Game Notation) format.</p>
+	</div>
 );
 const HomePageNonAuth = () => (
 	<>
