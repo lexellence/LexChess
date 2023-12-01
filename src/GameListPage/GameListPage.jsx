@@ -19,7 +19,7 @@ function GameListPageNonAuth() {
 	);
 };
 
-const MAX_CONCURRENT_GAMES = 5;
+const MAX_CONCURRENT_GAMES = 3;
 function GameListPageAuth() {
 	// Register user listener
 	const firebaseListener = useFirebaseListenerContext();

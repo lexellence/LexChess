@@ -9,7 +9,7 @@ const Chess = typeof ChessJS === "function" ? ChessJS : ChessJS.Chess;
 const apiRouter = express.Router();
 const db = admin.database();
 
-const MAX_CONCURRENT_GAMES = 5;
+const MAX_CONCURRENT_GAMES = 3;
 async function HasRoomForAnotherGame(uid: string): Promise<boolean> {
 	const hasRoom: boolean = (await db.ref(`users/${uid}/play`).once('value')).numChildren() >= MAX_CONCURRENT_GAMES;
 	return hasRoom;
