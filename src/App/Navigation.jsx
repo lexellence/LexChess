@@ -53,7 +53,6 @@ function NavigationAuth() {
 	// Register user listener
 	const firebaseListener = useFirebaseListenerContext();
 	const [userGameList, setUserGameList] = useState([]);
-	const [userHasPast, setUserHasPast] = useState(false);
 	useEffect(() => {
 		const handleUserUpdate = (user) => {
 			setUserGameList(
@@ -66,8 +65,6 @@ function NavigationAuth() {
 						})
 				)
 			);
-			setUserHasPast(Object.keys(user.past).length > 0);
-
 		};
 		return firebaseListener.registerUserListener(handleUserUpdate);
 	}, [firebaseListener]);
