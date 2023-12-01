@@ -93,11 +93,9 @@ function NavigationAuth() {
 					<Nav>
 						<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
 					</Nav>
-					{userHasPast &&
 						<Nav>
 							<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
 						</Nav>
-					}
 					<Nav>
 						<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
 					</Nav>
