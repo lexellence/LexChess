@@ -73,7 +73,7 @@ function NavigationAuth() {
 	}, [firebaseListener]);
 
 	return (
-		<Navbar bg="dark" variant="dark" className="unselectable" >
+		<Navbar bg="dark" variant="dark" className="unselectable">
 			<Container>
 				<Navbar.Brand>
 					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
@@ -81,9 +81,9 @@ function NavigationAuth() {
 				<Nav className="justify-content-end nav-menu">
 					{userGameList.length > 0 &&
 						userGameList.map((userGame, i) =>
-							<Nav key={i}>
+							<Nav key={i + 1}>
 								<NavLink to={ROUTES.PLAY + `?game=${i}`} style={getNavLinkStyle} className={navLinkClass}>
-									Play {i}
+									Play {i + 1}
 									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
 									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
 								</NavLink>
