@@ -8,7 +8,6 @@ import { iconSize, iconSize2 } from '../iconSizes';
 
 import { AuthUserContext } from '../Session';
 import { useFirebaseContext } from '../Firebase';
-import { SignOutButton } from './SignOutButton';
 import * as ROUTES from '../constants/routes';
 import * as ROLES from '../constants/roles';
 import { useFirebaseListenerContext } from '../FirebaseListener';
@@ -100,7 +99,7 @@ function NavigationAuth() {
 						<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
 					</Nav>}
 					<Nav>
-						<SignOutButton />
+						<button type="button" onClick={firebase.doSignOut}>Sign Out</button>
 					</Nav>
 				</Nav>
 			</Container >
