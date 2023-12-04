@@ -13,7 +13,7 @@ import * as ROUTES from '../constants/routes';
 import * as ROLES from '../constants/roles';
 import { useFirebaseListenerContext } from '../FirebaseListener';
 
-const navLinkClass = 'nav-link nav-menu-link';
+const navLinkClass = 'nav-link nav-menu-link text-nowrap';
 function getNavLinkStyle({ isActive }) {
 	return isActive ? { borderBottom: '3px solid #a2ff9a' } : null;
 }
@@ -73,7 +73,7 @@ function NavigationAuth() {
 	}, [firebaseListener]);
 
 	return (
-		<Navbar bg="dark" variant="dark" className="unselectable">
+		<Navbar bg="dark" variant="dark" className="unselectable" style={{ minHeight: "72px", maxHeight: "72px" }}>
 			<Container>
 				<Navbar.Brand>
 					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
@@ -93,9 +93,9 @@ function NavigationAuth() {
 					<Nav>
 						<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
 					</Nav>
-						<Nav>
-							<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
-						</Nav>
+					<Nav>
+						<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
+					</Nav>
 					<Nav>
 						<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
 					</Nav>
