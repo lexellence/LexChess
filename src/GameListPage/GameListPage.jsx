@@ -26,10 +26,7 @@ function GameListPageAuth() {
 	const [isUserMaxedOut, setIsUserMaxedOut] = useState(false);
 	useEffect(() => {
 		const handleUserUpdate = (user) => {
-			console.log("Object.keys(user.play).length=", Object.keys(user.play).length);
-			console.log("MAX_CONCURRENT_GAMES", MAX_CONCURRENT_GAMES);
 			setIsUserMaxedOut(Object.keys(user.play).length >= MAX_CONCURRENT_GAMES);
-			console.log(Object.keys(user.play).length >= MAX_CONCURRENT_GAMES);
 		};
 		return firebaseListener.registerUserListener(handleUserUpdate);
 	}, [firebaseListener, setIsUserMaxedOut]);
