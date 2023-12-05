@@ -20,7 +20,7 @@ function getNavLinkStyle({ isActive }) {
 
 function NavigationNonAuth() {
 	return (
-		<Navbar bg="dark" variant="dark" className="unselectable">
+		<Navbar bg="dark" data-bs-theme="dark" className="unselectable">
 			<Container>
 				<Navbar.Brand>
 					<Link to={ROUTES.LANDING} className="nav-link">LexChess</Link>
@@ -70,7 +70,7 @@ function NavigationAuth() {
 	}, [firebaseListener]);
 
 	return (
-		<Navbar bg="dark" variant="dark" className="unselectable" style={{ minHeight: "72px", maxHeight: "72px" }}>
+		<Navbar bg="dark" data-bs-theme="dark" className="unselectable" style={{ minHeight: "72px", maxHeight: "72px" }}>
 			<Container>
 				<Navbar.Brand>
 					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
