@@ -68,7 +68,7 @@ function NavLinksAuth() {
 			{userGameList.length > 0 &&
 				userGameList.map((userGame, i) =>
 					<Nav key={i + 1}>
-								<NavLink to={ROUTES.PLAY + `?game=${i}`} style={getNavLinkStyle} className={navLinkClass}>
+						<NavLink to={ROUTES.PLAY + `/${i}`} style={getNavLinkStyle} className={navLinkClass}>
 							Play {i + 1}
 							{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
 							{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}

@@ -16,7 +16,7 @@ function RouteList() {
 	return (
 		<Routes>
 			<Route path={ROUTES.LANDING} element={<HomePage />} />
-			<Route path={ROUTES.PLAY} element={<GamePage />} />
+			<Route path={ROUTES.PLAY_GAME} element={<GamePage />} />
 			<Route path={ROUTES.GAME_LIST} element={<GameListPage />} />
 			<Route path={ROUTES.GAME_HISTORY} element={<GameHistoryPage />} />
 			<Route path={ROUTES.SIGN_IN} element={<SignInPage />} />

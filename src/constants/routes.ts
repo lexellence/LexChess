@@ -7,5 +7,6 @@ export const PASSWORD_FORGET = '/pw-forget';
 export const ADMIN = '/admin';
 export const ADMIN_DETAILS = '/admin/:id';
 export const PLAY = '/play';
+export const PLAY_GAME = '/play/:gameIndex';
 export const GAME_LIST = '/game-list';
 export const GAME_HISTORY = '/history';

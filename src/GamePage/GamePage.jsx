@@ -1,48 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { withAuthorization, withEmailVerification } from '../Session';
 import * as ROUTES from "../constants/routes";
 import { useFirebaseListenerContext } from '../FirebaseListener';
 import { Game } from '../Game';
 import { usePlayAPIContext } from '../API';
 
-function getNextGID(selectedGID, gidList) {
-	if (!gidList)
-		return null;
-
-	const thisGameIndex = gidList.findIndex(gid => gid === selectedGID);
-	if (thisGameIndex < 0) {
-		// This game does not belong to user
-		if (gidList.length > 0) {
-			// Pick first game
-			return gidList[0];
-		}
-		else {
-			// No games to pick from
-			return null;
-		}
-	}
-	else {
-		if (gidList.length < 2) {
-			// No games to pick from
-			return null;
-		}
-		else {
-			// Pick next game
-			const nextIndex = (thisGameIndex + 1) % gidList.length;
-			return gidList[nextIndex];
-		}
-	}
-};
-
 function GamePageBase() {
 	// Get game index
-	const [searchParams] = useSearchParams();
-	const [gameIndex, setGameIndex] = useState(0);
+	const params = useParams();
+	const [gameIndexToDisplay, setGameIndexToDisplay] = useState(0);
 	useEffect(() => {
-		const indexStr = searchParams.get("game");
-		setGameIndex(indexStr ? parseInt(indexStr) : 0);
-	}, [searchParams]);
+		const indexStr = params.gameIndex;
+		setGameIndexToDisplay(indexStr ? parseInt(indexStr) : 0);
+	}, [params]);
 
 	// Register user listener
 	const firebaseListener = useFirebaseListenerContext();
@@ -58,12 +30,15 @@ function GamePageBase() {
 	// Redirect if user has no games, or game index is invalid
 	const navigate = useNavigate();
 	useEffect(() => {
-		if (userPlay)
-			if (Object.keys(userPlay).length < 1 ||
-				gameIndex > Object.keys(userPlay).length - 1) {
+		if (userPlay) {
+			const highestGameIndex = Object.keys(userPlay).length - 1;
+			if (highestGameIndex < 0)
 				navigate(ROUTES.GAME_LIST);
+			else if (gameIndexToDisplay > highestGameIndex) {
+				navigate(ROUTES.PLAY + `/${highestGameIndex}`)
 			}
-	}, [userPlay, navigate]);
+		}
+	}, [gameIndexToDisplay, userPlay, navigate]);
 
 
 	// Subscribe to selected game
@@ -72,11 +47,11 @@ function GamePageBase() {
 	useEffect(() => {
 		if (userPlay) {
 			const gids = Object.keys(userPlay);
-			if (gameIndex < gids.length) {
+			if (gameIndexToDisplay < gids.length) {
 				function handleGameUpdate(newGame) {
 					setGame({ ...newGame });
 				}
-				const gid = gids[gameIndex];
+				const gid = gids[gameIndexToDisplay];
 				const unsubscribe = firebaseListener.registerGameListener(handleGameUpdate, gid);
 
 				if (!userPlay[gid].visited)
@@ -85,7 +60,7 @@ function GamePageBase() {
 				return unsubscribe;
 			}
 		}
-	}, [firebaseListener, userPlay, gameIndex]);
+	}, [gameIndexToDisplay, userPlay, firebaseListener]);
 
 	// Render
 	if (!game)
