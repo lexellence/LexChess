@@ -2,6 +2,7 @@ import './Navigation.css';
 import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Nav, Navbar, Container } from "react-bootstrap";
+import Button from 'react-bootstrap/Button';
 import { MdFiberNew } from 'react-icons/md';
 import { FaChessPawn } from 'react-icons/fa';
 import { iconSize, iconSize2 } from '../iconSizes';
@@ -99,7 +100,7 @@ function NavigationAuth() {
 						<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
 					</Nav>}
 					<Nav>
-						<button type="button" onClick={firebase.doSignOut}>Sign Out</button>
+						<Button variant="light" onClick={firebase.doSignOut}>Sign Out</Button>
 					</Nav>
 				</Nav>
 			</Container >
