@@ -196,11 +196,16 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			}
 			else {
 				// Can they move their selected piece here?
+				try {
 				const nextMove = chess.move({ from: selectedSquare, to: square });
 				if (nextMove) {
 					refreshBoard();
 					playAPI.move(game.gid, nextMove.san);
 					setSelectedSquare(null);
+					}
+				}
+				catch (error) {
+					console.log("Invalid move from " + selectedSquare + " to " + square + '.');
 				}
 				return;
 			}
