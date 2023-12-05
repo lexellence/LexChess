@@ -1,7 +1,10 @@
-import React, { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import * as ROUTES from '../constants/routes';
 import Button from 'react-bootstrap/Button';
+import ToggleButton from 'react-bootstrap/ToggleButton';
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup';
+import Modal from 'react-bootstrap/Modal';
 import { ButtonSpinner } from '../ButtonSpinner';
 import { GameCanvas } from './GameCanvas';
 import { Chess } from 'chess.js'
@@ -12,6 +15,52 @@ import { historyButtonIconSize, iconSize, iconSize3 } from '../iconSizes';
 
 const DEFAULT_BOARD_SIZE = 360;
 const BOARD_SIZE_BUFFER = 20;	// Prevents scrollbar
+
+const defaultPromotionPiece = 'q';
+const promotionPieceRadioMap = new Map([
+	['q', { label: 'Queen', variant: 'light' }],
+	['b', { label: 'Bishop', variant: 'light' }],
+	['r', { label: 'Rook', variant: 'light' }],
+	['n', { label: 'Knight', variant: 'light' }],
+]);
+function PromotionPicker({ isActive, selectPiece, handleCancel }) {
+	const [pieceSelection, setPieceSelection] = useState(defaultPromotionPiece);
+
+	return (
+		<Modal
+			show={isActive}
+			onHide={handleCancel}
+			backdrop="static"
+			centered
+			size="sm"
+		>
+			<div style={{ margin: 'auto' }}>
+				<Modal.Header closeButton>
+					<Modal.Title style={{ margin: 'auto' }}>Pawn Promotion</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<ToggleButtonGroup type='radio' name='promotionPieceSelection'
+						defaultValue={defaultPromotionPiece} onChange={setPieceSelection}>
+						{Array.from(promotionPieceRadioMap).map(([piece, radio], i) =>
+							<ToggleButton id={`promotion-piece-button-${i}`} key={piece} value={piece}
+								variant={pieceSelection === piece ? radio.variant : `${radio.variant}`}
+								size='sm'
+								className={'promotion-piece-option' + (pieceSelection === piece ? ' promotion-piece-selection' : '')}>
+								{radio.label}
+							</ToggleButton>)}
+					</ToggleButtonGroup>
+				</Modal.Body>
+				<Modal.Footer>
+					<Button variant='primary'
+						onClick={() => selectPiece(pieceSelection)} id='promotion-button'>
+						Promote to {promotionPieceRadioMap.get(pieceSelection).label}
+					</Button>
+					<Button variant="secondary" onClick={handleCancel}>Cancel</Button>
+				</Modal.Footer>
+			</div>
+		</Modal >
+	);
+}
 
 function TurnIcon({ color, visible }) {
 	return <FaChessPawn
@@ -178,6 +227,13 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	//+----------------------------------\------------------------
 	//|	  	 	 Mouse Clicks			 |
 	//\----------------------------------/------------------------
+	const [showPromotionPicker, setShowPromotionPicker] = useState(false);
+	const [selectPromotionPiece, setSelectPromotionPiece] = useState(() => (pieceType) => { });
+	const handleCancelPromotion = () => {
+		setShowPromotionPicker(false);
+		setSelectedSquare(null);
+	};
+
 	const handleMouseDownCanvas = (square) => {
 		// Is game in progress?
 		if (game.status !== 'play')
@@ -195,18 +251,43 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				return;
 			}
 			else {
-				// Can they move their selected piece here?
-				try {
-				const nextMove = chess.move({ from: selectedSquare, to: square });
-				if (nextMove) {
-					refreshBoard();
-					playAPI.move(game.gid, nextMove.san);
-					setSelectedSquare(null);
+				let doesMoveTriggerPromotion = false;
+				{
+					const piece = chess.get(selectedSquare);
+					console.log("piece=", piece);
+					const isPieceAPawn = piece.type === 'p';
+					console.log("isPieceAPawn=", isPieceAPawn);
+					if (isPieceAPawn) {
+						const lastRowNum = game.team === 'w' ? '8' : '0';
+						const isDestinationInLastRow = (square.charAt(1) === lastRowNum);
+						if (isDestinationInLastRow)
+							doesMoveTriggerPromotion = true;
 					}
 				}
-				catch (error) {
-					console.log("Invalid move from " + selectedSquare + " to " + square + '.');
+
+				if (doesMoveTriggerPromotion) {
+					try {
+						let isValidMoveWithPromotion;
+						{
+							const thisMove = chess.move({ from: selectedSquare, to: square, promotion: 'q' });
+							isValidMoveWithPromotion = thisMove ? true : false;
+						}
+						if (isValidMoveWithPromotion) {
+							chess.undo();
+							setSelectPromotionPiece(() => (pieceType) => {
+								setShowPromotionPicker(false);
+								move(selectedSquare, square, pieceType);
+							});
+							setShowPromotionPicker(true);
+						}
+					}
+					catch (error) {
+						console.log(error.message);
+					}
 				}
+				else
+					move(selectedSquare, square);
+
 				return;
 			}
 		}
@@ -223,6 +304,20 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		// Indicate no moves, or highlight all possible moves 
 
 	};
+	const move = (fromSquare, toSquare, promotionPiece) => {
+		// try {
+		const thisMove = chess.move({ from: fromSquare, to: toSquare, promotion: promotionPiece });
+		if (thisMove) {
+			refreshBoard();
+			playAPI.move(game.gid, thisMove.san);
+			setSelectedSquare(null);
+		}
+		// }
+		// catch (error) {
+		// 	console.log(error.message);
+		// }
+	}
+
 	const handleMouseUpCanvas = (square) => {
 
 	};
@@ -357,6 +452,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			<Button ref={quitButton} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
 				{quitButtonContent}
 			</Button>
+
+			<PromotionPicker isActive={showPromotionPicker} selectPiece={selectPromotionPiece} handleCancel={handleCancelPromotion} />
 		</div>
 	);
 };

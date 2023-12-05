@@ -171,6 +171,17 @@ main {
 	width: 700px;
 }
 
+.promotion-piece-selection {
+	transform: translateY(-3px);
+}
+
+.promotion-piece-option {
+	transition: transform .1s linear;
+}
+
+#promotion-button {
+	width: 158px;
+}
 
 /* create-react-app */
 // body h3 {
