@@ -89,7 +89,7 @@ function NavLinksAuth() {
 				<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
 			</Nav>}
 			<Nav>
-				<Button variant="light" onClick={firebase.doSignOut}>Sign Out</Button>
+				<Button variant="secondary" onClick={firebase.doSignOut}>Sign Out</Button>
 			</Nav>
 		</>
 	);
