@@ -18,27 +18,20 @@ function getNavLinkStyle({ isActive }) {
 	return isActive ? { borderBottom: '3px solid #a2ff9a' } : null;
 }
 
-function NavigationNonAuth() {
+function NavLinksNonAuth() {
 	return (
-		<Navbar bg="dark" data-bs-theme="dark" className="unselectable">
-			<Container>
-				<Navbar.Brand>
-					<Link to={ROUTES.LANDING} className="nav-link">LexChess</Link>
-				</Navbar.Brand>
-				<Nav className="justify-content-end nav-menu">
-					<Nav>
-						<NavLink to={ROUTES.SIGN_UP} style={getNavLinkStyle} className={navLinkClass}>Create Account</NavLink>
-					</Nav>
-					<Nav>
-						<NavLink to={ROUTES.SIGN_IN} style={getNavLinkStyle} className={navLinkClass}>Sign in</NavLink>
-					</Nav>
-				</Nav>
-			</Container>
-		</Navbar>
+		<>
+			<Nav>
+				<NavLink to={ROUTES.SIGN_UP} style={getNavLinkStyle} className={navLinkClass}>Create Account</NavLink>
+			</Nav>
+			<Nav>
+				<NavLink to={ROUTES.SIGN_IN} style={getNavLinkStyle} className={navLinkClass}>Sign in</NavLink>
+			</Nav>
+		</>
 	);
 }
 
-function NavigationAuth() {
+function NavLinksAuth() {
 	// Register auth listener
 	const firebase = useFirebaseContext();
 	const [userRoles, setUserRoles] = useState({});
@@ -69,52 +62,55 @@ function NavigationAuth() {
 		return firebaseListener.registerUserListener(handleUserUpdate);
 	}, [firebaseListener]);
 
+	// Render
 	return (
-		<Navbar bg="dark" data-bs-theme="dark" className="unselectable" style={{ minHeight: "72px", maxHeight: "72px" }}>
-			<Container>
-				<Navbar.Brand>
-					<Link to={ROUTES.LANDING} className="nav-link">Lex Chess</Link>
-				</Navbar.Brand>
-				<Nav className="justify-content-end nav-menu">
-					{userGameList.length > 0 &&
-						userGameList.map((userGame, i) =>
-							<Nav key={i + 1}>
+		<>
+			{userGameList.length > 0 &&
+				userGameList.map((userGame, i) =>
+					<Nav key={i + 1}>
 								<NavLink to={ROUTES.PLAY + `?game=${i}`} style={getNavLinkStyle} className={navLinkClass}>
-									Play {i + 1}
-									{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
-									{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
-								</NavLink>
-							</Nav>
-						)
-					}
-					<Nav>
-						<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
+							Play {i + 1}
+							{!userGame.visited && <MdFiberNew className='attention' size={iconSize} />}
+							{userGame.myTurn && <FaChessPawn className='myTurn' size={iconSize2} />}
+						</NavLink>
 					</Nav>
-					<Nav>
-						<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
-					</Nav>
-					<Nav>
-						<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
-					</Nav>
-					{!!userRoles[ROLES.ADMIN] && <Nav>
-						<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
-					</Nav>}
-					<Nav>
-						<Button variant="light" onClick={firebase.doSignOut}>Sign Out</Button>
-					</Nav>
-				</Nav>
-			</Container >
-		</Navbar >
+				)
+			}
+			<Nav>
+				<NavLink to={ROUTES.GAME_LIST} style={getNavLinkStyle} className={navLinkClass}>Start</NavLink>
+			</Nav>
+			<Nav>
+				<NavLink to={ROUTES.GAME_HISTORY} style={getNavLinkStyle} className={navLinkClass}>Records</NavLink>
+			</Nav>
+			<Nav>
+				<NavLink to={ROUTES.ACCOUNT} style={getNavLinkStyle} className={navLinkClass}>Account</NavLink>
+			</Nav>
+			{!!userRoles[ROLES.ADMIN] && <Nav>
+				<NavLink to={ROUTES.ADMIN} style={getNavLinkStyle} className={navLinkClass}>Admin</NavLink>
+			</Nav>}
+			<Nav>
+				<Button variant="light" onClick={firebase.doSignOut}>Sign Out</Button>
+			</Nav>
+		</>
 	);
 }
 
 function Navigation() {
 	return (
-		<AuthUserContext.Consumer>
-			{authUser =>
-				authUser ? <NavigationAuth /> : <NavigationNonAuth />
-			}
-		</AuthUserContext.Consumer>
+		<Navbar bg="dark" data-bs-theme="dark" className="unselectable" style={{ minHeight: "72px", maxHeight: "72px" }}>
+			<Container>
+				<Navbar.Brand>
+					<Link to={ROUTES.LANDING} className="nav-link">LexChess</Link>
+				</Navbar.Brand>
+				<Nav className="justify-content-end nav-menu">
+					<AuthUserContext.Consumer>
+						{authUser =>
+							authUser ? <NavLinksAuth /> : <NavLinksNonAuth />
+						}
+					</AuthUserContext.Consumer>
+				</Nav>
+			</Container>
+		</Navbar>
 	);
 }
 
