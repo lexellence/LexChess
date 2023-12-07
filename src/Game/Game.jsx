@@ -254,9 +254,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				let doesMoveTriggerPromotion = false;
 				{
 					const piece = chess.get(selectedSquare);
-					console.log("piece=", piece);
 					const isPieceAPawn = piece.type === 'p';
-					console.log("isPieceAPawn=", isPieceAPawn);
 					if (isPieceAPawn) {
 						const lastRowNum = game.team === 'w' ? '8' : '0';
 						const isDestinationInLastRow = (square.charAt(1) === lastRowNum);
