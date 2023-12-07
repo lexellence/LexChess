@@ -36,10 +36,7 @@ async function getGameFromDatabase(gid: string, firebase: Firebase) {
 //|	  serveGameRecordFileToUser    |
 //\--------------------------------/--------------------------
 function serveGameRecordFileToUser(gid: string, dbGame: any) {
-	const date = dateFromKey(gid);
-	const filename = dbGame.name_w + ' vs ' + dbGame.name_b + ' ' +
-		(date.getMonth() + 1) + '-' + date.getDay() + '-' + date.getFullYear() + ' at ' +
-		date.getHours() + '-' + date.getMinutes() + '_' + date.getSeconds() + '-' + date.getMilliseconds() + '.txt';
+	const filename = dbGame.name_w + ' vs ' + dbGame.name_b + ' ' + dateFromKey(gid).toString() + '.txt';;
 	const content = gameToString(gid, dbGame);
 
 	serveFileToUser(filename, content);
