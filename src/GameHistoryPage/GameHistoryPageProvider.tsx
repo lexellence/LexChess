@@ -5,7 +5,6 @@ import { Firebase, useFirebaseContext } from '../Firebase';
 import { ref, get } from "firebase/database";
 import { dbGameToClientGame } from '../Game';
 import { date as dateFromKey } from 'firebase-key';
-import { move } from '../API/api';
 
 //+--------------------------------\--------------------------
 //|	     getGameFromDatabase   	   |
