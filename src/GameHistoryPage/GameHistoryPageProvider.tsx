@@ -56,11 +56,12 @@ function gameToString(gid: string, dbGame: any): string {
 		case 'con_w': result = dbGame.name_w + ' won (concession)'; break;
 		case 'con_b': result = dbGame.name_b + ' won (concession)'; break;
 	}
-	let summary: string = 'Game ID: ' + gid + '\n' +
-		'White: ' + dbGame.name_w + '\n' +
-		'Black: ' + dbGame.name_b + '\n';
+	let gameString: string = '';
+	gameString += 'Game ID: ' + gid + '\n';
+	gameString += 'White: ' + dbGame.name_w + '\n';
+	gameString += 'Black: ' + dbGame.name_b + '\n';
 	if (result)
-		summary += 'Result: ' + result + '\n';
+		gameString += 'Result: ' + result + '\n';
 	let movesString: string = '';
 	if (dbGame.moves) {
 		const moves = Object.values(dbGame.moves);
@@ -71,8 +72,8 @@ function gameToString(gid: string, dbGame: any): string {
 				movesString += ', ';
 		});
 	}
-	summary += 'Moves: [' + movesString + ']\n';
-	return summary;
+	gameString += 'Moves: [' + movesString + ']\n';
+	return gameString;
 }
 
 //+--------------------------------\--------------------------
