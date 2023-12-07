@@ -7,7 +7,10 @@ import { dbGameToClientGame } from '../Game';
 import { date as dateFromKey } from 'firebase-key';
 import { move } from '../API/api';
 
-async function getDbGame(gid: string, firebase: Firebase) {
+//+--------------------------------\--------------------------
+//|	     getGameFromDatabase   	   |
+//\--------------------------------/--------------------------
+async function getGameFromDatabase(gid: string, firebase: Firebase) {
 	return new Promise(function (resolve, reject) {
 		// Get game from local storage if saved
 		const savedGameString = localStorage.getItem('GameHistoryPageProvider::' + gid);
@@ -29,7 +32,23 @@ async function getDbGame(gid: string, firebase: Firebase) {
 	});
 }
 
-function getGameSummary(gid: string, dbGame: any) {
+//+--------------------------------\--------------------------
+//|	  serveGameRecordFileToUser    |
+//\--------------------------------/--------------------------
+function serveGameRecordFileToUser(gid: string, dbGame: any) {
+	const date = dateFromKey(gid);
+	const filename = dbGame.name_w + ' vs ' + dbGame.name_b + ' ' +
+		(date.getMonth() + 1) + '-' + date.getDay() + '-' + date.getFullYear() + ' at ' +
+		date.getHours() + '-' + date.getMinutes() + '_' + date.getSeconds() + '-' + date.getMilliseconds() + '.txt';
+	const content = gameToString(gid, dbGame);
+
+	serveFileToUser(filename, content);
+}
+
+//+--------------------------------\--------------------------
+//|	    	 gameToString		   |
+//\--------------------------------/--------------------------
+function gameToString(gid: string, dbGame: any): string {
 	let result: string = '';
 	switch (dbGame.status) {
 		case 'draw': result = 'Draw'; break;
@@ -61,6 +80,17 @@ function getGameSummary(gid: string, dbGame: any) {
 }
 
 //+--------------------------------\--------------------------
+//|	 	    serveFileToUser  	   |
+//\--------------------------------/--------------------------
+function serveFileToUser(filename: string, fileContent: string) {
+	const atag = document.createElement('a');
+	const file = new Blob([fileContent], { type: 'text/plain' });
+	atag.href = URL.createObjectURL(file);
+	atag.download = filename;
+	atag.click();
+}
+
+//+--------------------------------\--------------------------
 //|	 	GameHistoryPageProvider    |
 //\--------------------------------/--------------------------
 type GameHistoryPageState = {
@@ -83,61 +113,68 @@ const GameHistoryPageProvider: React.FC<Props> = ({ children }) => {
 	const authUser: AuthUserContextValue = useAuthUserContext();
 	const [state, setState] = useState<GameHistoryPageState>({ ...INITIAL_STATE });
 
+	//+--------------------------------\--------------------------
+	//|	 	  setHistoryPosition       |
+	//\--------------------------------/--------------------------
 	function setHistoryPosition(newPosition: number) {
 		sessionStorage.setItem('GameHistoryPageProvider::historyPosition', newPosition.toString());
 		setState({ ...state, historyPosition: newPosition });
 	}
 
+	//+--------------------------------\--------------------------
+	//|	 	  	   loadGame       	   |
+	//\--------------------------------/--------------------------
 	const loadGame = useCallback((gid: string, historyPosition: number): void => {
 		if (!historyPosition)
 			historyPosition = 0;
 
-		function start(dbGame: any) {
-			sessionStorage.setItem('GameHistoryPageProvider::viewingGID', gid);
-			sessionStorage.setItem('GameHistoryPageProvider::historyPosition', historyPosition.toString());
-			setState({
-				loadingGID: null,
-				downloadingGID: null,
-				game: dbGameToClientGame(dbGame, gid, authUser!.uid),
-				historyPosition
-			});
-		}
-
-		// Get game and start
 		setState({ ...INITIAL_STATE, loadingGID: gid });
-		getDbGame(gid, firebase)
-			.then(dbGame => start(dbGame))
+		getGameFromDatabase(gid, firebase)
+			.then(dbGame => {
+				sessionStorage.setItem('GameHistoryPageProvider::viewingGID', gid);
+				sessionStorage.setItem('GameHistoryPageProvider::historyPosition', historyPosition.toString());
+				setState({
+					loadingGID: null,
+					downloadingGID: null,
+					game: dbGameToClientGame(dbGame, gid, authUser!.uid),
+					historyPosition
+				});
+			})
 			.catch(() => {
 				console.log('GameHistoryPage: Error loading game');
 				setState({ ...INITIAL_STATE });
 			});
 	}, [firebase, authUser]);
 
+	//+--------------------------------\--------------------------
+	//|	 	     downloadGame          |
+	//\--------------------------------/--------------------------
 	const downloadGame = useCallback((gid: string): void => {
-		function serveFile(dbGame: any) {
-			const content = getGameSummary(gid, dbGame);
-			const atag = document.createElement('a');
-			const file = new Blob([content], { type: 'text/plain' });
-			const date = dateFromKey(gid);
-			atag.href = URL.createObjectURL(file);
-			atag.download = dbGame.name_w + ' vs ' + dbGame.name_b + ' ' +
-				(date.getMonth() + 1) + '-' + date.getDay() + '-' + date.getFullYear() + ' at ' +
-				date.getHours() + '-' + date.getMinutes() + '_' + date.getSeconds() + '-' + date.getMilliseconds() + '.txt';
-			atag.click();
-			setState({ ...INITIAL_STATE });
-		}
-
 		// Get game and serve
 		setState({ ...INITIAL_STATE, downloadingGID: gid });
-		getDbGame(gid, firebase)
-			.then(dbGame => serveFile(dbGame))
+		getGameFromDatabase(gid, firebase)
+			.then(dbGame => {
+				serveGameRecordFileToUser(gid, dbGame);
+				setState({ ...INITIAL_STATE });
+			})
 			.catch(() => {
 				console.log('GameHistoryPage: Error downloading game');
 				setState({ ...INITIAL_STATE });
 			});
 	}, [firebase]);
 
-	// Load from session storage on mount 
+	//+--------------------------------\--------------------------
+	//|	 	  	  leaveGame       	   |
+	//\--------------------------------/--------------------------
+	function leaveGame(): void {
+		sessionStorage.removeItem('GameHistoryPageProvider::viewingGID');
+		sessionStorage.removeItem('GameHistoryPageProvider::historyPosition');
+		setState({ ...INITIAL_STATE });
+	};
+
+	//+-------------------------------------------------\---------
+	//|   Effect: Load from session storage on mount 	|
+	//\-------------------------------------------------/---------
 	useEffect(() => {
 		const viewingGID = sessionStorage.getItem('GameHistoryPageProvider::viewingGID');
 		if (viewingGID) {
@@ -147,12 +184,9 @@ const GameHistoryPageProvider: React.FC<Props> = ({ children }) => {
 		}
 	}, [loadGame]);
 
-	function leaveGame(): void {
-		sessionStorage.removeItem('GameHistoryPageProvider::viewingGID');
-		sessionStorage.removeItem('GameHistoryPageProvider::historyPosition');
-		setState({ ...INITIAL_STATE });
-	};
-
+	//+-------------------------------------------------\---------
+	//|   	    Render: Provide context value		 	|
+	//\-------------------------------------------------/---------
 	const contextValue: GameHistoryPageContextValue = {
 		...state, loadGame, downloadGame, leaveGame, setHistoryPosition
 	};
