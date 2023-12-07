@@ -66,7 +66,8 @@ function GameTableRow({ gid, status, name_w, name_b }) {
 	const { loadingGID, loadGame, downloadingGID, downloadGame } = useGameHistoryPageContext();
 
 	// Only include finished games in history list
-	if (status === 'wait' || status === 'play')
+	// if (status === 'wait' || status === 'play')
+	if (status === 'wait')
 		return null;
 
 	// Buttons
