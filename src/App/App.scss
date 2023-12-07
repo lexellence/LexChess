@@ -139,9 +139,9 @@ main {
 }
 
 .game-history-button {
-	width: 80px;
+	width: 85px;
+	@extend .mx-1;
 }
-
 
 // #game-list-page {
 // 	text-align: center;
