@@ -47,12 +47,15 @@ function getGameSummary(gid: string, dbGame: any) {
 	if (result)
 		summary += 'Result: ' + result + '\n';
 	let movesString: string = '';
-	if (dbGame.moves)
-		for (let i = 0; i < dbGame.moves.length; i++) {
+	if (dbGame.moves) {
+		const moves = Object.values(dbGame.moves);
+		moves.forEach((move, i) => {
 			movesString += move;
-			if (i < dbGame.moves.length - 1)
+			const isNotLastMove = (i < moves.length - 1);
+			if (isNotLastMove)
 				movesString += ', ';
-		}
+		});
+	}
 	summary += 'Moves: [' + movesString + ']\n';
 	return summary;
 }
