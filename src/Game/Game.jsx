@@ -303,17 +303,17 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 
 	};
 	const move = (fromSquare, toSquare, promotionPiece) => {
-		// try {
-		const thisMove = chess.move({ from: fromSquare, to: toSquare, promotion: promotionPiece });
-		if (thisMove) {
-			refreshBoard();
-			playAPI.move(game.gid, thisMove.san);
-			setSelectedSquare(null);
+		try {
+			const thisMove = chess.move({ from: fromSquare, to: toSquare, promotion: promotionPiece });
+			if (thisMove) {
+				refreshBoard();
+				playAPI.move(game.gid, thisMove.san);
+				setSelectedSquare(null);
+			}
 		}
-		// }
-		// catch (error) {
-		// 	console.log(error.message);
-		// }
+		catch (error) {
+			console.log(error.message);
+		}
 	}
 
 	const handleMouseUpCanvas = (square) => {
