@@ -45,48 +45,58 @@ function serveGameRecordFileToUser(gameDate: Date, dbGame: any) {
 //|	    	 gameToString		   |
 //\--------------------------------/--------------------------
 function gameToString(dbGame: any): string {
-	let result: string = '';
-	switch (dbGame.status) {
-		case 'draw': result = 'Draw'; break;
-		case 'stale': result = 'Draw (stalemate)'; break;
-		case 'ins': result = 'Draw (insufficient material)'; break;
-		case '3fold': result = 'Draw (three-fold repetition)'; break;
-		case 'cm_w': result = dbGame.name_w + ' won (checkmate)'; break;
-		case 'cm_b': result = dbGame.name_b + ' won (checkmate)'; break;
-		case 'con_w': result = dbGame.name_w + ' won (concession)'; break;
-		case 'con_b': result = dbGame.name_b + ' won (concession)'; break;
-	}
-
-	// Create move data to arrays
-	let moveKeys: string[] = [];
-	let moveValues: string[] = [];
-	if (dbGame.moves) {
-		moveKeys = Object.keys(dbGame.moves);
-		moveValues = Object.values(dbGame.moves);
-	}
-
-	// Create the string
 	let gameString: string = '';
 
-	let gameStart = moveKeys.length > 0 ? dateFromKey(moveKeys[0]) : 'n/a';
-	let gameEnd = moveKeys.length > 0 ? dateFromKey(moveKeys[moveKeys.length - 1]) : 'n/a';
-	gameString += 'Start: ' + gameStart + '\n';
-	gameString += 'End: ' + gameEnd + '\n';
+	// Add dates
+	{
+		let moveKeys: string[] = dbGame.moves ? Object.keys(dbGame.moves) : [];
+		let gameStart = moveKeys.length > 0 ? dateFromKey(moveKeys[0]) : 'n/a';
+		let gameEnd = moveKeys.length > 0 ? dateFromKey(moveKeys[moveKeys.length - 1]) : 'n/a';
+		gameString += 'Start: ' + gameStart + '\n';
+		gameString += 'End: ' + gameEnd + '\n';
+	}
 
+	// Add names
 	gameString += 'White: ' + dbGame.name_w + '\n';
 	gameString += 'Black: ' + dbGame.name_b + '\n';
 
-	if (result)
+	// Add result
+	{
+		const result = getGameResultString(dbGame.status, dbGame.name_w, dbGame.name_b);
 		gameString += 'Result: ' + result + '\n';
-	let movesString: string = '';
-	moveValues.forEach((move, i) => {
-		movesString += move;
-		const isNotLastMove = (i < moveValues.length - 1);
-		if (isNotLastMove)
-			movesString += ', ';
-	});
-	gameString += 'Moves: [' + movesString + ']\n';
+	}
+
+	// Add moves
+	gameString += 'Moves: [';
+	{
+		let moveValues: string[] = dbGame.moves ? Object.values(dbGame.moves) : [];
+		moveValues.forEach((move, i) => {
+			gameString += move;
+			const isNotLastMove = (i < moveValues.length - 1);
+			if (isNotLastMove)
+				gameString += ', ';
+		});
+	}
+	gameString += ']\n';
+
 	return gameString;
+}
+
+//+--------------------------------\--------------------------
+//|	     getGameResultString	   |
+//\--------------------------------/--------------------------
+function getGameResultString(gameStatus: string, nameWhite: string, nameBlack: string) {
+	switch (gameStatus) {
+		case 'draw': return 'Draw'; break;
+		case 'stale': return 'Draw (stalemate)'; break;
+		case 'ins': return 'Draw (insufficient material)'; break;
+		case '3fold': return 'Draw (three-fold repetition)'; break;
+		case 'cm_w': return nameWhite + ' won (checkmate)'; break;
+		case 'cm_b': return nameBlack + ' won (checkmate)'; break;
+		case 'con_w': return nameWhite + ' won (concession)'; break;
+		case 'con_b': return nameBlack + ' won (concession)'; break;
+		default: return 'n/a'; break;
+	}
 }
 
 //+--------------------------------\--------------------------
