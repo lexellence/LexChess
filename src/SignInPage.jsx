@@ -39,6 +39,7 @@ function SignInFormBase({ firebase }) {
 				value={state.email}
 				onChange={onChange}
 				type="text"
+				autoComplete="off"
 				placeholder="Email Address"
 			/>
 			<input
@@ -46,6 +47,7 @@ function SignInFormBase({ firebase }) {
 				value={state.password}
 				onChange={onChange}
 				type="password"
+				autoComplete="off"
 				placeholder="Password"
 			/>
 			<button disabled={isInvalid} type="submit">Sign-in</button>
