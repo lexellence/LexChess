@@ -34,9 +34,9 @@ async function getGameFromDatabase(gid: string, firebase: Firebase) {
 //+--------------------------------\--------------------------
 //|	  serveGameRecordFileToUser    |
 //\--------------------------------/--------------------------
-function serveGameRecordFileToUser(gid: string, dbGame: any) {
-	const filename = dbGame.name_w + ' vs ' + dbGame.name_b + ' ' + dateFromKey(gid).toString() + '.txt';;
-	const content = gameToString(gid, dbGame);
+function serveGameRecordFileToUser(gameDate: Date, dbGame: any) {
+	const filename = dbGame.name_w + ' vs ' + dbGame.name_b + ' ' + gameDate.toString() + '.txt';;
+	const content = gameToString(dbGame);
 
 	serveFileToUser(filename, content);
 }
@@ -44,7 +44,7 @@ function serveGameRecordFileToUser(gid: string, dbGame: any) {
 //+--------------------------------\--------------------------
 //|	    	 gameToString		   |
 //\--------------------------------/--------------------------
-function gameToString(gid: string, dbGame: any): string {
+function gameToString(dbGame: any): string {
 	let result: string = '';
 	switch (dbGame.status) {
 		case 'draw': result = 'Draw'; break;
@@ -56,22 +56,35 @@ function gameToString(gid: string, dbGame: any): string {
 		case 'con_w': result = dbGame.name_w + ' won (concession)'; break;
 		case 'con_b': result = dbGame.name_b + ' won (concession)'; break;
 	}
+
+	// Create move data to arrays
+	let moveKeys: string[] = [];
+	let moveValues: string[] = [];
+	if (dbGame.moves) {
+		moveKeys = Object.keys(dbGame.moves);
+		moveValues = Object.values(dbGame.moves);
+	}
+
+	// Create the string
 	let gameString: string = '';
-	gameString += 'Game ID: ' + gid + '\n';
+
+	let gameStart = moveKeys.length > 0 ? dateFromKey(moveKeys[0]) : 'n/a';
+	let gameEnd = moveKeys.length > 0 ? dateFromKey(moveKeys[moveKeys.length - 1]) : 'n/a';
+	gameString += 'Start: ' + gameStart + '\n';
+	gameString += 'End: ' + gameEnd + '\n';
+
 	gameString += 'White: ' + dbGame.name_w + '\n';
 	gameString += 'Black: ' + dbGame.name_b + '\n';
+
 	if (result)
 		gameString += 'Result: ' + result + '\n';
 	let movesString: string = '';
-	if (dbGame.moves) {
-		const moves = Object.values(dbGame.moves);
-		moves.forEach((move, i) => {
-			movesString += move;
-			const isNotLastMove = (i < moves.length - 1);
-			if (isNotLastMove)
-				movesString += ', ';
-		});
-	}
+	moveValues.forEach((move, i) => {
+		movesString += move;
+		const isNotLastMove = (i < moveValues.length - 1);
+		if (isNotLastMove)
+			movesString += ', ';
+	});
 	gameString += 'Moves: [' + movesString + ']\n';
 	return gameString;
 }
@@ -151,7 +164,7 @@ const GameHistoryPageProvider: React.FC<Props> = ({ children }) => {
 		setState({ ...INITIAL_STATE, downloadingGID: gid });
 		getGameFromDatabase(gid, firebase)
 			.then(dbGame => {
-				serveGameRecordFileToUser(gid, dbGame);
+				serveGameRecordFileToUser(dateFromKey(gid), dbGame);
 				setState({ ...INITIAL_STATE });
 			})
 			.catch(() => {
