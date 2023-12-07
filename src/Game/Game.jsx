@@ -225,7 +225,37 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	};
 
 	//+----------------------------------\------------------------
-	//|	  	 	 Mouse Clicks			 |
+	//|	  	 handleMouseDownCanvas		 |
+	//\----------------------------------/------------------------
+	const handleMouseDownCanvas = (clickedSquare) => {
+		const gameIsBeingPlayed = game.status === 'play';
+		const itIsOurTurn = chess.turn() === game.team;
+		if (!gameIsBeingPlayed || !itIsOurTurn)
+			return;
+
+		if (selectedSquare) {
+			if (selectedSquare === clickedSquare)
+				setSelectedSquare(null);
+			else
+				attemptMove(clickedSquare);
+		}
+		else {
+			let isUserClickingOnHisPiece;
+			{
+				const piece = chess.get(clickedSquare);
+				isUserClickingOnHisPiece = piece && piece.color === game.team;
+			}
+			if (isUserClickingOnHisPiece)
+				setSelectedSquare(clickedSquare);
+		}
+
+		// Did they click on a piece that has valid moves?
+		// Indicate no moves, or highlight all possible moves 
+
+	};
+
+	//+----------------------------------\------------------------
+	//|	  	 	  attemptMove			 |
 	//\----------------------------------/------------------------
 	const [showPromotionPicker, setShowPromotionPicker] = useState(false);
 	const [selectPromotionPiece, setSelectPromotionPiece] = useState(() => (pieceType) => { });
@@ -233,76 +263,57 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		setShowPromotionPicker(false);
 		setSelectedSquare(null);
 	};
-
-	const handleMouseDownCanvas = (square) => {
-		// Is game in progress?
-		if (game.status !== 'play')
-			return;
-
-		// Is it user's turn?
-		if (chess.turn() !== game.team)
-			return;
-
-		// Do they already have a piece chosen?
-		if (selectedSquare) {
-			// Did they cancel their selection?
-			if (selectedSquare === square) {
-				setSelectedSquare(null);
-				return;
-			}
-			else {
-				let doesMoveTriggerPromotion = false;
-				{
-					const piece = chess.get(selectedSquare);
-					const isPieceAPawn = piece.type === 'p';
-					if (isPieceAPawn) {
-						const lastRowNum = game.team === 'w' ? '8' : '0';
-						const isDestinationInLastRow = (square.charAt(1) === lastRowNum);
-						if (isDestinationInLastRow)
-							doesMoveTriggerPromotion = true;
-					}
-				}
-
-				if (doesMoveTriggerPromotion) {
-					try {
-						let isValidMoveWithPromotion;
-						{
-							const thisMove = chess.move({ from: selectedSquare, to: square, promotion: 'q' });
-							isValidMoveWithPromotion = thisMove ? true : false;
-						}
-						if (isValidMoveWithPromotion) {
-							chess.undo();
-							setSelectPromotionPiece(() => (pieceType) => {
-								setShowPromotionPicker(false);
-								move(selectedSquare, square, pieceType);
-							});
-							setShowPromotionPicker(true);
-						}
-					}
-					catch (error) {
-						console.log(error.message);
-					}
-				}
-				else
-					move(selectedSquare, square);
-
-				return;
+	const attemptMove = (destinationSquare) => {
+		let doesMoveTriggerPromotion = false;
+		{
+			const piece = chess.get(selectedSquare);
+			const isPieceAPawn = piece.type === 'p';
+			if (isPieceAPawn) {
+				const lastRowNum = game.team === 'w' ? '8' : '0';
+				const isDestinationInLastRow = (destinationSquare.charAt(1) === lastRowNum);
+				if (isDestinationInLastRow)
+					doesMoveTriggerPromotion = true;
 			}
 		}
 
-		// Did they click on one of their pieces?
-		const piece = chess.get(square);
-		if (piece) {
-			if (piece.color === game.team) {
-				setSelectedSquare(square);
+		if (doesMoveTriggerPromotion) {
+			if (isValidPromotionMove(selectedSquare, destinationSquare)) {
+				setShowPromotionPicker(true);
+				setSelectPromotionPiece(() => (pieceType) => {
+					setShowPromotionPicker(false);
+					performMove(selectedSquare, destinationSquare, pieceType);
+				});
 			}
 		}
+		else
+			performMove(selectedSquare, destinationSquare);
 
-		// Did they click on a piece that has valid moves?
-		// Indicate no moves, or highlight all possible moves 
-
+		return;
 	};
-	const move = (fromSquare, toSquare, promotionPiece) => {
+
+	//+----------------------------------\------------------------
+	//|	  	  isValidPromotionMove		 |
+	//\----------------------------------/------------------------
+	const isValidPromotionMove = (sourceSquare, destinationSquare) => {
+		try {
+			const thisMove = chess.move({ from: selectedSquare, to: destinationSquare, promotion: 'q' });
+			if (thisMove) {
+				chess.undo();
+				return true;
+			}
+			else
+				return false;
+		}
+		catch (error) {
+			console.log(error.message);
+			return false;
+		}
+	};
+
+	//+----------------------------------\------------------------
+	//|	  	 	  performMove			 |
+	//\----------------------------------/------------------------
+	const performMove = (fromSquare, toSquare, promotionPiece) => {
 		try {
 			const thisMove = chess.move({ from: fromSquare, to: toSquare, promotion: promotionPiece });
 			if (thisMove) {
@@ -314,11 +325,14 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		catch (error) {
 			console.log(error.message);
 		}
-	}
-
-	const handleMouseUpCanvas = (square) => {
-
 	};
+
+	//+----------------------------------\------------------------
+	//|	  	 handleMouseUpCanvas		 |
+	//\----------------------------------/------------------------
+	const handleMouseUpCanvas = (squarePointedTo) => {
+	};
+
 	// function handlePieceDrop({ sourceSquare, targetSquare }) {
 	// 	console.log(sourceSquare, targetSquare);
 	// 	// Try move
