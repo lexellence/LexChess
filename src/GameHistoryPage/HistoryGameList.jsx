@@ -62,7 +62,7 @@ function HistoryGameList() {
 //+--------------------------------\--------------------------
 //|	 	    GameTableRow   	       |
 //\--------------------------------/--------------------------
-function GameTableRow({ gid, status, name_w, name_b, name_d }) {
+function GameTableRow({ gid, status, name_w, name_b }) {
 	const { loadingGID, loadGame, downloadingGID, downloadGame } = useGameHistoryPageContext();
 
 	// Only include finished games in history list
