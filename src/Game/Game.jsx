@@ -107,15 +107,15 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const quitButton = useRef();
 	useLayoutEffect(() => {
 		function resetBoardSize() {
-			const gameContentWidth = outerDiv.current?.offsetWidth;
-			const gameContentHeight = outerDiv.current?.offsetHeight;
+			const gameContentWidth = outerDiv.current.offsetWidth;
+			const gameContentHeight = outerDiv.current.offsetHeight;
 			if (gameContentWidth && gameContentHeight) {
-				const titleHeight = title.current?.scrollHeight;
-				const topTeamLabelHeight = topTeamLabel.current?.scrollHeight;
-				const bottomTeamLabelHeight = bottomTeamLabel.current?.scrollHeight;
-				const historyControlsHeight = historyControls.current?.scrollHeight;
-				const timerHeight = timer.current?.scrollHeight;
-				const quitButtonHeight = quitButton.current?.scrollHeight;
+				const titleHeight = title.current ? title.current.scrollHeight : 0;
+				const topTeamLabelHeight = topTeamLabel.current ? topTeamLabel.current.scrollHeight : 0;
+				const bottomTeamLabelHeight = bottomTeamLabel.current ? bottomTeamLabel.current.scrollHeight : 0;
+				const historyControlsHeight = historyControls.current ? historyControls.current.scrollHeight : 0;
+				const timerHeight = timer.current ? timer.current.scrollHeight : 0;
+				const quitButtonHeight = quitButton.current ? quitButton.current.scrollHeight : 0;
 				const totalNonBoardHeight = titleHeight + topTeamLabelHeight + bottomTeamLabelHeight +
 					historyControlsHeight + timerHeight + quitButtonHeight;
 
@@ -365,11 +365,6 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	//+----------------------------------\------------------------
 	//|	  	 		Render				 |
 	//\----------------------------------/------------------------
-	if (errorMessage)
-		return <div style={{ textAlign: 'center' }}>Something happened: {errorMessage}</div>;
-	if (!game)
-		return <div style={{ textAlign: 'center' }}>Loading...</div>;
-
 	const { isMovingTable, isQuittingTable } = playAPI;
 	const isMoving = isMovingTable[game.gid];
 	const isQuitting = isQuittingTable[game.gid];
@@ -418,6 +413,11 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 
 	const whiteTeamLabel = <><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></>;
 	const blackTeamLabel = <><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></>;
+
+	if (errorMessage)
+		return <div ref={outerDiv} style={{ textAlign: 'center' }}>Something happened: {errorMessage}</div>;
+	if (!game)
+		return <div ref={outerDiv} style={{ textAlign: 'center' }}>Loading...</div>;
 	return (
 		<div id='game' ref={outerDiv}>
 			<h4 ref={title} style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>

@@ -100,7 +100,7 @@ function SignUpForm() {
 }
 
 const SignUpPage = () => (
-	<div className='auth-page'>
+	<div id='auth-page'>
 		<h1>Create a New Account</h1>
 		<div className='auth-form'>
 			<SignUpForm />

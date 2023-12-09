@@ -9,7 +9,7 @@ import * as ROUTES from '../constants/routes';
 
 function AdminPageBase() {
 	return (
-		<React.Fragment>
+		<div id="admin-page">
 			<h1>Admin</h1>
 			<p>The Admin Page is accessible by every signed in admin user.</p>
 
@@ -17,8 +17,7 @@ function AdminPageBase() {
 				<Route path={ROUTES.ADMIN_DETAILS} element={<UserItem />} />
 				<Route path={ROUTES.ADMIN} element={<UserList />} />
 			</Routes>
-		</React.Fragment>
-	);
+		</div>);
 }
 const AdminPage =
 	withEmailVerification(

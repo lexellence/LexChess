@@ -98,7 +98,7 @@ function SignInPageBase({ firebase }) {
 	});
 
 	return (
-		<div className='auth-page'>
+		<div id='auth-page'>
 			<h1>Sign In</h1>
 			<div className='auth-form'>
 				<SignInForm />

@@ -64,13 +64,13 @@ function GamePageBase() {
 
 	// Render
 	if (!game)
-		return <div style={{ textAlign: 'center' }}>Loading...</div>;
+		return <div id='game-page' style={{ textAlign: 'center' }}>Loading...</div>;
 	else {
 		return (
-			<section id='game-page'>
+			<div id='game-page'>
 				{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
 					: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
-			</section>
+			</div>
 		);
 	}
 }

@@ -35,7 +35,7 @@ table {
 	@extend .p-3;
 }
 
-.auth-page {
+#auth-page {
 	width: 400px;
 	margin: auto;
 
@@ -50,7 +50,13 @@ table {
 	}
 }
 
-.home-page {
+#account-page {}
+
+#admin-page {}
+
+#game-list-page {}
+
+#home-page {
 	min-width: 200px;
 	max-width: 700px;
 	margin: auto;
@@ -66,6 +72,13 @@ table {
 			text-align: left;
 		}
 	}
+}
+
+#game-page {
+	width: 100%;
+	height: 100%;
+	line-height: 2em;
+	// border: 3px solid rgb(158, 5, 5);
 }
 
 hr {
@@ -105,19 +118,6 @@ main {
 	padding: 0px;
 }
 
-#game-page {
-	width: 100%;
-	height: 100%;
-	line-height: 2em;
-	// border: 3px solid rgb(158, 5, 5);
-}
-
-// #game-history-page {
-// 	text-align: center;
-// 	width: 100%;
-// 	height: 100%;
-// }
-
 #game {
 	// text-align: center;
 	// display: flex;
@@ -142,10 +142,6 @@ main {
 	width: 85px;
 	@extend .mx-1;
 }
-
-// #game-list-page {
-// 	text-align: center;
-// }
 
 .game-list-button {
 	width: 100%;
