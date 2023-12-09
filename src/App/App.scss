@@ -1,4 +1,8 @@
 @import "../../node_modules/bootstrap/scss/bootstrap";
+$primaryColor: #66DD66;
+$secondaryColor: #8dfd8d;
+$brightColor: #00ff00;
+$attentionColor: #FFA900;
 
 /* Mine */
 html,
@@ -11,7 +15,7 @@ body {
 }
 
 body {
-	background-color: #66DD66;
+	background-color: $primaryColor;
 	// border: 3px solid rgb(93, 240, 250);
 	height: 100%;
 }
@@ -31,7 +35,7 @@ table {
 }
 
 .block-section {
-	background-color: #8dfd8d;
+	background-color: $secondaryColor;
 	@extend .p-3;
 }
 
@@ -148,11 +152,11 @@ main {
 }
 
 .attention {
-	color: #FFA900 !important;
+	color: $attentionColor !important;
 }
 
 .myTurn {
-	color: #00ff00;
+	color: $brightColor;
 }
 
 #timer-table {
