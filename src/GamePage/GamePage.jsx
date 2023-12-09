@@ -63,16 +63,12 @@ function GamePageBase() {
 	}, [gameIndexToDisplay, userPlay, firebaseListener]);
 
 	// Render
-	if (!game)
-		return <div id='game-page' style={{ textAlign: 'center' }}>Loading...</div>;
-	else {
-		return (
-			<div id='game-page'>
-				{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
-					: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
-			</div>
-		);
-	}
+	return (
+		<div id='game-page'>
+			{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
+				: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
+		</div>
+	);
 }
 const GamePage =
 	withEmailVerification(
