@@ -33,7 +33,7 @@ const HomePageAuth = ({ authUser }) => (
 );
 
 const HomePage = () => (
-	<div className='home-page'>
+	<div id='home-page'>
 		<div>
 			<AuthUserContext.Consumer>
 				{authUser =>
