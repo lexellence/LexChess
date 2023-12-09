@@ -65,17 +65,12 @@ function HistoryGameList() {
 function GameTableRow({ gid, status, name_w, name_b }) {
 	const { loadingGID, loadGame, downloadingGID, downloadGame } = useGameHistoryPageContext();
 
-	// Only include finished games in history list
-	// if (status === 'wait' || status === 'play')
 	if (status === 'wait')
 		return null;
 
-	// Buttons
 	const loadingThisGame = Boolean(loadingGID) && loadingGID === gid;
 	const downloadingThisGame = Boolean(downloadingGID) && downloadingGID === gid;
 	const disableButtons = Boolean(loadingGID) || Boolean(downloadingGID);
-
-	// Render
 	return (
 		<tr>
 			<td>{getStatusText(status, name_w, name_b)}</td>
@@ -85,26 +80,28 @@ function GameTableRow({ gid, status, name_w, name_b }) {
 				<Button className='game-list-button' variant='primary' size='sm'
 					disabled={disableButtons}
 					onClick={!disableButtons ? () => loadGame(gid) : null}>
-					{/* Button Label */}
-					{(loadingThisGame) ?
-						<>Opening...<ButtonSpinner variant='light' /></>
-						: 'View'
-					}
+					<ButtonContent isActionInProgress={loadingThisGame} actionLabel='View' inProgressLabel='Opening...' />
 				</Button>
 			</td>
 			<td>
 				<Button className='game-list-button' variant='primary' size='sm'
 					disabled={disableButtons}
 					onClick={!disableButtons ? () => downloadGame(gid) : null}>
-					{/* Button Label */}
-					{(downloadingThisGame) ?
-						<>Downloading...<ButtonSpinner variant='light' /></>
-						: 'Download'
-					}
+					<ButtonContent isActionInProgress={downloadingThisGame} actionLabel='Download' inProgressLabel='Downloading...' />
 				</Button>
 			</td>
 		</tr >
 	);
+}
+
+//+--------------------------------\--------------------------
+//|	 	    ButtonContent  	       |
+//\--------------------------------/--------------------------
+function ButtonContent({ isActionInProgress, actionLabel, inProgressLabel }) {
+	if (isActionInProgress)
+		return <>{inProgressLabel}<ButtonSpinner variant='light' /></>;
+	else
+		return <>{actionLabel}</>;
 }
 
 export { HistoryGameList };
