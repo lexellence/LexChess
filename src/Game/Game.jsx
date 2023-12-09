@@ -401,7 +401,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const nextMoveDisabled = buttonsDisabled || !canGoForwardInHistory();
 	const lastMoveDisabled = buttonsDisabled || !canGoBackInHistory();
 
-	const timerDisplay = (game.status === 'play') ? 'block' : 'none';
+	// const timerDisplay = (game.status === 'play') ? 'block' : 'none';
+	const timerDisplay = 'none';
 
 	let quitButtonContent;
 	if (game.status === 'play')
