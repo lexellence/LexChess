@@ -77,31 +77,34 @@ function GameTableRow({ gid, status, name_w, name_b }) {
 			<td>{name_w}</td>
 			<td>{name_b}</td>
 			<td>
-				<Button className='game-list-button' variant='primary' size='sm'
-					disabled={disableButtons}
-					onClick={!disableButtons ? () => loadGame(gid) : null}>
-					<ButtonContent isActionInProgress={loadingThisGame} actionLabel='View' inProgressLabel='Opening...' />
-				</Button>
+				<GameTableButton isActionInProgress={loadingThisGame} actionLabel='View' inProgressLabel='Opening...'
+					onClick={() => loadGame(gid)} disabled={disableButtons} />
 			</td>
 			<td>
-				<Button className='game-list-button' variant='primary' size='sm'
-					disabled={disableButtons}
-					onClick={!disableButtons ? () => downloadGame(gid) : null}>
-					<ButtonContent isActionInProgress={downloadingThisGame} actionLabel='Download' inProgressLabel='Downloading...' />
-				</Button>
+				<GameTableButton isActionInProgress={downloadingThisGame} actionLabel='Download' inProgressLabel='Downloading...'
+					onClick={() => downloadGame(gid)} disabled={disableButtons} />
 			</td>
 		</tr >
 	);
 }
 
 //+--------------------------------\--------------------------
-//|	 	    ButtonContent  	       |
+//|	 	   GameTableButton	       |
 //\--------------------------------/--------------------------
-function ButtonContent({ isActionInProgress, actionLabel, inProgressLabel }) {
-	if (isActionInProgress)
-		return <>{inProgressLabel}<ButtonSpinner variant='light' /></>;
-	else
-		return <>{actionLabel}</>;
+function GameTableButton({ isActionInProgress, actionLabel, inProgressLabel, onClick, disabled }) {
+	const buttonContent =
+		isActionInProgress ?
+			<>{inProgressLabel}<ButtonSpinner variant='light' /></>
+			:
+			<>{actionLabel}</>;
+	return (
+		<Button className='game-list-button' variant='primary' size='sm'
+			disabled={disabled}
+			onClick={!disabled ? onClick : null}>
+			{buttonContent}
+		</Button>
+	);
+
 }
 
 export { HistoryGameList };
