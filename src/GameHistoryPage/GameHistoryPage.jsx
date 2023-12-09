@@ -9,7 +9,7 @@ import { useGameHistoryPageContext } from './useGameHistoryPageContext';
 function GameHistoryPageBase() {
 	const { game, historyPosition, setHistoryPosition, leaveGame } = useGameHistoryPageContext();
 	return (
-		<div className='game-page'>
+		<div id='game-page'>
 			{game ?
 				<Game game={game} historyPosition={historyPosition} setHistoryPosition={setHistoryPosition} leaveGame={leaveGame} />
 				:
