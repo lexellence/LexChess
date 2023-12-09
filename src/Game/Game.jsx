@@ -228,7 +228,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	//|	  	 handleMouseDownCanvas		 |
 	//\----------------------------------/------------------------
 	const handleMouseDownCanvas = (clickedSquare) => {
-		const gameIsBeingPlayed = game.status === 'play';
+		const gameIsBeingPlayed = (game.status === 'play' && location.pathname.startsWith(ROUTES.PLAY));
 		const itIsOurTurn = chess.turn() === game.team;
 		if (!gameIsBeingPlayed || !itIsOurTurn)
 			return;
@@ -393,8 +393,8 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	else
 		gameTitleVisibility = 'visible';
 
-	const blackTurnIconVisible = (game.status === 'play' && chess.turn() === 'b');
-	const whiteTurnIconVisible = (game.status === 'play' && chess.turn() === 'w');
+	const blackTurnIconVisible = (chess.turn() === 'b');
+	const whiteTurnIconVisible = (chess.turn() === 'w');
 
 	const buttonsDisabled = isMoving || isQuitting;
 	const historyControlsDisplay = !setHistoryPosition ? 'none' : 'block';
@@ -405,10 +405,12 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const timerDisplay = 'none';
 
 	let quitButtonContent;
-	if (game.status === 'play')
-		quitButtonContent = isQuitting ? <>Conceding...<ButtonSpinner /></> : 'Concede';
-	else if (location.pathname.startsWith(ROUTES.PLAY))
-		quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
+	if (location.pathname.startsWith(ROUTES.PLAY)) {
+		if (game.status === 'play')
+			quitButtonContent = isQuitting ? <>Conceding...<ButtonSpinner /></> : 'Concede';
+		else
+			quitButtonContent = isQuitting ? <>Leaving...<ButtonSpinner /></> : 'Leave';
+	}
 	else
 		quitButtonContent = isQuitting ? <>Loading records...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
 
