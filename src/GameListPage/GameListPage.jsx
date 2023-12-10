@@ -12,10 +12,10 @@ import { useFirebaseListenerContext } from '../FirebaseListener';
 
 function GameListPageNonAuth() {
 	return (
-		<>
+		<section>
 			<h3>Please <Link to={ROUTES.SIGN_IN}>sign in</Link> to create, join, or watch a game</h3>
 			<JoinGameList isSignedIn={false} />
-		</>
+		</section>
 	);
 };
 
@@ -33,10 +33,14 @@ function GameListPageAuth() {
 
 	return (
 		<>
-			<h1>Create a new game</h1>
-			<GameCreator isUserMaxedOut={isUserMaxedOut} />
-			<h1>Join a game</h1>
-			<JoinGameList isSignedIn={true} isUserMaxedOut={isUserMaxedOut} />
+			<section>
+				<h1>Create a new game</h1>
+				<GameCreator isUserMaxedOut={isUserMaxedOut} />
+			</section>
+			<section>
+				<h1>Join a game</h1>
+				<JoinGameList isSignedIn={true} isUserMaxedOut={isUserMaxedOut} />
+			</section>
 		</>
 	);
 };

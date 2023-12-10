@@ -64,10 +64,10 @@ function GamePageBase() {
 
 	// Render
 	return (
-		<div id='game-page'>
+		<section id='game-page'>
 			{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
 				: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
-		</div>
+		</section>
 	);
 }
 const GamePage =

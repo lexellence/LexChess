@@ -3,12 +3,12 @@ import { PasswordForgetForm } from './PasswordForgetForm';
 
 function PasswordForgetPage() {
 	return (
-		<div className='authPage'>
+		<section id='auth-page'>
 			<h1>Password Forget</h1>
-			<div className='authForm'>
+			<div className='auth-form'>
 				<PasswordForgetForm />
 			</div>
-		</div>
+		</section>
 	);
 };
 

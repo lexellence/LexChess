@@ -9,7 +9,7 @@ import { useGameHistoryPageContext } from './useGameHistoryPageContext';
 function GameHistoryPageBase() {
 	const { game, historyPosition, setHistoryPosition, leaveGame } = useGameHistoryPageContext();
 	return (
-		<div id='game-page'>
+		<section id='game-page'>
 			{game ?
 				<Game game={game} historyPosition={historyPosition} setHistoryPosition={setHistoryPosition} leaveGame={leaveGame} />
 				:
@@ -18,7 +18,7 @@ function GameHistoryPageBase() {
 					<HistoryGameList />
 				</>
 			}
-		</div>
+		</section>
 	);
 }
 const GameHistoryPage = withEmailVerification(

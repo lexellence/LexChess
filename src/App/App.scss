@@ -30,13 +30,18 @@ body {
 }
 
 table {
-	background-color: #cee46d;
+	background-color: #1d200f;
 	margin: 0 auto;
 }
 
-.block-section {
+section {
+	@extend .pt-3;
+}
+
+.page-section-block {
 	background-color: $secondaryColor;
 	@extend .p-3;
+	border-radius: 6px;
 }
 
 #auth-page {
@@ -46,7 +51,7 @@ table {
 	.auth-form {
 		width: 280px;
 		margin: auto;
-		@extend .block-section;
+		@extend .page-section-block;
 
 		input {
 			@extend .my-1;
@@ -66,7 +71,7 @@ table {
 	margin: auto;
 
 	.home-desc {
-		@extend .block-section;
+		@extend .page-section-block;
 
 		max-width: 500px;
 		margin: auto;
@@ -149,6 +154,12 @@ main {
 
 .game-list-button {
 	width: 100%;
+}
+
+.game-creator {
+	@extend .page-section-block;
+	margin: auto;
+	max-width: 225px;
 }
 
 .attention {

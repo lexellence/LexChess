@@ -30,7 +30,7 @@ function GameCreator({ isUserMaxedOut }) {
 
 	const canCreateGame = !isCreatingGame && !isUserMaxedOut;
 	return (
-		<>
+		<div className='game-creator'>
 			Play as:<br />
 			<ToggleButtonGroup type='radio' name='teamSelection' defaultValue={defaultTeamSelection}
 				onChange={!isCreatingGame ? setTeamSelection : null}>
@@ -46,7 +46,7 @@ function GameCreator({ isUserMaxedOut }) {
 				variant={createGameRadioMap.get(teamSelection).variant}>
 				{createButtonContent}
 			</Button>
-		</>
+		</div>
 	);
 };
 

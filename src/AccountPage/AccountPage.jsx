@@ -191,7 +191,7 @@ function AccountPageBase() {
 
 	return (
 		// <span style={{ maxWidth: "500px" }} className='selectable mx-auto'>
-		<div id="account-page" className="selectable">
+		<section id="account-page" className="selectable">
 			<h1>My Account</h1>
 			{/* <Stack gap={3} className="mx-auto text-start"> */}
 			<Container style={{ maxWidth: "800px" }} className="text-start">
@@ -239,7 +239,7 @@ function AccountPageBase() {
 				</Row>
 				{/* </Stack> */}
 			</Container>
-		</div>
+		</section>
 		//  </span>
 	);
 }
