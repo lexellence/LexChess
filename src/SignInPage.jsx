@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { withFirebase } from './Firebase';
 import * as ROUTES from './constants/routes';
+import * as LIMITS from './constants/charlimits';
 
 const ERROR_CODE_ACCOUNT_EXISTS = 'auth/account-exists-with-different-credential';
 const ERROR_MSG_ACCOUNT_EXISTS = `
@@ -41,6 +42,7 @@ function SignInFormBase({ firebase }) {
 				type="text"
 				autoComplete="off"
 				placeholder="Email Address"
+				maxLength={LIMITS.MAX_CHARS_EMAIL}
 			/>
 			<input
 				name="password"

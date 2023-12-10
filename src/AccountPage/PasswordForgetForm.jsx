@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { withFirebase } from '../Firebase';
+import * as LIMITS from '../constants/charlimits';
 
 const INITIAL_STATE = {
 	email: '',
@@ -42,7 +43,9 @@ class PasswordForgetFormBase extends React.Component {
 					value={this.state.email}
 					onChange={this.onChange}
 					type="text"
-					placeholder="Email Address" />
+					placeholder="Email Address"
+					maxLength={LIMITS.MAX_CHARS_EMAIL}
+				/>
 				<button disabled={isInvalid} type="submit">
 					Reset My Password
 				</button>
