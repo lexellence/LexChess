@@ -110,14 +110,11 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			const gameContentWidth = outerDiv.current.offsetWidth;
 			const gameContentHeight = outerDiv.current.offsetHeight;
 			if (gameContentWidth && gameContentHeight) {
-				const titleHeight = title.current ? title.current.scrollHeight : 0;
-				const topTeamLabelHeight = topTeamLabel.current ? topTeamLabel.current.scrollHeight : 0;
-				const bottomTeamLabelHeight = bottomTeamLabel.current ? bottomTeamLabel.current.scrollHeight : 0;
-				const historyControlsHeight = historyControls.current ? historyControls.current.scrollHeight : 0;
-				const timerHeight = timer.current ? timer.current.scrollHeight : 0;
-				const quitButtonHeight = quitButton.current ? quitButton.current.scrollHeight : 0;
-				const totalNonBoardHeight = titleHeight + topTeamLabelHeight + bottomTeamLabelHeight +
-					historyControlsHeight + timerHeight + quitButtonHeight;
+				const getHeight = (ref) => ref.current ? ref.current.scrollHeight : 0;
+				const totalNonBoardHeight =
+					getHeight(title) + getHeight(topTeamLabel) +
+					getHeight(bottomTeamLabel) + getHeight(historyControls) +
+					getHeight(timer) + getHeight(quitButton);
 
 				const boardHeight = gameContentHeight - totalNonBoardHeight;
 				setBoardSize(Math.min(gameContentWidth, boardHeight) - BOARD_SIZE_BUFFER);
