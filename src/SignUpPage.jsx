@@ -91,13 +91,13 @@ function SignUpForm() {
 }
 
 const SignUpPage = () => (
-	<div id='auth-page'>
+	<section id='auth-page'>
 		<h1>Create a New Account</h1>
 		<div className='auth-form'>
 			<SignUpForm />
 		</div>
 		<pre className="mt-3"><p>Already have an account? <Link to={ROUTES.SIGN_IN}>Sign in</Link></p></pre>
-	</div>
+	</section>
 );
 
 export { SignUpPage };

@@ -33,16 +33,14 @@ const HomePageAuth = ({ authUser }) => (
 );
 
 const HomePage = () => (
-	<div id='home-page'>
-		<div>
-			<AuthUserContext.Consumer>
-				{authUser =>
-					authUser ? <HomePageAuth authUser={authUser} /> : <HomePageNonAuth />
-				}
-			</AuthUserContext.Consumer>
-		</div>
+	<section id='home-page'>
+		<AuthUserContext.Consumer>
+			{authUser =>
+				authUser ? <HomePageAuth authUser={authUser} /> : <HomePageNonAuth />
+			}
+		</AuthUserContext.Consumer>
 		<pre className="mt-3"><p>Impressed? <a href='https://davidleksen.com' target='blank'>Hire me</a></p></pre>
-	</div>
+	</section>
 );
 
 export { HomePage };

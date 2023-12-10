@@ -100,20 +100,24 @@ function SignInPageBase({ firebase }) {
 
 	return (
 		<div id='auth-page'>
-			<h1>Sign In</h1>
-			<div className='auth-form'>
-				<SignInForm />
-			</div>
-			<pre className="mt-2"><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></pre>
-			<h1 className="mt-3">Other Sign In Methods</h1>
-			<div className='auth-form'>
-				<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />
-				<hr />
-				<h6>Coming soon</h6>
-				<SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled />
-				<SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled />
-			</div>
-			<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Create one</Link></p></pre>
+			<section>
+				<h1>Sign In</h1>
+				<div className='auth-form'>
+					<SignInForm />
+				</div>
+				<pre className="mt-2"><Link to={ROUTES.PASSWORD_FORGET}>Forgot Password?</Link></pre>
+			</section>
+			<section>
+				<h1 className="mt-3">Other Sign In Methods</h1>
+				<div className='auth-form'>
+					<SignInSocialMedia name='Google' doSignIn={firebase.doSignInWithGoogle} />
+					<hr />
+					<h6>Coming soon</h6>
+					<SignInSocialMedia name='Facebook' doSignIn={firebase.doSignInWithFacebook} disabled />
+					<SignInSocialMedia name='Twitter' doSignIn={firebase.doSignInWithTwitter} disabled />
+				</div>
+				<pre className="mt-3"><p>Don't have an account? <Link to={ROUTES.SIGN_UP}>Create one</Link></p></pre>
+			</section>
 		</div>
 	);
 }
