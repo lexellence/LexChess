@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import { ButtonSpinner } from '../ButtonSpinner';
@@ -37,7 +37,6 @@ function JoinGameList({ isSignedIn, isUserMaxedOut }) {
 		<Table id='join-game-table' striped bordered hover>
 			<thead>
 				<tr>
-					{/* Game list headers */}
 					<th>Players</th>
 					<th>Status</th>
 					<th>White</th>
@@ -46,7 +45,6 @@ function JoinGameList({ isSignedIn, isUserMaxedOut }) {
 				</tr>
 			</thead>
 			<tbody>
-				{/* Game list rows */}
 				{gameList.map((game, i) => {
 					return <GameTableRow
 						key={i}

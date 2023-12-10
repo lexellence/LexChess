@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { PasswordForgetForm } from './PasswordForgetForm';
 
 function PasswordForgetPage() {

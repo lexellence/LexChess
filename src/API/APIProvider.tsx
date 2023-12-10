@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PlayAPIContext, PlayAPIContextValue, JoinAPIContext, JoinAPIContextValue, JoinGameValue } from '.';
 import { Firebase, useFirebaseContext } from '../Firebase';
 import * as api from './api';

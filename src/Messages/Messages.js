@@ -1,10 +1,10 @@
-import * as React from 'react';
+import { Component } from 'react';
 
 import { AuthUserContext } from '../Session';
 import { withFirebase } from '../Firebase';
 import { MessageList } from './MessageList';
 
-class MessagesBase extends React.Component {
+class MessagesBase extends Component {
 	constructor(props) {
 		super(props);
 
@@ -93,7 +93,7 @@ class MessagesBase extends React.Component {
 		return (
 			<AuthUserContext.Consumer>
 				{authUser =>
-					<React.Fragment>
+					<>
 						{!loading && messages &&
 							<button type="button" onClick={this.onNextPage}>
 								More
@@ -122,7 +122,7 @@ class MessagesBase extends React.Component {
 								onChange={this.onChangeText} />
 							<button type="submit">Send</button>
 						</form>
-					</React.Fragment>
+					</>
 				}
 			</AuthUserContext.Consumer>
 		);

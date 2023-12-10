@@ -1,8 +1,3 @@
-// import firebaseApp from 'firebase/compat/app';
-// import 'firebase/compat/auth';
-// import 'firebase/compat/database';
-
-
 import { initializeApp } from 'firebase/app';
 import {
 	getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
@@ -11,8 +6,6 @@ import {
 } from "firebase/auth";
 import { getDatabase, ref, get, child } from "firebase/database";
 import * as ROUTES from '../constants/routes';
-
-// import * as ROLES from '../constants/roles';
 
 const config = {
 	apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -41,17 +34,12 @@ class Firebase {
 	}
 
 	// *** Auth API ***
-
 	doCreateUserWithEmailAndPassword = (email, password) => createUserWithEmailAndPassword(this.auth, email, password);
-
 	doSignInWithEmailAndPassword = (email, password) => signInWithEmailAndPassword(this.auth, email, password);
-
 	doSignInWithGoogle = () => signInWithPopup(this.auth, this.googleProvider);
 	doSignInWithFacebook = () => signInWithPopup(this.auth, this.facebookProvider);
 	doSignInWithTwitter = () => signInWithPopup(this.auth, this.twitterProvider);
-
 	doSignOut = () => signOut(this.auth);
-
 	doPasswordReset = (email) => sendPasswordResetEmail(this.auth, email);
 
 	doSendEmailVerification = () => {

@@ -1,4 +1,3 @@
-// import axios, { Method, AxiosResponse } from 'axios';
 import axios, { Method } from 'axios';
 import * as ENDPOINTS from "../constants/endpoints";
 
@@ -6,7 +5,6 @@ import * as ENDPOINTS from "../constants/endpoints";
 //|	 	       callAPI    	       |
 //\--------------------------------/
 //------------------------------------------------------------
-// async function callAPI(idToken: string, method: Method, url: string) {
 async function callAPI(authUser: any, method: Method, url: string) {
 	return new Promise(function (resolve, reject) {
 		if (!authUser?.getIdToken)
@@ -21,7 +19,6 @@ async function callAPI(authUser: any, method: Method, url: string) {
 				headers: {
 					Authorization: 'Bearer ' + idToken
 				}
-				// }).then(function (response: AxiosResponse) {
 			}).then(function () {
 				resolve(null);
 			}).catch(function (error) {
@@ -53,34 +50,7 @@ async function callAPI(authUser: any, method: Method, url: string) {
 		});
 	});
 }
-// //+--------------------------------\-------------------------
-// //|	 	 	   joinGame 	   	   |
-// //\--------------------------------/
-// //------------------------------------------------------------
-// export async function joinGame(idToken: string, gid: string, team: string) {
-// 	return callAPI(idToken, 'put', ENDPOINTS.JOIN_GAME + '/' + gid + '/' + team);
-// };
-// //+--------------------------------\-------------------------
-// //|	 	      createGame		   |
-// //\--------------------------------/
-// //------------------------------------------------------------
-// export async function createGame(idToken: string, team: string) {
-// 	return callAPI(idToken, 'post', ENDPOINTS.CREATE_GAME + '/' + team);
-// };
-// //+--------------------------------\-------------------------
-// //|	 	      	move			   |
-// //\--------------------------------/
-// //------------------------------------------------------------
-// export async function move(idToken: string, gid: string, moveString: string) {
-// 	return callAPI(idToken, 'put', ENDPOINTS.MOVE + '/' + gid + '/' + moveString);
-// };
-// //+--------------------------------\-------------------------
-// //|	 	 	  leaveGame	     	   |
-// //\--------------------------------/
-// //------------------------------------------------------------
-// export async function leaveGame(idToken: string, gid: string) {
-// 	return callAPI(idToken, 'put', ENDPOINTS.LEAVE_GAME + '/' + gid);
-// };
+
 //+--------------------------------\-------------------------
 //|	 	 	   joinGame 	   	   |
 //\--------------------------------/

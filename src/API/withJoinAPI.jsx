@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { JoinAPIContext } from './JoinAPIContext';
 
 const withJoinAPI =

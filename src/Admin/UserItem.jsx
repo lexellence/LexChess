@@ -1,8 +1,7 @@
-import * as React from 'react';
-
+import { Component } from 'react';
 import { withFirebase } from '../Firebase';
 
-class UserItemBase extends React.Component {
+class UserItemBase extends Component {
 	constructor(props) {
 		super(props);
 
@@ -42,12 +41,12 @@ class UserItemBase extends React.Component {
 		const { user, loading } = this.state;
 
 		return (
-			<React.Fragment>
+			<>
 				<h2>User ({this.props.match.params.id})</h2>
 				{loading && <div>Loading ...</div>}
 
 				{user && (
-					<React.Fragment>
+					<>
 						<span>
 							<strong>ID:</strong> {user.uid}
 						</span>
@@ -66,9 +65,9 @@ class UserItemBase extends React.Component {
 								Send Password Reset
 							</button>
 						</span>
-					</React.Fragment>
+					</>
 				)}
-			</React.Fragment>
+			</>
 		);
 	}
 }

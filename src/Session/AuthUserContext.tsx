@@ -1,12 +1,11 @@
-import * as React from 'react';
-import { getApp, } from 'firebase/app';
+import { useContext, createContext } from 'react';
 import { User } from 'firebase/auth';
 
 type AuthUserContextValue = User | null;
-const AuthUserContext = React.createContext<AuthUserContextValue | undefined>(undefined);
+const AuthUserContext = createContext<AuthUserContextValue | undefined>(undefined);
 
 function useAuthUserContext() {
-	let context = React.useContext(AuthUserContext);
+	let context = useContext(AuthUserContext);
 	if (context === undefined)
 		throw new Error('useAuthUserContext must be used in a child component of AuthUserContext.Provider');
 	return context;

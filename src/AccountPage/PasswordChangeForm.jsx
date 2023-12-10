@@ -7,8 +7,6 @@ import * as ROUTES from "../constants/routes";
 
 const requiresRecentLoginErrorCode = "auth/requires-recent-login";
 const requiresRecentLoginErrorMessage = <>Recent authentication required.<br />Sign out and sign back in, then try again.</>;
-// const passwordTooShortErrorCode = "auth/weak-password";
-// const passwordTooShortErrorMessage = <>Password must be at least 6 characters.</>;
 
 function PasswordChangeForm() {
 	const [password1, setPassword1] = useState('');
@@ -31,8 +29,6 @@ function PasswordChangeForm() {
 			.catch(error => {
 				if (error.code === requiresRecentLoginErrorCode)
 					setStatus({ message: requiresRecentLoginErrorMessage, class: "text-danger" });
-				// else if (error.code === passwordTooShortErrorCode)
-				// 	setStatus({ message: passwordTooShortErrorMessage, class: "text-danger" });
 				else
 					setStatus({ message: error.message, class: "text-danger" });
 			});

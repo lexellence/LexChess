@@ -3,14 +3,6 @@
 }
 
 .nav-menu-link {
-  /* margin: 1em; */
-  /* font-size: 2em; */
-  /* font-family: 'Roboto', sans-serif; */
-  /* cursor: pointer; */
-  /* text-decoration: none; */
-  /* letter-spacing: .3em; */
-  /* text-indent: .3em; */
-  /* color: #181818; */
   border-bottom: 3px solid transparent;
   transition: transform .2s linear, border-bottom .2s linear;
 }

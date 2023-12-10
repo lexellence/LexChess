@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { FirebaseContext } from './FirebaseContext';
 
 const withFirebase =

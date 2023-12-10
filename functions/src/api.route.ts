@@ -1,6 +1,5 @@
 import express from 'express';
 import httpCodes from 'http-status-codes';
-// import { validateBody, schemas } from './validator';
 import admin from 'firebase-admin';
 
 import * as ChessJS from "chess.js";

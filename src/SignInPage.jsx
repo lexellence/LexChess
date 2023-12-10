@@ -83,7 +83,6 @@ function SignInSocialMedia({ name, doSignIn, disabled }) {
 			<button type='submit' disabled={disabled}>
 				{buttonText}
 			</button>
-			{/* {disabled && '(coming soon)'} */}
 			{error && <p className="text-danger">{error.message}</p>}
 		</form >
 	);

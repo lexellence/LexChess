@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom';
 
-// import { Form, Button, Card, Alert } from "react-bootstrap";
-// import { useAuth } from "../contexts/AuthContext";
-
 import { useFirebaseContext } from './Firebase';
 import * as ROUTES from './constants/routes';
 import * as LIMITS from './constants/charlimits';
@@ -27,12 +24,6 @@ function SignUpForm() {
 	const [errorMessage, setErrorMessage] = useState(null);
 
 	function onSubmit(e) {
-		// const roles = {};
-		// TODO: Where would isAdmin be set to true???
-		// if (isAdmin) {
-		// 	roles[ROLES.ADMIN] = ROLES.ADMIN;
-		// }
-
 		// Prevent the browser from reloading the page
 		e.preventDefault();
 

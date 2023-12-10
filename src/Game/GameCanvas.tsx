@@ -10,7 +10,6 @@ const PIECE_OFFSET_Y_FACTOR = -0.025;
 const COLOR_LIGHT = '#99ff85ff';
 const COLOR_DARK = '#168500ff';
 const COLOR_SELECTED = '#00CC00';
-// const COLOR_MARGIN = 'black';
 const CORNER_ROUNDING_RADIUS = 7;
 
 //+--------------------------------\--------------------------

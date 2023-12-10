@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 import { ButtonSpinner } from '../ButtonSpinner';
@@ -34,7 +34,6 @@ function HistoryGameList() {
 			<Table id='records-table' striped bordered hover>
 				<thead>
 					<tr>
-						{/* Game list headers */}
 						<th>Result</th>
 						<th>White</th>
 						<th>Black</th>
@@ -43,7 +42,6 @@ function HistoryGameList() {
 					</tr>
 				</thead>
 				<tbody>
-					{/* Game list rows */}
 					{gameList.map((game, i) => {
 						return <GameTableRow
 							key={i}
