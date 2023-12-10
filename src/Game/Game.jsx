@@ -105,7 +105,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const historyControls = useRef();
 	const timer = useRef();
 	const quitButton = useRef();
-	useLayoutEffect(() => {
+	useEffect(() => {
 		function resetBoardSize() {
 			const gameContentWidth = outerDiv.current.offsetWidth;
 			const gameContentHeight = outerDiv.current.offsetHeight;
@@ -123,16 +123,12 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				setBoardSize(Math.min(gameContentWidth, boardHeight) - BOARD_SIZE_BUFFER);
 			}
 		}
-		let resizeID;
-		function handleResize() {
-			clearTimeout(resizeID);
-			resizeID = setTimeout(resetBoardSize, 20);
-		}
-		window.addEventListener('resize', handleResize);
 
+		window.addEventListener('resize', resetBoardSize);
 		resetBoardSize();
+
 		return () => {
-			window.removeEventListener('resize', handleResize);
+			window.removeEventListener('resize', resetBoardSize);
 		};
 	}, []);
 
