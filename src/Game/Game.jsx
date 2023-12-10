@@ -121,10 +121,24 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 			}
 		}
 
+		// Observe element size changes
+		const observer = new ResizeObserver(entries => {
+			resetBoardSize();
+		})
+		observer.observe(outerDiv.current)
+		observer.observe(title.current)
+		observer.observe(topTeamLabel.current)
+		observer.observe(bottomTeamLabel.current)
+		observer.observe(historyControls.current)
+		observer.observe(timer.current)
+		observer.observe(quitButton.current)
+
+		// Observe window size changes
 		window.addEventListener('resize', resetBoardSize);
 		resetBoardSize();
 
 		return () => {
+			observer.disconnect();
 			window.removeEventListener('resize', resetBoardSize);
 		};
 	}, []);
