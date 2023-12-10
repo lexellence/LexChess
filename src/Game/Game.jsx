@@ -98,24 +98,24 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 
 
 	// Resize board based on game content dimensions
-	const outerDiv = useRef();
-	const title = useRef();
-	const topTeamLabel = useRef();
-	const bottomTeamLabel = useRef();
-	const historyControls = useRef();
-	const timer = useRef();
-	const quitButton = useRef();
+	const nonGameBoardRefsMap = new Map([
+		['outerDiv', useRef()],
+		['title', useRef()],
+		['topTeamLabel', useRef()],
+		['bottomTeamLabel', useRef()],
+		['historyControls', useRef()],
+		['timer', useRef()],
+		['quitButton', useRef()]
+	]);
 	useEffect(() => {
 		function resetBoardSize() {
-			const gameContentWidth = outerDiv.current.offsetWidth;
-			const gameContentHeight = outerDiv.current.offsetHeight;
+			const gameContentWidth = nonGameBoardRefsMap.get('outerDiv').current.offsetWidth;
+			const gameContentHeight = nonGameBoardRefsMap.get('outerDiv').current.offsetHeight;
 			if (gameContentWidth && gameContentHeight) {
-				const getHeight = (ref) => ref.current ? ref.current.scrollHeight : 0;
-				const totalNonBoardHeight =
-					getHeight(title) + getHeight(topTeamLabel) +
-					getHeight(bottomTeamLabel) + getHeight(historyControls) +
-					getHeight(timer) + getHeight(quitButton);
-
+				let totalNonBoardHeight = 0;
+				Array.from(nonGameBoardRefsMap.values()).forEach(nonGameBoardRef => {
+					totalNonBoardHeight += nonGameBoardRef.current ? nonGameBoardRef.current.scrollHeight : 0;
+				});
 				const boardHeight = gameContentHeight - totalNonBoardHeight;
 				setBoardSize(Math.min(gameContentWidth, boardHeight) - BOARD_SIZE_BUFFER);
 			}
@@ -125,13 +125,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		const observer = new ResizeObserver(entries => {
 			resetBoardSize();
 		})
-		observer.observe(outerDiv.current)
-		observer.observe(title.current)
-		observer.observe(topTeamLabel.current)
-		observer.observe(bottomTeamLabel.current)
-		observer.observe(historyControls.current)
-		observer.observe(timer.current)
-		observer.observe(quitButton.current)
+		Array.from(nonGameBoardRefsMap.values()).forEach(nonGameBoardRef => {
+			observer.observe(nonGameBoardRef.current)
+		});
 
 		// Observe window size changes
 		window.addEventListener('resize', resetBoardSize);
@@ -425,14 +421,14 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const blackTeamLabel = <><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></>;
 
 	if (errorMessage)
-		return <div ref={outerDiv} style={{ textAlign: 'center' }}>Something happened: {errorMessage}</div>;
+		return <div ref={nonGameBoardRefsMap.get('outerDiv')} style={{ textAlign: 'center' }}>Something happened: {errorMessage}</div>;
 	if (!game)
-		return <div ref={outerDiv} style={{ textAlign: 'center' }}>Loading...</div>;
+		return <div ref={nonGameBoardRefsMap.get('outerDiv')} style={{ textAlign: 'center' }}>Loading...</div>;
 	return (
-		<div id='game' ref={outerDiv}>
-			<h4 ref={title} style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
+		<div id='game' ref={nonGameBoardRefsMap.get('outerDiv')}>
+			<h4 ref={nonGameBoardRefsMap.get('title')} style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
 
-			<div ref={topTeamLabel}>{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}</div>
+			<div ref={nonGameBoardRefsMap.get('topTeamLabel')}>{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}</div>
 			<div id='game-board'>
 				<GameCanvas size={boardSize}
 					fen={fen}
@@ -441,9 +437,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 					onMouseDown={handleMouseDownCanvas}
 					onMouseUp={handleMouseUpCanvas} />
 			</div>
-			<div ref={bottomTeamLabel}>{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}</div>
+			<div ref={nonGameBoardRefsMap.get('bottomTeamLabel')}>{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}</div>
 
-			<div id='game-history-controls' ref={historyControls} style={{ display: historyControlsDisplay }}>
+			<div id='game-history-controls' ref={nonGameBoardRefsMap.get('historyControls')} style={{ display: historyControlsDisplay }}>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>
 					<span style={{ visibility: game.moves.length - historyPosition > 0 ? 'visible' : 'hidden' }}>{game.moves.length - historyPosition}</span>
 					<IoPlayBack size={historyButtonIconSize} />
@@ -462,7 +458,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				</Button>
 			</div>
 
-			<div ref={timer} style={{ display: timerDisplay }}>
+			<div ref={nonGameBoardRefsMap.get('timer')} style={{ display: timerDisplay }}>
 				<table id='timer-table'>
 					<tbody>
 						<tr><th>Your time</th><th>Their time</th></tr>
@@ -471,7 +467,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				</table>
 			</div>
 
-			<Button ref={quitButton} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
+			<Button ref={nonGameBoardRefsMap.get('quitButton')} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
 				{quitButtonContent}
 			</Button>
 
