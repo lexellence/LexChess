@@ -69,7 +69,7 @@ function SignUpForm() {
 				onChange={e => setEmail(e.target.value)}
 				type="text"
 				placeholder="Email Address"
-				maxlength={LIMITS.MAX_CHARS_EMAIL}
+				maxLength={LIMITS.MAX_CHARS_EMAIL}
 			/>
 			<input
 				name="passwordOne"
@@ -91,7 +91,7 @@ function SignUpForm() {
 				onChange={e => setDisplayName(e.target.value)}
 				type="text"
 				placeholder="Display Name"
-				maxlength={LIMITS.MAX_CHARS_DISPLAY_NAME}
+				maxLength={LIMITS.MAX_CHARS_DISPLAY_NAME}
 			/>
 			<button disabled={isInvalid} type="submit">Sign Up</button>
 			{errorMessage && <p>{errorMessage}</p>}
