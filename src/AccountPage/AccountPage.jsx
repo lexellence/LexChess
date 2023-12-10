@@ -1,8 +1,6 @@
 import * as React from 'react';
-import { useState, useCallback } from 'react';
 import { fetchSignInMethodsForEmail, linkWithPopup, linkWithCredential, unlink } from "firebase/auth";
 import Card from 'react-bootstrap/Card';
-import Stack from 'react-bootstrap/Stack';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
