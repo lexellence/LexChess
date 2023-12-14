@@ -3,12 +3,13 @@ import { SVGRoundedRect } from './SVGRoundedRect';
 
 const FILE_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const MIN_BOARD_SIZE = 5;
-const BOARD_MARGIN_FACTOR = 0;
+const BOARD_MARGIN_FACTOR = 0.010;
 const PIECE_MARGIN_FACTOR = 0.0;
 const PIECE_OFFSET_X_FACTOR = 0.0;
 const PIECE_OFFSET_Y_FACTOR = -0.025;
 const COLOR_LIGHT = '#99ff85ff';
 const COLOR_DARK = '#168500ff';
+const COLOR_BORDER = '#182c25';
 const COLOR_SELECTED = '#00CC00';
 const CORNER_ROUNDING_RADIUS = 7;
 
@@ -192,6 +193,7 @@ function GameCanvas({ size, fen, flip, selectedSquare, onMouseDown, onMouseUp }:
 				</defs>
 
 				{/* Draw */}
+				<rect x={0} y={0} width={boardImageSize} height={boardImageSize} rx={CORNER_ROUNDING_RADIUS.toString()} fill={COLOR_BORDER} />
 				<rect x={boardStart} y={boardStart} width={boardSize} height={boardSize} rx={CORNER_ROUNDING_RADIUS.toString()} fill={COLOR_DARK} />
 				{getSVGBoardSquares()}
 				{getSVGPieces()}
