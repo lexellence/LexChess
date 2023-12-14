@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import { HomePage } from "../HomePage";
 import { GamePage } from "../GamePage";
@@ -14,7 +14,9 @@ import * as ROUTES from "../constants/routes";
 function RouteList() {
 	return (
 		<Routes>
-			<Route path={ROUTES.LANDING} element={<HomePage />} />
+			<Route path="*" element={<Navigate replace to={ROUTES.HOME} />} />
+			<Route index element={<Navigate replace to={ROUTES.HOME} />} />
+			<Route path={ROUTES.HOME} element={<HomePage />} />
 			<Route path={ROUTES.PLAY_GAME} element={<GamePage />} />
 			<Route path={ROUTES.GAME_LIST} element={<GameListPage />} />
 			<Route path={ROUTES.GAME_HISTORY} element={<GameHistoryPage />} />
