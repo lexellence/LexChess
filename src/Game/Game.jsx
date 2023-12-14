@@ -383,7 +383,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	let gameTitleText;
 	switch (game.status) {
 		case 'wait': gameTitleText = 'Waiting for another player...'; break;
-		case 'play': gameTitleText = inCheck ? 'Check!' : 'invisible'; break;
+		case 'play': gameTitleText = inCheck ? 'Check!' : ''; break;
 		case 'draw': gameTitleText = <>Draw</>; break;
 		case 'stale': gameTitleText = <>Draw<br />(stalemate)</>; break;
 		case 'ins': gameTitleText = <>Draw<br />(insufficient material)</>; break;
@@ -392,13 +392,9 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		case 'cm_b': gameTitleText = <>{blackNoun + ' won'}<br />Checkmate!</>; break;
 		case 'con_w': gameTitleText = <>{whiteNoun + ' won'}<br />{blackNoun + ' conceded'}</>; break;
 		case 'con_b': gameTitleText = <>{blackNoun + ' won'}<br />{whiteNoun + ' conceded'}</>; break;
-		default: gameTitleText = 'invisible'; break;
+		default: gameTitleText = ''; break;
 	}
-	let gameTitleVisibility;
-	if (gameTitleText === 'invisible')
-		gameTitleVisibility = 'hidden';
-	else
-		gameTitleVisibility = 'visible';
+	const gameTitleDisplay = (gameTitleText === '') ? 'none' : 'block';
 
 	const blackTurnIconVisible = (chess.turn() === 'b');
 	const whiteTurnIconVisible = (chess.turn() === 'w');
@@ -430,7 +426,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 		return <div ref={outerDiv} style={{ textAlign: 'center' }}>Loading...</div>;
 	return (
 		<div id='game' ref={outerDiv}>
-			<h4 ref={title} style={{ visibility: gameTitleVisibility }}>{gameTitleText}</h4>
+			<h4 ref={title} style={{ display: gameTitleDisplay }}>{gameTitleText}</h4>
 
 			<div ref={topTeamLabel}>{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}</div>
 			<div id='game-board'>
