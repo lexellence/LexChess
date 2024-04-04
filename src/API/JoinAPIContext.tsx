@@ -7,7 +7,7 @@ type JoinGameValue = {
 }
 type JoinAPIContextValue = {
 	joinGame(gid: string, team: string): void;
-	createGame(team: string): void;
+	createGame(team: string, minutesPerPlayer: string, incrementSecondsPerTurn: string): void;
 	isCreatingGame: boolean;
 	joiningGameData: JoinGameValue;
 }

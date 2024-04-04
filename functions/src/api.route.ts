@@ -14,13 +14,19 @@ async function HasRoomForAnotherGame(uid: string): Promise<boolean> {
 	return hasRoom;
 }
 
-//+------------------------------\----------------------------
-//|	  POST /create-game/:team    | 
-//\------------------------------/
-//	starts game as :team = 'w' or 'b'
-//	Any other values of :team will defer team choice.
+//+-----------------------------------------------\-----------
+//|	  POST /create-game/:team/:time/:increment    |
+//\-----------------------------------------------/
+//	starts game as :team = 'w' or 'b'.
+//		Any other values will defer team choice.
+//	:time (minutes per player) >= '1' enables time.
+//		Any other values will disable time.
+//	:increment (seconds per turn) >= '1' enables increments.
+//		Any other values will disable increments.
+//		If :time is disabled, this value is ignored
+//			and increments are disabled.
 //------------------------------------------------------------
-apiRouter.post("/create-game/:team", async (req: any, res: any) => {
+apiRouter.post("/create-game/:team/:time/:increment", async (req: any, res: any) => {
 	try {
 		const { uid, name } = req.decodedClaims;
 		const { team } = req.params;

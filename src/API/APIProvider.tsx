@@ -75,12 +75,12 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 	//+--------------------------------\--------------------------
 	//|	 	      createGame		   |
 	//\--------------------------------/--------------------------
-	function createGame(team: string) {
+	function createGame(team: string, minutesPerPlayer: string, incrementSecondsPerTurn: string) {
 		if (isCreatingGame)
 			return;
 
 		setCreatingGame(true);
-		api.createGame(authUser, team).catch(errorMessage => {
+		api.createGame(authUser, team, minutesPerPlayer, incrementSecondsPerTurn).catch(errorMessage => {
 			handleAPIError(errorMessage);
 		}).finally(() => {
 			setCreatingGame(false);

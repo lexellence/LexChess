@@ -62,8 +62,10 @@ export async function joinGame(authUser: any, gid: string, team: string) {
 //|	 	      createGame		   |
 //\--------------------------------/
 //------------------------------------------------------------
-export async function createGame(authUser: any, team: string) {
-	return callAPI(authUser, 'post', ENDPOINTS.CREATE_GAME + '/' + team);
+export async function createGame(authUser: any, team: string, minutesPerPlayer: string, incrementSecondsPerTurn: string) {
+	const time = minutesPerPlayer ? minutesPerPlayer : '0';
+	const increment = incrementSecondsPerTurn ? incrementSecondsPerTurn : '0';
+	return callAPI(authUser, 'post', ENDPOINTS.CREATE_GAME + '/' + team + '/' + time + '/' + increment);
 };
 //+--------------------------------\-------------------------
 //|	 	      visitGame		   |

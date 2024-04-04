@@ -42,7 +42,7 @@ function GameCreator({ isUserMaxedOut }) {
 			</ToggleButtonGroup>
 			<br />
 			<Button className='game-button' disabled={!canCreateGame}
-				onClick={canCreateGame ? () => createGame(teamSelection) : null}
+				onClick={canCreateGame ? () => createGame(teamSelection, '30', '10') : null}
 				variant={createGameRadioMap.get(teamSelection).variant}>
 				{createButtonContent}
 			</Button>
