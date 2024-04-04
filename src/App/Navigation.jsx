@@ -100,7 +100,7 @@ function Navigation() {
 		<Navbar bg="dark" data-bs-theme="dark" className="unselectable" style={{ minHeight: "72px", maxHeight: "72px" }}>
 			<Container>
 				<Navbar.Brand>
-					<Link to={ROUTES.LANDING} className="nav-link">LexChess</Link>
+					<Link to={ROUTES.HOME} className="nav-link">LexChess</Link>
 				</Navbar.Brand>
 				<Nav className="justify-content-end nav-menu">
 					<AuthUserContext.Consumer>
