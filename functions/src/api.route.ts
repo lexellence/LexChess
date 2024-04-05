@@ -10,7 +10,7 @@ const db = admin.database();
 
 const MAX_CONCURRENT_GAMES = 3;
 async function HasRoomForAnotherGame(uid: string): Promise<boolean> {
-	const hasRoom: boolean = (await db.ref(`users/${uid}/play`).once('value')).numChildren() >= MAX_CONCURRENT_GAMES;
+	const hasRoom: boolean = (await db.ref(`users/${uid}/play`).once('value')).numChildren() < MAX_CONCURRENT_GAMES;
 	return hasRoom;
 }
 
@@ -31,7 +31,8 @@ apiRouter.post("/create-game/:team/:time/:increment", async (req: any, res: any)
 		const { uid, name } = req.decodedClaims;
 		const { team } = req.params;
 
-		if (await HasRoomForAnotherGame(uid)) {
+		const userMaxedOut = !(await HasRoomForAnotherGame(uid));
+		if (userMaxedOut) {
 			console.log('User ' + uid + ' tried to create a new game but already has the maximum number of games.');
 			res.status(httpCodes.FORBIDDEN).send('User already in the maximum number of concurrent games');
 			return;
@@ -82,7 +83,8 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 		const { uid, name } = req.decodedClaims;
 		const { gid, team } = req.params;
 
-		if (await HasRoomForAnotherGame(uid)) {
+		const userMaxedOut = !(await HasRoomForAnotherGame(uid));
+		if (userMaxedOut) {
 			console.log('User ' + uid + ' tried to join game ' + gid + ' but already has the maximum number of games.');
 			res.status(httpCodes.FORBIDDEN).send('User already in the maximum number of concurrent games');
 			return;
