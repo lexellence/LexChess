@@ -162,8 +162,8 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 				databaseUpdate[`games/${gid}/ready_b`] = !timedGame;
 
 				// Set game status
-				databaseUpdate[`gameList/${gid}/status`] = 'play_not_ready';
-				databaseUpdate[`games/${gid}/status`] = 'play_not_ready';
+				databaseUpdate[`gameList/${gid}/status`] = 'play_nr';
+				databaseUpdate[`games/${gid}/status`] = 'play_nr';
 
 				// Join team
 				databaseUpdate[`games/${gid}/uid_${team}`] = uid;
@@ -225,7 +225,7 @@ apiRouter.put("/player-ready/:gid/:isReady", async (req: any, res: any) => {
 		}
 
 		// Update database
-		if (game.status === 'play_not_ready') {
+		if (game.status === 'play_nr') {
 			if (isReadyBool && !game[`ready_${myTeam}`] ||
 				!isReadyBool && game[`ready_${myTeam}`]) {
 				const databaseUpdate: any = {};

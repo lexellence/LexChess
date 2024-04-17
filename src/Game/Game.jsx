@@ -422,7 +422,7 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 	let readyButtonContent;
 	let readyButtonDisplay;
 	const myTeamReady = game[`ready_${game.team}`];
-	if (location.pathname.startsWith(ROUTES.PLAY) && game.status === 'play_not_ready') {
+	if (location.pathname.startsWith(ROUTES.PLAY) && game.status === 'play_nr') {
 		readyButtonContent =
 			isMarkingReady ?
 				myTeamReady ? <>Marking as not ready...<ButtonSpinner /></>
@@ -444,7 +444,7 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 		<>
 			<TurnIcon color='white' visible={whiteTurnIconVisible} />
 			{' ' + game.name_w
-				+ (game.status !== 'play_not_ready' ? '' : (whiteReady ? ' - Ready' : ' - Not Ready'))
+				+ (game.status !== 'play_nr' ? '' : (whiteReady ? ' - Ready' : ' - Not Ready'))
 				+ ' '}
 			<TurnIcon visible={false} />
 		</>;
@@ -452,7 +452,7 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 		<>
 			<TurnIcon color='black' visible={blackTurnIconVisible} />
 			{' ' + game.name_b
-				+ (game.status !== 'play_not_ready' ? '' : (blackReady ? ' - Ready' : ' - Not Ready'))
+				+ (game.status !== 'play_nr' ? '' : (blackReady ? ' - Ready' : ' - Not Ready'))
 				+ ' '}
 			<TurnIcon visible={false} />
 		</>;
