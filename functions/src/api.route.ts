@@ -348,7 +348,7 @@ apiRouter.put("/move/:gid/:move", async (req: any, res: any) => {
 
 		// Game must be in 'play' mode
 		if (game.status !== 'play') {
-			console.log('User ' + uid + ' tried to move but game status is ' + game.core.status);
+			console.log('User ' + uid + ' tried to move but game status is ' + game.status);
 			res.status(httpCodes.FORBIDDEN).send('move: Your game has not started');
 			return;
 		}
