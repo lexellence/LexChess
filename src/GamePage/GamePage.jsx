@@ -66,7 +66,7 @@ function GamePageBase() {
 	return (
 		<section id='game-page'>
 			{!game ? <div style={{ textAlign: 'center' }}>Loading...</div>
-				: <Game game={game} leaveGame={() => playAPI.leaveGame(game.gid)} />}
+				: <Game game={game} leaveGame={playAPI.leaveGame} playerReady={playAPI.playerReady} />}
 		</section>
 	);
 }

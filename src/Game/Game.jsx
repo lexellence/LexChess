@@ -85,7 +85,7 @@ function applyMoves(chess, moves, historyPosition) {
 	return true;
 }
 
-function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
+function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPosition }) {
 	const playAPI = usePlayAPIContext();
 	const location = useLocation();
 
@@ -105,6 +105,7 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	const historyControls = useRef();
 	const timer = useRef();
 	const quitButton = useRef();
+	const readyButton = useRef();
 	useEffect(() => {
 		function resetBoardSize() {
 			const gameContentWidth = outerDiv.current.offsetWidth;
@@ -372,9 +373,10 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	//+----------------------------------\------------------------
 	//|	  	 		Render				 |
 	//\----------------------------------/------------------------
-	const { isMovingTable, isQuittingTable } = playAPI;
+	const { isMovingTable, isQuittingTable, isMarkingReadyTable } = playAPI;
 	const isMoving = isMovingTable[game.gid];
 	const isQuitting = isQuittingTable[game.gid];
+	const isMarkingReady = isMarkingReadyTable[game.gid];
 
 	const whiteNoun = (game.team === 'w') ? 'You' : game.name_w;
 	const blackNoun = (game.team === 'b') ? 'You' : game.name_b;
@@ -396,10 +398,10 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	}
 	const gameTitleDisplay = (gameTitleText === '') ? 'none' : 'block';
 
-	const blackTurnIconVisible = (chess.turn() === 'b');
-	const whiteTurnIconVisible = (chess.turn() === 'w');
+	const blackTurnIconVisible = (game.status === 'play' && chess.turn() === 'b');
+	const whiteTurnIconVisible = (game.status === 'play' && chess.turn() === 'w');
 
-	const buttonsDisabled = isMoving || isQuitting;
+	const buttonsDisabled = isMoving || isQuitting || isMarkingReady;
 	const historyControlsDisplay = !setHistoryPosition ? 'none' : 'block';
 	const nextMoveDisabled = buttonsDisabled || !canGoForwardInHistory();
 	const lastMoveDisabled = buttonsDisabled || !canGoBackInHistory();
@@ -417,8 +419,43 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 	else
 		quitButtonContent = isQuitting ? <>Loading records...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
 
-	const whiteTeamLabel = <><TurnIcon color='white' visible={whiteTurnIconVisible} />{' ' + game.name_w}<TurnIcon visible={false} /></>;
-	const blackTeamLabel = <><TurnIcon color='black' visible={blackTurnIconVisible} />{' ' + game.name_b}<TurnIcon visible={false} /></>;
+	let readyButtonContent;
+	let readyButtonDisplay;
+	const myTeamReady = game[`ready_${game.team}`];
+	if (location.pathname.startsWith(ROUTES.PLAY) && game.status === 'play_not_ready') {
+		readyButtonContent =
+			isMarkingReady ?
+				myTeamReady ? <>Marking as not ready...<ButtonSpinner /></>
+					: <>Marking as ready...<ButtonSpinner /></>
+				:
+				myTeamReady ? 'Mark as not ready' : 'Mark as ready';
+
+		readyButtonDisplay = 'inline';
+	}
+	else {
+		readyButtonContent = '';
+		readyButtonDisplay = 'none';
+	}
+
+	const whiteReady = game[`ready_w`];
+	const blackReady = game[`ready_b`];
+
+	const whiteTeamLabel =
+		<>
+			<TurnIcon color='white' visible={whiteTurnIconVisible} />
+			{' ' + game.name_w
+				+ (game.status !== 'play_not_ready' ? '' : (whiteReady ? ' - Ready' : ' - Not Ready'))
+				+ ' '}
+			<TurnIcon visible={false} />
+		</>;
+	const blackTeamLabel =
+		<>
+			<TurnIcon color='black' visible={blackTurnIconVisible} />
+			{' ' + game.name_b
+				+ (game.status !== 'play_not_ready' ? '' : (blackReady ? ' - Ready' : ' - Not Ready'))
+				+ ' '}
+			<TurnIcon visible={false} />
+		</>;
 
 	if (errorMessage)
 		return <div ref={outerDiv} style={{ textAlign: 'center' }}>Something happened: {errorMessage}</div>;
@@ -467,8 +504,11 @@ function Game({ game, leaveGame, historyPosition, setHistoryPosition }) {
 				</table>
 			</div>
 
-			<Button ref={quitButton} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? leaveGame : null}>
+			<Button ref={quitButton} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? () => leaveGame(game.gid) : null}>
 				{quitButtonContent}
+			</Button>
+			<Button ref={readyButton} className='game-button' style={{ display: readyButtonDisplay }} disabled={buttonsDisabled} onClick={!buttonsDisabled ? () => playerReady(game.gid, myTeamReady ? '0' : '1') : null}>
+				{readyButtonContent}
 			</Button>
 
 			<PromotionPicker isActive={showPromotionPicker} selectPiece={selectPromotionPiece} handleCancel={handleCancelPromotion} />

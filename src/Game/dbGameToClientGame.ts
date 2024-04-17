@@ -6,6 +6,8 @@ function dbGameToClientGame(dbGame: any, gid: string, uid: string) {
 			name_w: dbGame.name_w,
 			name_b: dbGame.name_b,
 			name_d: dbGame.name_d,
+			ready_w: dbGame.ready_w,
+			ready_b: dbGame.ready_b,
 			moves: dbGame.moves ? Object.values(dbGame.moves) : [],
 		};
 

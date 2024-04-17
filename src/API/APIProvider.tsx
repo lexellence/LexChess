@@ -31,6 +31,14 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 		_setQuittingTable(newTable);
 	}
 
+	const [isMarkingReadyTable, _setIsMarkingReadyTable] = useState<{ [gid: string]: boolean }>({});
+	function setIsMarkingReadyTable(gid: string, isMarkingReady: boolean): void {
+		const newTable = { ...isMarkingReadyTable, [gid]: isMarkingReady };
+		if (!isMarkingReady)
+			delete newTable[gid];
+		_setIsMarkingReadyTable(newTable);
+	}
+
 	//+----------------------------------\------------------------
 	//|	  		 Mount/Unmount			 |
 	//\----------------------------------/------------------------
@@ -95,6 +103,20 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 		})
 	};
 	//+--------------------------------\--------------------------
+	//|	 	      playerReady 		   |
+	//\--------------------------------/--------------------------
+	function playerReady(gid: string, isReady: string) {
+		if (isMarkingReadyTable[gid])
+			return;
+
+		setIsMarkingReadyTable(gid, true);
+		api.playerReady(authUser, gid, isReady).catch(errorMessage => {
+			handleAPIError(errorMessage);
+		}).finally(() => {
+			setIsMarkingReadyTable(gid, false);
+		});
+	};
+	//+--------------------------------\--------------------------
 	//|	 	      	move			   |
 	//\--------------------------------/--------------------------
 	function move(gid: string, moveString: string) {
@@ -124,7 +146,7 @@ const APIProvider: React.FC<Props> = ({ children }) => {
 	};
 
 	const playAPIValue: PlayAPIContextValue = {
-		visitGame, move, leaveGame, isMovingTable, isQuittingTable
+		visitGame, playerReady, isMarkingReadyTable, move, isMovingTable, leaveGame, isQuittingTable
 	};
 	const joinAPIValue: JoinAPIContextValue = {
 		joinGame, createGame, isCreatingGame, joiningGameData

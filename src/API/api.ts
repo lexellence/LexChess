@@ -75,6 +75,13 @@ export async function visitGame(authUser: any, gid: string) {
 	return callAPI(authUser, 'put', ENDPOINTS.VISIT_GAME + '/' + gid);
 };
 //+--------------------------------\-------------------------
+//|	 	     playerReady		   |
+//\--------------------------------/
+//------------------------------------------------------------
+export async function playerReady(authUser: any, gid: string, isReady: string) {
+	return callAPI(authUser, 'put', ENDPOINTS.PLAYER_READY + '/' + gid + '/' + isReady);
+};
+//+--------------------------------\-------------------------
 //|	 	      	move			   |
 //\--------------------------------/
 //------------------------------------------------------------
