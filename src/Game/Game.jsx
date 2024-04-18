@@ -100,12 +100,12 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 	// Resize board based on game content dimensions
 	const outerDiv = useRef();
 	const title = useRef();
-	const topTeamLabel = useRef();
-	const bottomTeamLabel = useRef();
+	const topTeamLine = useRef();
+	const bottomTeamLine = useRef();
 	const historyControls = useRef();
 	const timer = useRef();
 	const quitButton = useRef();
-	const readyButton = useRef();
+	// const readyButton = useRef();
 	useEffect(() => {
 		function resetBoardSize() {
 			const gameContentWidth = outerDiv.current.offsetWidth;
@@ -113,8 +113,8 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 			if (gameContentWidth && gameContentHeight) {
 				const getHeight = (ref) => ref.current ? ref.current.scrollHeight : 0;
 				const totalNonBoardHeight =
-					getHeight(title) + getHeight(topTeamLabel) +
-					getHeight(bottomTeamLabel) + getHeight(historyControls) +
+					getHeight(title) + getHeight(topTeamLine) +
+					getHeight(bottomTeamLine) + getHeight(historyControls) +
 					getHeight(timer) + getHeight(quitButton);
 
 				const boardHeight = gameContentHeight - totalNonBoardHeight;
@@ -128,8 +128,8 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 		})
 		observer.observe(outerDiv.current)
 		observer.observe(title.current)
-		observer.observe(topTeamLabel.current)
-		observer.observe(bottomTeamLabel.current)
+		observer.observe(topTeamLine.current)
+		observer.observe(bottomTeamLine.current)
 		observer.observe(historyControls.current)
 		observer.observe(timer.current)
 		observer.observe(quitButton.current)
@@ -419,41 +419,58 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 	else
 		quitButtonContent = isQuitting ? <>Loading records...<ButtonSpinner /></> : <><IoArrowBackCircleSharp size={iconSize} />Records</>;
 
-	let readyButtonContent;
-	let readyButtonDisplay;
-	const myTeamReady = game[`ready_${game.team}`];
-	if (location.pathname.startsWith(ROUTES.PLAY) && game.status === 'play_nr') {
-		readyButtonContent =
-			isMarkingReady ?
-				myTeamReady ? <>Marking as not ready...<ButtonSpinner /></>
-					: <>Marking as ready...<ButtonSpinner /></>
-				:
-				myTeamReady ? 'Mark as not ready' : 'Mark as ready';
+	let whiteReadyButton = null;
+	let blackReadyButton = null;
 
-		readyButtonDisplay = 'inline';
-	}
-	else {
-		readyButtonContent = '';
-		readyButtonDisplay = 'none';
-	}
-
+	// Ready buttons
 	const whiteReady = game[`ready_w`];
 	const blackReady = game[`ready_b`];
+	if (game.team === 'w' || game.team === 'b')
+		if (location.pathname.startsWith(ROUTES.PLAY) && game.status === 'play_nr') {
+			const myTeamReady = game.team === 'w' ? whiteReady : blackReady;
+			const opponentReady = game.team === 'w' ? blackReady : whiteReady;
 
-	const whiteTeamLabel =
+			const readyButtonContent =
+				isMarkingReady ?
+					myTeamReady ? <ButtonSpinner />
+						: <ButtonSpinner />
+					:
+					myTeamReady ? 'Hold on a sec.' : 'Let\'s rock!';
+			const opponentReadyButtonContent = opponentReady ? 'Ready to rock!' : 'Waiting...';
+
+			const whiteReadyButtonDisabled = buttonsDisabled || game.team !== 'w';
+			const blackReadyButtonDisabled = buttonsDisabled || game.team !== 'b';
+			const onReadyButtonClick = () => playerReady(game.gid, myTeamReady ? '0' : '1');
+			whiteReadyButton =
+				<><Button
+					variant={whiteReady ? 'success' : 'danger'}
+					className='game-button'
+					disabled={whiteReadyButtonDisabled}
+					onClick={whiteReadyButtonDisabled ? null : onReadyButtonClick}>
+					{game.team === 'w' ? readyButtonContent : opponentReadyButtonContent}
+				</Button></>;
+			blackReadyButton =
+				<><Button
+					variant={blackReady ? 'success' : 'danger'}
+					className='game-button'
+					disabled={blackReadyButtonDisabled}
+					onClick={blackReadyButtonDisabled ? null : onReadyButtonClick}>
+					{game.team === 'b' ? readyButtonContent : opponentReadyButtonContent}
+				</Button></>;
+		}
+
+	const whiteTeamLine =
 		<>
 			<TurnIcon color='white' visible={whiteTurnIconVisible} />
-			{' ' + game.name_w
-				+ (game.status !== 'play_nr' ? '' : (whiteReady ? ' - Ready' : ' - Not Ready'))
-				+ ' '}
+			{' ' + game.name_w + ' '}
+			{whiteReadyButton}
 			<TurnIcon visible={false} />
 		</>;
-	const blackTeamLabel =
+	const blackTeamLine =
 		<>
 			<TurnIcon color='black' visible={blackTurnIconVisible} />
-			{' ' + game.name_b
-				+ (game.status !== 'play_nr' ? '' : (blackReady ? ' - Ready' : ' - Not Ready'))
-				+ ' '}
+			{' ' + game.name_b + ' '}
+			{blackReadyButton}
 			<TurnIcon visible={false} />
 		</>;
 
@@ -465,7 +482,7 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 		<div id='game' ref={outerDiv}>
 			<h4 ref={title} style={{ display: gameTitleDisplay }}>{gameTitleText}</h4>
 
-			<div ref={topTeamLabel}>{game.team === 'w' ? blackTeamLabel : whiteTeamLabel}</div>
+			<div ref={topTeamLine}>{game.team === 'w' ? blackTeamLine : whiteTeamLine}</div>
 			<div id='game-board'>
 				<GameCanvas size={boardSize}
 					fen={fen}
@@ -474,7 +491,7 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 					onMouseDown={handleMouseDownCanvas}
 					onMouseUp={handleMouseUpCanvas} />
 			</div>
-			<div ref={bottomTeamLabel}>{game.team === 'w' ? whiteTeamLabel : blackTeamLabel}</div>
+			<div ref={bottomTeamLine}>{game.team === 'w' ? whiteTeamLine : blackTeamLine}</div>
 
 			<div id='game-history-controls' ref={historyControls} style={{ display: historyControlsDisplay }}>
 				<Button className='game-history-button' disabled={lastMoveDisabled} onClick={!lastMoveDisabled ? showStart : null}>
@@ -506,9 +523,6 @@ function Game({ game, leaveGame, playerReady, historyPosition, setHistoryPositio
 
 			<Button ref={quitButton} className='game-button' disabled={buttonsDisabled} onClick={!buttonsDisabled ? () => leaveGame(game.gid) : null}>
 				{quitButtonContent}
-			</Button>
-			<Button ref={readyButton} className='game-button' style={{ display: readyButtonDisplay }} disabled={buttonsDisabled} onClick={!buttonsDisabled ? () => playerReady(game.gid, myTeamReady ? '0' : '1') : null}>
-				{readyButtonContent}
 			</Button>
 
 			<PromotionPicker isActive={showPromotionPicker} selectPiece={selectPromotionPiece} handleCancel={handleCancelPromotion} />
