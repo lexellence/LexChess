@@ -232,9 +232,8 @@ apiRouter.put("/player-ready/:gid/:isReady", async (req: any, res: any) => {
 				databaseUpdate[`games/${gid}/ready_${myTeam}`] = isReadyBool;
 				await db.ref().update(databaseUpdate);
 			}
+			await StartGameIfReady(gid);
 		}
-
-		await StartGameIfReady(gid);
 
 		res.status(httpCodes.OK).send();
 		return;
