@@ -8,6 +8,8 @@ function dbGameToClientGame(dbGame: any, gid: string, uid: string) {
 			name_d: dbGame.name_d,
 			ready_w: dbGame.ready_w,
 			ready_b: dbGame.ready_b,
+			time: dbGame.time,
+			increment: dbGame.increment,
 			moves: dbGame.moves ? Object.values(dbGame.moves) : [],
 		};
 
