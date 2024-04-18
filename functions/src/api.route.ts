@@ -48,15 +48,15 @@ apiRouter.post("/create-game/:team/:time/:increment", async (req: any, res: any)
 		const validatedIncrementInt = (incrementInt && validatedTimeInt > 0) ? incrementInt : 0;
 		const gameListing = {
 			status: 'wait',
-			name_w: isWhite ? name : '',
-			name_b: isBlack ? name : '',
-			name_d: isDefer ? name : '',
+			name_w: isWhite ? name : null,
+			name_b: isBlack ? name : null,
+			name_d: isDefer ? name : null,
 		};
 		const game = {
 			...gameListing,
-			uid_w: isWhite ? uid : 0,
-			uid_b: isBlack ? uid : 0,
-			uid_d: isDefer ? uid : 0,
+			uid_w: isWhite ? uid : null,
+			uid_b: isBlack ? uid : null,
+			uid_d: isDefer ? uid : null,
 			time: validatedTimeInt,
 			increment: validatedIncrementInt,
 		};
@@ -174,13 +174,13 @@ apiRouter.put("/join-game/:gid/:team", async (req: any, res: any) => {
 				const opponentTeam = (team === 'w') ? 'b' : 'w';
 				if (game.uid_d) {
 					databaseUpdate[`games/${gid}/uid_${opponentTeam}`] = game.uid_d;
-					databaseUpdate[`games/${gid}/uid_d`] = 0;
+					databaseUpdate[`games/${gid}/uid_d`] = null;
 
 					databaseUpdate[`games/${gid}/name_${opponentTeam}`] = game.name_d;
 					databaseUpdate[`gameList/${gid}/name_${opponentTeam}`] = game.name_d;
 
-					databaseUpdate[`games/${gid}/name_d`] = 0;
-					databaseUpdate[`gameList/${gid}/name_d`] = 0;
+					databaseUpdate[`games/${gid}/name_d`] = null;
+					databaseUpdate[`gameList/${gid}/name_d`] = null;
 				}
 			}
 		}
