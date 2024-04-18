@@ -268,15 +268,26 @@ apiRouter.put("/visit-game/:gid", async (req: any, res: any) => {
 //\------------------------/
 //
 //------------------------------------------------------------
+function hasBlackMoved(game: any): boolean {
+	if (game.status === 'wait' || game.status === 'play_nr')
+		return false;
+	if (game.status === 'play') {
+		if (!game.moves)
+			return false;
+		if (Object.values(game.moves).length < 2)
+			return false;
+	}
+	return true;
+}
 apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 	try {
 		const { uid } = req.decodedClaims;
 		const { gid } = req.params;
 
 		// Can't leave if you're not in the game
-		const isUserPlaying = (await db.ref(`users/${uid}/play/${gid}`).once('value')).exists();
+		const isUserInGame = (await db.ref(`users/${uid}/play/${gid}`).once('value')).exists();
 		const game = (await db.ref(`games/${gid}`).once('value')).val();
-		if (!isUserPlaying || !game) {
+		if (!isUserInGame || !game) {
 			console.log(`User tried to leave game but is not in it (uid=${uid} gid=${gid})`);
 			res.status(httpCodes.FORBIDDEN).send('You are not in that game');
 			return;
@@ -284,36 +295,47 @@ apiRouter.put("/leave-game/:gid", async (req: any, res: any) => {
 
 		// Construct database update
 		const databaseUpdate: any = {};
-		if (game.status === 'play' && (uid === game.uid_w || uid === game.uid_b)) {
-			// Concede defeat
-			let opponentUID: string;
-			if (uid === game.uid_w) {
-				opponentUID = game.uid_b;
-				databaseUpdate[`games/${gid}/status`] = 'con_b';
-				databaseUpdate[`gameList/${gid}/status`] = 'con_b';
-			}
-			else {
-				opponentUID = game.uid_w;
-				databaseUpdate[`games/${gid}/status`] = 'con_w';
-				databaseUpdate[`gameList/${gid}/status`] = 'con_w';
-			}
-
-			// Add game to users' histories
-			databaseUpdate[`users/${uid}/past/${gid}`] = true;
-			databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
-
-			// Update users
-			databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
-			databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = false;
-		}
+		const isUserSpectating = (uid !== game.uid_w && uid !== game.uid_b && uid !== game.uid_d);
+		const isGameOver = game.status !== 'wait' && game.status !== 'play_nr' && game.status !== 'play';
+		if (isUserSpectating || isGameOver)
+			databaseUpdate[`users/${uid}/play/${gid}`] = null;
 		else {
-			if (game.status === 'wait' && uid === game.uid_d) {
-				// Delete game not yet started			
+			if (game.status === 'play' && hasBlackMoved(game)) {
+				// Concede defeat
+				let opponentUID: string;
+				if (uid === game.uid_w) {
+					opponentUID = game.uid_b;
+					databaseUpdate[`games/${gid}/status`] = 'con_b';
+					databaseUpdate[`gameList/${gid}/status`] = 'con_b';
+				}
+				else {
+					opponentUID = game.uid_w;
+					databaseUpdate[`games/${gid}/status`] = 'con_w';
+					databaseUpdate[`gameList/${gid}/status`] = 'con_w';
+				}
+
+				// Add game to users' histories
+				databaseUpdate[`users/${uid}/past/${gid}`] = true;
+				databaseUpdate[`users/${opponentUID}/past/${gid}`] = true;
+
+				// Update users
+				databaseUpdate[`users/${uid}/play/${gid}/myTurn`] = false;
+				databaseUpdate[`users/${opponentUID}/play/${gid}/myTurn`] = false;
+			}
+			else if (game.status === 'wait' || game.status === 'play_nr' ||
+				(game.status === 'play' && !hasBlackMoved(game))) {
+				// Cancel game			
 				databaseUpdate[`games/${gid}`] = null;
 				databaseUpdate[`gameList/${gid}`] = null;
+
+				// Remove game from users' playing lists
+				if (game.uid_w)
+					databaseUpdate[`users/${game.uid_w}/play/${gid}`] = null;
+				if (game.uid_b)
+					databaseUpdate[`users/${game.uid_b}/play/${gid}`] = null;
+				if (game.uid_d)
+					databaseUpdate[`users/${game.uid_d}/play/${gid}`] = null;
 			}
-			// Remove game from user's playing list
-			databaseUpdate[`users/${uid}/play/${gid}`] = null;
 		}
 
 		// Save changes to database
