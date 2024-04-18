@@ -3,9 +3,9 @@ function dbGameToClientGame(dbGame: any, gid: string, uid: string) {
 		const game: any = {
 			gid: gid,
 			status: dbGame.status,
-			name_w: dbGame.name_w,
-			name_b: dbGame.name_b,
-			name_d: dbGame.name_d,
+			name_w: dbGame.name_w || '',
+			name_b: dbGame.name_b || '',
+			name_d: dbGame.name_d || '',
 			ready_w: dbGame.ready_w,
 			ready_b: dbGame.ready_b,
 			time: dbGame.time,
